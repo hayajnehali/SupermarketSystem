@@ -361,30 +361,31 @@ Priority meanings:
 
 | ID | Functional requirement | Priority |
 |---|---|---|
-| BRS-INV-017 | The system shall allow creation of an inventory-transfer request between two branches. | Must |
+| BRS-INV-017 | The system shall allow an authorized branch employee to submit an inventory-transfer request to Central Administration for movement between two branches. | Must |
 | BRS-INV-018 | A transfer request shall require approval before dispatch is executed. | Must |
 | BRS-INV-019 | The system shall record transferred items, quantities, batches, sending branch, and receiving branch. | Must |
-| BRS-INV-020 | The quantity shall be deducted from the sending branch's inventory when it is physically dispatched. | Must |
-| BRS-INV-021 | The quantity shall be added to the receiving branch's inventory only when it is physically received. | Must |
+| BRS-INV-020 | Central Administration employees shall execute the physical dispatch of an approved transfer; the quantity shall be deducted from the sending branch's inventory when Central Administration records the dispatch. | Must |
+| BRS-INV-021 | Central Administration employees shall execute and record the physical receipt at the destination branch; the quantity shall be added to the receiving branch's inventory only when Central Administration records the actual receipt. | Must |
 | BRS-INV-022 | The system shall record differences between dispatched and received quantities and submit them for review according to permissions. | Must |
 | BRS-INV-023 | The system shall preserve the transfer status, stages, responsible users, and timestamps. | Must |
 
 **Use case — Transfer inventory between branches**
 
-1. A branch creates a transfer request.
-2. Central administration approves it.
-3. The sending branch records the quantity physically dispatched.
-4. The dispatched quantity is deducted from the sending branch.
-5. The receiving branch records the quantity physically received.
-6. The received quantity is added to the receiving branch.
-7. Any difference is recorded for review; unreceived quantities do not become available inventory.
+1. A branch submits a transfer request to Central Administration.
+2. Central Administration reviews and approves or rejects the request.
+3. Central Administration employees execute and record the physical dispatch.
+4. The dispatched quantity is deducted from the sending branch's inventory.
+5. Central Administration employees execute and record the physical receipt at the destination branch.
+6. Only the quantity actually received is added to the destination branch's inventory.
+7. Any difference is recorded for Central Administration review; unreceived quantities do not become available inventory.
 
 **Acceptance criteria**
 
-- Given an unapproved transfer request, when a branch attempts to dispatch goods, then the system blocks execution.
-- Given an approved shipment, when the sending branch records dispatch, then the dispatched quantity is deducted from its inventory.
-- Given a shipment in transit, when the receiving branch reviews its inventory, then the quantity is not shown as available at that branch.
-- Given a difference between dispatched and received quantities, when receiving is recorded, then the difference is presented for review.
+- Given an unapproved transfer request, when any branch employee attempts to execute dispatch, then the system blocks execution.
+- Given an approved transfer, when an authorized Central Administration employee records physical dispatch, then the dispatched quantity is deducted from the sending branch.
+- Given a shipment in transit, when the destination branch inventory is reviewed, then the quantity is not shown as available there.
+- Given an authorized Central Administration employee records physical receipt, then only the actually received quantity is added to the destination branch.
+- Given a difference between dispatched and received quantities, when receipt is recorded, then the difference is presented to Central Administration for review.
 
 ## 4.4 Stocktaking and variance adjustments
 
@@ -392,8 +393,8 @@ Priority meanings:
 |---|---|---|
 | BRS-INV-024 | The system shall support full, partial, and surprise stocktaking. | Must |
 | BRS-INV-025 | The system shall allow the stocktake scope to be defined by branch, products, and storage locations. | Must |
-| BRS-INV-026 | The system shall not display expected balances to the employee performing the count (blind inventory). | Must |
-| BRS-INV-027 | The system shall record the actual quantities entered by the stocktaking employee. | Must |
+| BRS-INV-026 | Physical stocktaking shall be performed by assigned Central Administration employees using blind-count mode; expected balances shall not be displayed to the employees performing the count. | Must |
+| BRS-INV-027 | The system shall record the actual quantities entered by the assigned Central Administration stocktaking employees. | Must |
 | BRS-INV-028 | After counting is completed, the system shall compare actual quantities with recorded balances. | Must |
 | BRS-INV-029 | The system shall record stock variances and request an explanation when a variance exists. | Must |
 | BRS-INV-030 | The system shall not change inventory balances due to a stocktake variance before the required central approval. | Must |
@@ -403,17 +404,43 @@ Priority meanings:
 
 1. An authorized user creates a surprise stocktake for a branch or selected products.
 2. The system defines the products and storage locations in scope.
-3. The stocktaking employee enters actual quantities without seeing expected balances.
+3. Assigned Central Administration employees enter actual quantities without seeing expected balances.
 4. After counting is completed, the system compares the results with recorded balances.
 5. Variances are displayed and explanations are requested.
 6. Central administration reviews the results and approves or rejects the adjustment.
 
 **Acceptance criteria**
 
-- Given an employee assigned to count stock, when the employee opens the stocktake, then expected balances are not visible.
+- Given a Central Administration employee assigned to count stock, when the employee opens the stocktake, then expected balances are not visible.
+- Given a branch employee, when the employee attempts to perform the physical stock count, then the system does not grant that role the stocktaking execution authority.
 - Given a completed count, when the system calculates the variance, then actual quantity, recorded balance, and difference are displayed.
 - Given an unapproved variance, when the system attempts to update inventory because of it, then the update is blocked.
 - Given an approved adjustment, when it is applied, then the responsible user, reason, quantity, and timestamp are recorded.
+
+## 4.4.1 Stocktake session controls and closure
+
+| ID | Functional requirement | Priority |
+|---|---|---|
+| BRS-INV-043 | Central Administration shall define the scope of each partial stocktake and create the stocktake session. | Must |
+| BRS-INV-044 | A stocktake session may be divided among multiple assigned Central Administration employees; the system shall record each employee's assigned scope and submitted count. | Must |
+| BRS-INV-045 | If the first count shows a variance, the assigned Central Administration employee shall perform a second count. If both counts match, the matching result proceeds to central review; if they differ, the case is referred for investigation and shall not be resolved automatically. | Must |
+| BRS-INV-046 | Inventory movements affecting products within the stocktake scope shall be frozen from session start until the session is closed. A partial stocktake shall not freeze products outside its defined scope. | Must |
+| BRS-INV-047 | Only Central Administration may cancel an active stocktake session, and the cancellation reason shall be recorded. | Must |
+| BRS-INV-048 | The system shall retain the history of stocktake sessions, assigned employees, counts, recounts, variances, investigations, approvals, cancellations, and closure. | Must |
+| BRS-INV-049 | A stocktake session shall not close or release its movement freeze until counting and required recounts are complete, all variances are investigated, and Central Administration has approved or rejected each adjustment and closed the session. If there are no variances, Central Administration shall still approve session closure before movements resume. | Must |
+
+**Acceptance criteria**
+
+- Only Central Administration can create and define the scope of a partial stocktake.
+- Multiple Central Administration employees can be assigned separate count scopes within one session.
+- Expected balances remain hidden during every count and recount.
+- A first-count variance requires a second count; matching counts proceed to review, while differing counts require investigation.
+- Movements for in-scope products remain frozen until Central Administration closes the session; out-of-scope products remain operational during a partial count.
+- Only Central Administration can cancel a session, and the reason is retained.
+- The system retains the complete stocktake session and decision history.
+- No session closes and no movement freeze is released before the required count, recount, investigation, and central closeout steps are complete.
+
+---
 
 ## 4.5 Damaged, expired, and near-expiry products
 

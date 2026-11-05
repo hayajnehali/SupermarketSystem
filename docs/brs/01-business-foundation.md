@@ -96,6 +96,8 @@ The core business roles are:
 - Inventory Clerk
 - Pricing Clerk
 
+The Branch Manager title does not grant independent administrative or operational authority. A Branch Manager, like every branch employee, may perform only actions explicitly granted by Central Administration; centrally controlled decisions and approvals remain central.
+
 Permissions are managed centrally. Additional permissions may be granted to or withdrawn from an employee without changing their role.
 
 A Branch Manager cannot independently create user accounts or administer permissions. The manager may submit a request to the central administration.

@@ -19,10 +19,16 @@ This part documents the owner-approved recommendations P31–P40. It does not re
 | CRM-CUS-001 | The system shall verify ownership of a customer's mobile phone number using OTP during registration. | Must |
 | CRM-CUS-002 | A customer account shall not become active until the phone OTP verification succeeds. | Must |
 | CRM-CUS-003 | The mobile phone number shall be a unique customer identifier. The system shall prevent creating a second customer account using a phone number already associated with an existing account. | Must |
-| CRM-CUS-004 | The system shall support an administrative process for handling duplicate customer accounts that already exist, without silently creating further duplicates. | Must |
+| CRM-CUS-004 | The system shall support a Central Administration-controlled process for reviewing and resolving duplicate customer accounts that already exist, preserving transaction history and audit trail. | Must |
+| CRM-CUS-005 | Customers may update personal account information and view previous orders. | Must |
+| CRM-CUS-006 | Delivery addresses shall not be maintained as a reusable saved-address book. For each order, the customer selects a city, selects a related village/area, and enters address details in free text. | Must |
+| CRM-CUS-007 | Branch and delivery employees shall not search or browse customer profiles. They may view only customer information necessary for an order assigned to them; delivery employees may view only orders assigned to them. | Must |
 | CRM-LOY-001 | Loyalty points earned from a sale shall be calculated and credited only after the sale is completed and its payment is confirmed. | Must |
 | CRM-LOY-002 | When a sale is partially or fully returned, the system shall reverse the points earned for the returned products in proportion to their returned value, according to the approved loyalty rules. | Must |
 | CRM-LOY-003 | When a return relates to a purchase for which loyalty points were already redeemed, the system shall handle the redeemed points according to the approved refund and return policy. | Must |
+| CRM-LOY-004 | Central Administration shall define the validity period of loyalty points and the rules for expiry. | Must |
+| CRM-LOY-005 | Loyalty points may be redeemed in supermarket branches and on the online store, subject to centrally defined rules. | Must |
+| CRM-LOY-006 | Points shall be applied only to the eligible amount remaining after applicable discounts, according to centrally configured loyalty rules. | Must |
 | CRM-CMP-001 | The system shall allow customer complaints to be recorded and assigned a unique reference number. | Must |
 | CRM-CMP-002 | Each complaint shall have a status, an assigned responsible employee, and a record of actions taken. | Must |
 | CRM-CMP-003 | The system shall preserve the complaint's history, including status changes and recorded actions, until the complaint is closed. | Must |
@@ -73,6 +79,7 @@ This part documents the owner-approved recommendations P31–P40. It does not re
 - Every complaint has a unique reference number, status, assigned responsible employee, and action history.
 - Complaint status changes and actions remain traceable through closure.
 - Complaint management remains under Central Administration.
+- Branch and delivery employees cannot search customer profiles and can access only information needed for orders assigned to them.
 
 ---
 
@@ -82,45 +89,50 @@ This part documents the owner-approved recommendations P31–P40. It does not re
 
 | ID | Functional requirement | Priority |
 |---|---|---|
-| OPS-EXP-001 | The branch shall be able to record an expense and submit it to Central Administration for review. | Must |
-| OPS-EXP-002 | A branch-recorded expense shall not be treated as financially approved until Central Administration approves it. | Must |
-| OPS-EXP-003 | The system shall require an invoice or supporting document for an expense. An exception may be accepted only when Central Administration approves it and the exception is recorded. | Must |
-| OPS-MNT-001 | The branch shall be able to submit a maintenance request identifying the device or asset, its location, and the reported fault. | Must |
-| OPS-MNT-002 | Each maintenance request shall have a unique reference number, priority, assigned responsible person, recorded cost, status, and chronological history. | Must |
-| OPS-MNT-003 | The system shall preserve maintenance request status changes and actions in a chronological record. | Must |
-| OPS-ALT-001 | The system shall provide a centralized alerts center. | Must |
-| OPS-ALT-002 | Alerts shall be classified by importance and shall identify the responsible person or role for follow-up. | Must |
-| OPS-RPT-001 | The system shall provide centralized reports for management. | Must |
-| OPS-RPT-002 | The system shall support comparison of branch performance and results. | Must |
-| OPS-RPT-003 | Central reports and branch comparisons shall support filtering by branch, period, and product. | Must |
+| OPS-EXP-001 | A branch shall submit a prospective expense request before purchase or payment, including expense type, branch, estimated amount, reason, and a quotation or pro-forma invoice. | Must |
+| OPS-EXP-002 | Central Administration shall review each expense request and may approve, reject, or return it for correction and resubmission. The decision and reason shall be recorded. | Must |
+| OPS-EXP-003 | The branch shall not purchase or pay for an expense before Central Administration approval. | Must |
+| OPS-EXP-004 | After an approved expense is executed, the branch shall record the actual amount and attach the final invoice or proof of payment; Central Administration shall review the completed record. | Must |
+| OPS-EXP-005 | A branch expense shall not be treated as financially approved or completed until the required Central Administration review is recorded. | Must |
+| OPS-MNT-001 | The branch shall submit a maintenance request identifying the device/asset, its location, fault description, photo or video of the fault, and urgency. | Must |
+| OPS-MNT-002 | Each maintenance request shall have a unique reference number, priority, assigned technician or service provider, status, recorded cost, and chronological history. | Must |
+| OPS-MNT-003 | Central Administration shall review the request, assign the technician or service provider, and monitor it through completion. | Must |
+| OPS-MNT-004 | The technician shall submit a maintenance report and cost. The branch shall confirm that the device is operational again; Central Administration shall review and close the request. | Must |
+| OPS-ALT-001 | The system shall provide a centralized alerts center for alert types selected by Central Administration. | Must |
+| OPS-ALT-002 | Alerts shall be classified by importance and identify the employee or role responsible for follow-up. | Must |
+| OPS-ALT-003 | Alerts intended for Central Administration shall be delivered in the system, by email, and by mobile push notification. Central Administration shall define recipients for each alert type. | Must |
+| OPS-ALT-004 | A recipient may acknowledge an alert and record an action or note. Reading or acknowledging an alert shall not delete it; it remains in alert history. | Must |
+| OPS-RPT-001 | The system shall provide management reports centrally. | Must |
+| OPS-RPT-002 | Central Administration shall be able to compare company-wide and individual branch results. | Must |
+| OPS-RPT-003 | Central reports shall support filtering by branch, period, and product; Central Administration selects the reporting period. | Must |
+| OPS-RPT-004 | Access to sales, profit, and inventory reports shall be restricted to Central Administration. | Must |
 
 ## 12.2 Main scenarios
 
 ### Scenario A — Submit and approve a branch expense
 
-1. A branch employee records an expense.
-2. The employee attaches an invoice or supporting document.
-3. The branch submits the expense to Central Administration.
-4. Central Administration reviews and approves or rejects it.
-5. The expense is not treated as financially approved before central approval.
-6. If supporting documentation is unavailable, the exception must be explicitly approved by Central Administration and recorded.
+1. A branch submits an expense request with type, branch, estimated amount, reason, and quotation or pro-forma invoice.
+2. Central Administration approves, rejects, or returns the request for correction; its decision is recorded.
+3. The branch executes the purchase only after approval.
+4. The branch records the actual amount and attaches the final invoice or proof of payment.
+5. Central Administration reviews the completed expense record.
 
 ### Scenario B — Submit a maintenance request
 
-1. A branch employee selects the affected device or asset.
-2. The employee records its location and describes the fault.
-3. The system creates a maintenance request with a unique reference number.
-4. The request is assigned a priority and a responsible person.
-5. Its cost and status are recorded as the request progresses.
-6. The system preserves a chronological history of the request and its actions.
+1. A branch employee identifies the device/asset, location, fault description, urgency, and attaches a photo or video.
+2. The system creates a maintenance request with a unique reference number.
+3. Central Administration reviews the request and assigns a technician or service provider.
+4. The technician submits a report and cost.
+5. The branch confirms that the device has returned to service.
+6. Central Administration reviews and closes the request; the full history is retained.
 
 ### Scenario C — Review centralized alerts
 
-1. The system generates an operational alert.
-2. The alert appears in the centralized alerts center.
-3. The alert is classified by importance.
-4. The responsible person or role is identified for follow-up.
-5. The alert remains available for tracking according to its status.
+1. The system generates an alert type selected by Central Administration.
+2. The alert is delivered to configured recipients in the system, by email, and by mobile push notification.
+3. The alert is classified by importance and identifies the responsible recipient.
+4. The recipient may acknowledge it and record an action or note.
+5. The alert remains in the historical alert record after being read or acknowledged.
 
 ### Scenario D — Review branch reports
 
@@ -136,7 +148,8 @@ This part documents the owner-approved recommendations P31–P40. It does not re
 - A maintenance request has a unique reference number, priority, responsible person, cost, status, and chronological history.
 - Maintenance actions and status changes are retained in chronological order.
 - Alerts are available through one centralized center, classified by importance, and identify who is responsible for follow-up.
-- Centralized reports support branch comparison and filtering by branch, period, and product.
+- Alerts are delivered to configured central recipients in the system, by email, and by mobile push notification; recipients can acknowledge and add notes/actions, and alerts remain in history.
+- Sales, profit, and inventory reports are accessible only to Central Administration; reporting periods are centrally selected, with filters for branch, period, and product.
 
 ---
 
@@ -152,6 +165,6 @@ This part documents the owner-approved recommendations P31–P40. It does not re
 - P38: maintenance requests have a reference number, priority, responsible person, cost, status, and chronological history. The branch records the device, its location, and the fault.
 - P39: a centralized alerts center classifies alerts by importance and identifies the responsible person.
 - P40: centralized reports compare branches and can be filtered by branch, period, and product.
-- Limited payroll tracking remains governed by the separately approved PAY-01 scope; this part does not introduce payroll calculation or statutory payroll processing.
+- Limited payroll tracking remains governed by the separately approved FIN-03 / PAYROLL scope; it does not introduce payroll calculation or statutory payroll processing.
 - Financial approvals, audit, access control, and historical-record retention remain subject to the shared business rules in the approved BRS foundation.
 - Detailed interfaces, data schemas, APIs, alert delivery channels, report calculations, and technical scheduling belong to technical design and are not newly specified here.
