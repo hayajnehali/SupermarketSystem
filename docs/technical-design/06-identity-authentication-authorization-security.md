@@ -2,7 +2,7 @@
 
 **Document:** TD-06  
 **Version:** 0.1  
-**Status:** Initial security design proposal — pending owner review  
+**Status:** Approved by project owner — baseline accepted for detailed design  
 **Depends on:** Merged BRS, approved owner decisions, TD-01 through TD-05.
 
 ## 1. Security objectives
