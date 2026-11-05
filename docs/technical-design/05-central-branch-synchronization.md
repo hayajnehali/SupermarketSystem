@@ -363,9 +363,9 @@ The Branch also stores the processed `OperationId` and original outcome. Repeate
 This state model is approved as the logical baseline. It defines logical states and safety transitions only. Detailed order statuses, payment-provider mapping, webhook contracts, timeout handling, and exception-resolution permissions will be specified in the API and payment integration design. No additional customer-facing policy is introduced here.
 
 
-## 17. Reservation/payment exception handling — proposed operational rules
+## 17. Reservation/payment exception handling — owner-approved operational rules
 
-This section defines safe technical handling for failures and race conditions. It does not create new customer-facing refund, cancellation, delivery, or objection policies.
+**Owner approval: 2026-11-06.** The project owner approved these safe technical handling rules for failures and race conditions. It does not create new customer-facing refund, cancellation, delivery, or objection policies.
 
 ### 17.1 Important state clarification
 
@@ -416,4 +416,4 @@ The following require a separate explicit business decision and are not inferred
 
 ### 17.5 Approval boundary
 
-This exception-handling model and the `PaymentSucceededAwaitingBranchCommit` clarification are proposed for owner approval. Once approved, they become the logical technical baseline; detailed API contracts, provider-specific integration, alert thresholds, and operational runbooks remain implementation design work.
+This exception-handling model and the `PaymentSucceededAwaitingBranchCommit` clarification are approved as the logical technical baseline; detailed API contracts, provider-specific integration, alert thresholds, and operational runbooks remain implementation design work.
