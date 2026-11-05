@@ -300,9 +300,9 @@ The API contract will define exact DTOs, status codes, and reason-code catalogue
 This mechanism is an approved logical baseline. It selects outbound `Branch.Worker` polling over Central-initiated inbound connections. Approval does not finalize endpoint paths, authentication credential format, polling interval, SQL table design, or payment-provider exception handling; those remain detailed API/security/operations work.
 
 
-## 16. Online stock-reservation state machine — proposed baseline
+## 16. Online stock-reservation state machine — owner-approved baseline
 
-This section defines separate Central workflow states and Branch stock states. They must not be collapsed into one status because Central owns the online order/payment lifecycle while the Branch database owns the physical stock reservation.
+**Owner approval: 2026-11-06.** The project owner approved this logical state model. It defines separate Central workflow states and Branch stock states. They must not be collapsed into one status because Central owns the online order/payment lifecycle while the Branch database owns the physical stock reservation.
 
 ### 16.1 Central reservation/order states
 
@@ -360,4 +360,4 @@ The Branch also stores the processed `OperationId` and original outcome. Repeate
 
 ### 16.6 Approval boundary
 
-This state model is proposed for owner approval. It defines logical states and safety transitions only. Detailed order statuses, payment-provider mapping, webhook contracts, timeout handling, and exception-resolution permissions will be specified in the API and payment integration design. No additional customer-facing policy is introduced here.
+This state model is approved as the logical baseline. It defines logical states and safety transitions only. Detailed order statuses, payment-provider mapping, webhook contracts, timeout handling, and exception-resolution permissions will be specified in the API and payment integration design. No additional customer-facing policy is introduced here.
