@@ -118,7 +118,7 @@ Control preparation, item verification, assignment, delivery/pickup completion, 
 | DLV-016 | A customer may dispute a delivery confirmation within a period defined by Central Administration. The order shall be marked disputed while retaining the original delivery confirmation and its history. | Must |
 | DLV-017 | The system shall retain available delivery information for dispute review, including employee identity, assignment, timestamps, delivery confirmation, and any evidence available from the workflow. | Must |
 | DLV-018 | Central Administration shall review and accept or reject a delivery dispute, recording the decision and reason. A dispute shall not automatically trigger a refund. | Must |
-| DLV-019 | A paid pickup order created at a branch that is not collected shall follow the separately approved branch-created pickup policy; it shall not be treated as an uncollected unpaid online order. | Must |
+| DLV-019 | A paid pickup order created through a branch shall be treated as a completed sale if the customer does not attend. The centrally defined retention period and subsequent central decision shall be recorded; products shall not be returned to stock automatically and must be inspected before any inventory disposition. | Must |
 
 ## 9.3 Main scenarios
 
@@ -181,7 +181,7 @@ Maintain controlled branch operations during connectivity loss, preserve local t
 |---|---|---|
 | OFF-001 | Each branch shall use its latest locally available centrally approved data while operating within the centrally configured Offline time limit. | Must |
 | OFF-002 | The Offline time limit shall be centrally configurable and apply uniformly to all branches. | Must |
-| OFF-003 | Offline login shall follow the approved local authentication validity period and central-verification rule. The local session shall not be treated as valid indefinitely without central verification. | Must |
+| OFF-003 | Offline login shall remain valid for no more than 24 hours after the last successful central verification. After that period, local login shall not authorize further Offline operation until central verification succeeds. | Must |
 | OFF-004 | During an allowed Offline period, the branch shall use the last locally approved base prices and promotions. Expired promotions shall stop applying and the last locally approved base price shall apply. | Must |
 | OFF-005 | Branch users shall not create or modify prices, promotions, or central policies while Offline. | Must |
 | OFF-006 | When synchronization detects a conflict, the conflicting data/operation shall be isolated and referred to Central Administration. The system shall not resolve business conflicts automatically. | Must |
