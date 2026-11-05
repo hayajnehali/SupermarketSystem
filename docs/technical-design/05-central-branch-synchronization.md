@@ -239,3 +239,62 @@ The eventual implementation must demonstrate, through automated and integration 
 ## 14. Approval boundary
 
 TD-05 establishes the logical synchronization contract and safety invariants. It does not finalize transport endpoints, exact retry timings, SQL schema, authentication implementation, hosting, or authorize application coding.
+
+
+## 15. Branch-initiated command delivery — proposed detailed mechanism
+
+This section proposes the transport mechanism for Central-to-Branch commands, including online stock reservations and releases. It preserves the approved rule that Branch owns the final stock decision and that Central has no direct database connection to a branch.
+
+### 15.1 Connection direction
+
+- `Branch.Worker` initiates outbound HTTPS requests to the Central API.
+- Central does not open inbound connections to branch networks and does not connect to branch SQL databases.
+- The Worker uses a configurable polling loop to request commands addressed to its registered BranchId.
+- Poll interval, request timeout, batch size, and concurrency are operational configuration values; they are not fixed here.
+- The Worker must use the existing authenticated service identity and branch-scoped authorization defined by TD-06. A request for one branch must never retrieve another branch's commands.
+
+### 15.2 Command delivery lifecycle
+
+1. Central commits a command to its durable command/Outbox store with a stable `CommandId`, `OperationId`, target `BranchId`, command type, schema version, and correlation metadata.
+2. On its next poll, the Branch Worker requests a bounded batch of commands for its own branch. Central returns command identifiers and payloads; delivery is at-least-once.
+3. The Worker passes each command to the appropriate Branch application handler. The handler validates the target branch, command version, business state, and current local data.
+4. For a stock reservation, the Branch handler atomically checks sellable stock against existing reservations and POS sales, persists the reservation and the processed-command receipt in the same Branch database transaction, and only then returns an accepted outcome.
+5. For a release, the Branch handler durably applies the release and records the processed-command receipt before returning a released outcome. POS may sell the released quantity only after this local commit.
+6. The Worker posts each outcome to Central. Central records the acknowledgement against the same command/operation identity and updates its workflow state only from a valid, authenticated Branch outcome.
+7. If the response or acknowledgement is lost, the Worker may deliver the same command again. The Branch returns its previously persisted outcome without repeating the stock effect.
+
+### 15.3 Reliability and concurrency safeguards
+
+- Central command creation must be durable before the command is offered to a Worker.
+- Delivery is at-least-once; exactly-once transport is neither assumed nor required. Exactly-once business effect is achieved through durable idempotency at the Branch.
+- The Branch database transaction is the serialization boundary shared by website reservation handling and POS sale validation.
+- Central must not start the approved 15-minute payment window or present stock as reserved until it has received the Branch's durable reservation acceptance and created/started the payment session according to the payment workflow.
+- A command that has not been durably accepted by the Branch is not a confirmed reservation.
+- A timeout, lost response, or Worker restart must not cause Central to assume acceptance or create a second reservation/payment attempt. The same stable identifiers are reused during recovery.
+- Central records command delivery status separately from business outcome. A successful HTTP response alone is not proof that the business operation succeeded.
+- A command rejected for insufficient stock or invalid state returns a durable business rejection; transient transport failures remain eligible for retry.
+- A release is idempotent. Repeated release delivery must not increase available stock more than once.
+- If the Branch is unreachable during checkout, Central fails the reservation handshake safely; it must not proceed as though stock were reserved.
+
+### 15.4 Minimum command outcomes
+
+The Branch must return a durable outcome for each command, at minimum:
+- `Accepted`: reservation was committed locally.
+- `Released`: release was committed locally.
+- `Rejected`: a permanent business validation prevented application, with a stable reason code.
+- `AlreadyProcessed`: the same operation was previously processed; include the original outcome.
+- `RetryableFailure`: no business effect was committed and the same operation may be retried.
+
+The API contract will define exact DTOs, status codes, and reason-code catalogues later. A transport-level failure is not a business rejection.
+
+### 15.5 Timing and policy boundaries
+
+- This mechanism does not change the approved 15-minute website payment window. That window begins only after durable Branch reservation acceptance and initiation of the payment session; command polling/transport delay before acceptance does not consume it.
+- It does not change the centrally configured Offline duration, local login validity, or the requirement for explicit Central authorization before POS resumes after an Offline period.
+- Technical command retries do not count as another customer delivery attempt.
+- No additional customer objection period or delivery attempt is introduced.
+- Polling frequency, command lease/visibility timeout, retry backoff, and operational alert thresholds remain configurable implementation/operations details and must be finalized during API and deployment design.
+
+### 15.6 Approval boundary
+
+This is the recommended logical delivery mechanism for owner review. It selects outbound Branch.Worker polling over Central-initiated inbound connections. It does not finalize endpoint paths, authentication credential format, polling interval, SQL table design, or payment-provider exception handling. Those remain detailed API/security/operations work. The mechanism becomes an approved baseline only after explicit owner approval.
