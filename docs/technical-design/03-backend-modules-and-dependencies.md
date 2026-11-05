@@ -2,7 +2,7 @@
 
 **Document:** TD-03  
 **Version:** 0.1  
-**Status:** Initial module-boundary proposal — pending owner review  
+**Status:** Approved by project owner — logical module boundaries accepted (2026-11-06)  
 **Depends on:** Merged BRS, TD-01 Architecture Overview.  
 **Purpose:** Define business-aligned backend modules and their ownership without splitting the initial system into microservices.
 
