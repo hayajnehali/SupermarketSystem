@@ -78,6 +78,8 @@ Branch database contents must be branch-scoped. Customer information is minimize
 
 The exact reservation handshake, branch acknowledgement timeout, and stock freshness threshold require a dedicated synchronization design decision. This document does not invent those timings.
 
+**Owner-approved stock-concurrency invariant (2026-11-06):** The assigned Branch database is the final authority for accepting an online stock reservation and for completing a POS sale against that branch's physical stock. Reservation processing and POS sale validation must serialize against the same branch stock/reservation state. The branch must persist an accepted reservation durably before acknowledging it to Central. Therefore, the same stock units cannot be both reserved for a website order and sold through POS. The specific SQL locking/isolation or conditional-update technique remains an implementation detail for the detailed database design; this approval does not select one.
+
 ### 4.2 Sales and invoices
 
 - The branch creates and completes its POS invoice locally.
