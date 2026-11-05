@@ -417,6 +417,31 @@ Priority meanings:
 - Given an unapproved variance, when the system attempts to update inventory because of it, then the update is blocked.
 - Given an approved adjustment, when it is applied, then the responsible user, reason, quantity, and timestamp are recorded.
 
+## 4.4.1 Stocktake session controls and closure
+
+| ID | Functional requirement | Priority |
+|---|---|---|
+| BRS-INV-043 | Central Administration shall define the scope of each partial stocktake and create the stocktake session. | Must |
+| BRS-INV-044 | A stocktake session may be divided among multiple assigned Central Administration employees; the system shall record each employee's assigned scope and submitted count. | Must |
+| BRS-INV-045 | If the first count shows a variance, the assigned Central Administration employee shall perform a second count. If both counts match, the matching result proceeds to central review; if they differ, the case is referred for investigation and shall not be resolved automatically. | Must |
+| BRS-INV-046 | Inventory movements affecting products within the stocktake scope shall be frozen from session start until the session is closed. A partial stocktake shall not freeze products outside its defined scope. | Must |
+| BRS-INV-047 | Only Central Administration may cancel an active stocktake session, and the cancellation reason shall be recorded. | Must |
+| BRS-INV-048 | The system shall retain the history of stocktake sessions, assigned employees, counts, recounts, variances, investigations, approvals, cancellations, and closure. | Must |
+| BRS-INV-049 | A stocktake session shall not close or release its movement freeze until counting and required recounts are complete, all variances are investigated, and Central Administration has approved or rejected each adjustment and closed the session. If there are no variances, Central Administration shall still approve session closure before movements resume. | Must |
+
+**Acceptance criteria**
+
+- Only Central Administration can create and define the scope of a partial stocktake.
+- Multiple Central Administration employees can be assigned separate count scopes within one session.
+- Expected balances remain hidden during every count and recount.
+- A first-count variance requires a second count; matching counts proceed to review, while differing counts require investigation.
+- Movements for in-scope products remain frozen until Central Administration closes the session; out-of-scope products remain operational during a partial count.
+- Only Central Administration can cancel a session, and the reason is retained.
+- The system retains the complete stocktake session and decision history.
+- No session closes and no movement freeze is released before the required count, recount, investigation, and central closeout steps are complete.
+
+---
+
 ## 4.5 Damaged, expired, and near-expiry products
 
 | ID | Functional requirement | Priority |
