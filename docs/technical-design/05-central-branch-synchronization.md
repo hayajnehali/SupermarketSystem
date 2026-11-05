@@ -194,6 +194,8 @@ This resumption gate implements the approved rule; it does not create an additio
 - The single delivery attempt policy is enforced by the order/fulfillment workflow. A technical retry of a synchronization message is not another customer delivery attempt.
 - Reservation expiry, late payment, branch acknowledgement timeout, and stock freshness thresholds must follow the approved BRS and be completed in the detailed order/API contract; this document does not invent new durations.
 
+**Owner-approved stock-concurrency invariant (2026-11-06):** The Branch database is the final authority for accepting a reservation against its physical stock. Applying a website reservation and validating a POS sale must serialize against the same local stock/reservation state. Branch must commit the reservation and its durable processing receipt before acknowledging acceptance to Central. Central must not interpret a transport send or an uncommitted response as proof that stock is reserved. Duplicate delivery of the same reservation OperationId returns the recorded outcome and must not reserve stock twice. The exact transport/coordination mechanism, acknowledgement timeout, and detailed failure-state contract remain open for the next design step.
+
 ## 11. Security and observability requirements
 
 - Authenticate every branch-to-central synchronization client and identify its registered BranchId/device/service identity.
