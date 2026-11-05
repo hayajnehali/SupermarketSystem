@@ -128,7 +128,9 @@ Rules:
 ### 7.1 Central
 
 - Preserve the approved Central RPO target of 15 minutes.
-- Use a SQL Server backup strategy capable of meeting the target, including full, differential and transaction-log backups as appropriate to the selected recovery model.
+- Use a SQL Server recovery model and backup strategy capable of meeting the target. Under the full recovery model, schedule transaction-log backups frequently enough to keep the recoverable data-loss window within 15 minutes; full/differential backups alone do not establish this RPO.
+- Monitor the age of the latest successfully completed transaction-log backup and alert before the 15-minute RPO can be breached.
+- Confirm that backup storage throughput, transaction-log chain continuity, encryption, and restore procedures can meet the target under the selected Central workload.
 - Back up application configuration and deployment metadata needed to rebuild the service, excluding recoverable secrets where a secret manager is authoritative.
 - Encrypt backups in transit and at rest.
 - Store backup copies outside the primary database host and preferably in a separate failure domain/account.
@@ -259,7 +261,7 @@ The implementation and production readiness review must demonstrate that:
 3. Branch.Worker can synchronize outbound securely without inbound database connectivity.
 4. A branch internet outage respects the Central-configured Offline duration.
 5. A local Branch.Api/database outage blocks POS sales.
-6. Central backup and restore tests meet the 15-minute RPO and 4-hour RTO targets under the tested failure scenario.
+6. Central backup and restore tests meet the 15-minute RPO and 4-hour RTO targets under the tested failure scenario, including point-in-time recovery from an unbroken transaction-log backup chain.
 7. Branch backups can be restored and local Outbox/Inbox state remains consistent.
 8. A recovery with pending synchronization messages does not duplicate invoices, stock movements or payment effects.
 9. Restored branches do not resume sales before required reconciliation and explicit Central authorization.
