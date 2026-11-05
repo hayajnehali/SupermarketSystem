@@ -134,18 +134,18 @@ TD-07 now explicitly includes a delivery-disputes API group and workflow: custom
 
 | Document | Current status | Review disposition |
 |---|---|---|
-| TD-01 Architecture overview | Proposal pending owner review | Approve after checking this review's findings |
-| TD-02 Technology stack | Recommendation pending owner approval | Requires explicit owner approval |
-| TD-03 Backend modules | Proposal pending owner review | Approve as logical module baseline; detailed contracts remain later work |
-| TD-04 Database topology/ownership | Proposal pending owner review | Approve ownership model; reservation handshake must be completed |
+| TD-01 Architecture overview | Approved by owner (2026-11-06) | Baseline approved; implementation findings remain open |
+| TD-02 Technology stack | Approved by owner (2026-11-06) | Baseline approved; pin exact patches at implementation start |
+| TD-03 Backend modules | Approved by owner (2026-11-06) | Logical boundaries approved; detailed contracts remain later work |
+| TD-04 Database topology/ownership | Approved by owner (2026-11-06) | Ownership baseline approved; reservation handshake must be completed |
 | TD-05 Central/Branch synchronization | Owner-approved | Retain approval; detailed reservation contract still required |
 | TD-06 Identity/security | Owner-approved | Retain approval; implementation details remain deferred |
 | TD-07 API/integrations | Owner-approved, updated with dispute workflow | Retain approval; detailed endpoint contracts remain deferred |
-| TD-08 Deployment/DR | Proposal pending owner review | Review and approve after operational recovery requirements are understood |
+| TD-08 Deployment/DR | Approved by owner (2026-11-06) | Baseline approved; operational sizing and recovery proof remain required |
 
 ## 6. Recommended next sequence
 
-1. Owner approval of TD-01 through TD-04 and the TD-02 technology baseline.
+1. Record the owner's approval of TD-01 through TD-04 and the TD-02 technology baseline in the document index (completed).
 2. Complete the online reservation handshake and stock-concurrency contract (TD-04/TD-05/TD-07).
 3. Produce the critical API contract catalogue.
 4. Complete security implementation threat model and identity/device decisions.
