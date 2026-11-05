@@ -361,3 +361,59 @@ The Branch also stores the processed `OperationId` and original outcome. Repeate
 ### 16.6 Approval boundary
 
 This state model is approved as the logical baseline. It defines logical states and safety transitions only. Detailed order statuses, payment-provider mapping, webhook contracts, timeout handling, and exception-resolution permissions will be specified in the API and payment integration design. No additional customer-facing policy is introduced here.
+
+
+## 17. Reservation/payment exception handling — proposed operational rules
+
+This section defines safe technical handling for failures and race conditions. It does not create new customer-facing refund, cancellation, delivery, or objection policies.
+
+### 17.1 Important state clarification
+
+A successful payment-provider result and a confirmed order are separate facts. To avoid Central showing an order as confirmed before the Branch has durably associated the reservation with that order, add the Central state `PaymentSucceededAwaitingBranchCommit`:
+
+- Enter it only after the provider's authoritative successful payment result is verified.
+- Central durably records the payment result and queues an idempotent Branch commit command.
+- The Branch moves `Reserved` to `CommittedToOrder` in a local transaction and acknowledges the same reservation/operation identity.
+- Central enters `Confirmed` only after receiving the Branch's durable commit acknowledgement.
+- If the Branch is unavailable, remain in `PaymentSucceededAwaitingBranchCommit`, retry/query using the same operation identity, and raise an operational alert when configured thresholds are exceeded. Do not initiate another charge and do not release the reservation.
+
+This clarification does not change the approved payment window or payment success criteria; it makes the meaning of order confirmation consistent across Central and Branch.
+
+### 17.2 Exception matrix
+
+| Scenario | Required safe behavior | Recovery condition |
+|---|---|---|
+| Reservation command not yet received by Branch | Keep Central in `AwaitingBranchReservation`; retry delivery using the same `CommandId`/`OperationId` | Durable Branch outcome received |
+| Branch committed reservation but acknowledgement was lost | Replay/query the same operation; Branch returns its stored outcome without reserving again | Central records original `Accepted` or `Rejected` result |
+| Branch rejects for insufficient sellable stock | Mark the reservation attempt rejected; do not start payment | Customer may follow the normal site flow to revise/retry the cart; no automatic alternate-branch assignment is introduced here |
+| Payment-session creation request times out | Treat provider result as unknown; query by the same merchant/payment reference or idempotency key; do not create a second payment session/charge blindly | Provider confirms created/failed/no session |
+| Payment window expires with provider status unknown | Enter `PaymentVerificationPending`; keep reservation unavailable to POS; verify with provider/webhook reconciliation | Authoritative provider success or definitive failure/cancellation |
+| Provider reports payment success more than once | Deduplicate provider event and payment identity; apply the success transition once | Existing recorded success is returned for duplicates |
+| Provider reports definitive failure/cancellation | Queue one idempotent Branch release command; keep quantity unavailable to POS until Branch acknowledges release | Branch durably records `Released` |
+| Release command or acknowledgement is lost | Retry/query the same release operation; never release twice | Branch's durable `Released` outcome is received |
+| Payment succeeds while Branch is offline after payment | Record `PaymentSucceededAwaitingBranchCommit`; keep reservation held locally and retry commit delivery; do not confirm the order until Branch acknowledges | Branch commit acknowledgement |
+| Payment success arrives after Branch has already confirmed release | Enter a critical `PaymentException`; block automatic order confirmation and automatic stock adjustment. Preserve payment and release evidence for authorized reconciliation | Explicit audited resolution under an owner-approved payment exception policy |
+| Duplicate or out-of-order webhooks | Verify current payment status with the provider; deduplicate event IDs and enforce legal state transitions; stale events cannot reverse a terminal verified outcome | Provider's authoritative status and idempotent event processing |
+| Branch reports a conflicting outcome for the same operation | Quarantine the workflow in an exception state; do not guess which stock/payment result is correct | Reconciliation using durable Branch ledger, Central command history, and provider transaction evidence |
+
+### 17.3 Invariants for every recovery path
+
+- Never mark an order `Confirmed` solely because a payment webhook arrived; verify the payment and obtain the Branch commit acknowledgement.
+- Never allow POS to sell reserved stock because Central timed out or because a release command was merely queued.
+- Never create a new reservation/payment/release identity to recover a lost acknowledgement; reuse the original idempotency identity for the same business operation.
+- Never interpret a transport timeout as a business failure.
+- Provider events are authenticated, deduplicated, and checked against the provider's authoritative transaction status.
+- Every manual resolution records actor, timestamp, evidence/reason, previous state, and resulting state. No historical transaction or acknowledgement is overwritten.
+- Alerts and retry schedules are operational configuration; they do not alter the approved customer-facing 15-minute payment window.
+
+### 17.4 Decisions deliberately not made here
+
+The following require a separate explicit business decision and are not inferred by this technical design:
+- Whether a successfully paid order whose stock reservation was already released should be refunded automatically, manually refunded, or re-reserved if stock is available.
+- The customer communication and service-level target while payment or Branch commit reconciliation is pending.
+- The exact role permitted to approve financial exception resolution and any monetary threshold.
+- The exact retry/alert thresholds and provider-specific status mapping.
+
+### 17.5 Approval boundary
+
+This exception-handling model and the `PaymentSucceededAwaitingBranchCommit` clarification are proposed for owner approval. Once approved, they become the logical technical baseline; detailed API contracts, provider-specific integration, alert thresholds, and operational runbooks remain implementation design work.
