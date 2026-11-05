@@ -2,7 +2,7 @@
 
 **Document:** TD-02  
 **Version:** 0.1  
-**Status:** Recommendation for owner approval  
+**Status:** Approved by project owner — technology baseline accepted (2026-11-06)  
 **As-of date:** 2026-11-05  
 **Depends on:** TD-01 Architecture Overview and the merged BRS.
 
