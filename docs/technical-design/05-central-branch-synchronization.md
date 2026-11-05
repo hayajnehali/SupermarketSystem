@@ -241,9 +241,9 @@ The eventual implementation must demonstrate, through automated and integration 
 TD-05 establishes the logical synchronization contract and safety invariants. It does not finalize transport endpoints, exact retry timings, SQL schema, authentication implementation, hosting, or authorize application coding.
 
 
-## 15. Branch-initiated command delivery — proposed detailed mechanism
+## 15. Branch-initiated command delivery — owner-approved mechanism
 
-This section proposes the transport mechanism for Central-to-Branch commands, including online stock reservations and releases. It preserves the approved rule that Branch owns the final stock decision and that Central has no direct database connection to a branch.
+**Owner approval: 2026-11-06.** The project owner approved outbound HTTPS polling initiated by `Branch.Worker` as the logical delivery mechanism for Central-to-Branch commands, including online stock reservations and releases. It preserves the approved rule that Branch owns the final stock decision and that Central has no direct database connection to a branch.
 
 ### 15.1 Connection direction
 
@@ -297,4 +297,4 @@ The API contract will define exact DTOs, status codes, and reason-code catalogue
 
 ### 15.6 Approval boundary
 
-This is the recommended logical delivery mechanism for owner review. It selects outbound Branch.Worker polling over Central-initiated inbound connections. It does not finalize endpoint paths, authentication credential format, polling interval, SQL table design, or payment-provider exception handling. Those remain detailed API/security/operations work. The mechanism becomes an approved baseline only after explicit owner approval.
+This mechanism is an approved logical baseline. It selects outbound `Branch.Worker` polling over Central-initiated inbound connections. Approval does not finalize endpoint paths, authentication credential format, polling interval, SQL table design, or payment-provider exception handling; those remain detailed API/security/operations work.
