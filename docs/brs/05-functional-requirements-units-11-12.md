@@ -79,6 +79,7 @@ This part documents the owner-approved recommendations P31–P40. It does not re
 - Every complaint has a unique reference number, status, assigned responsible employee, and action history.
 - Complaint status changes and actions remain traceable through closure.
 - Complaint management remains under Central Administration.
+- Branch and delivery employees cannot search customer profiles and can access only information needed for orders assigned to them.
 
 ---
 
@@ -147,7 +148,8 @@ This part documents the owner-approved recommendations P31–P40. It does not re
 - A maintenance request has a unique reference number, priority, responsible person, cost, status, and chronological history.
 - Maintenance actions and status changes are retained in chronological order.
 - Alerts are available through one centralized center, classified by importance, and identify who is responsible for follow-up.
-- Centralized reports support branch comparison and filtering by branch, period, and product.
+- Alerts are delivered to configured central recipients in the system, by email, and by mobile push notification; recipients can acknowledge and add notes/actions, and alerts remain in history.
+- Sales, profit, and inventory reports are accessible only to Central Administration; reporting periods are centrally selected, with filters for branch, period, and product.
 
 ---
 
