@@ -298,3 +298,66 @@ The API contract will define exact DTOs, status codes, and reason-code catalogue
 ### 15.6 Approval boundary
 
 This mechanism is an approved logical baseline. It selects outbound `Branch.Worker` polling over Central-initiated inbound connections. Approval does not finalize endpoint paths, authentication credential format, polling interval, SQL table design, or payment-provider exception handling; those remain detailed API/security/operations work.
+
+
+## 16. Online stock-reservation state machine — owner-approved baseline
+
+**Owner approval: 2026-11-06.** The project owner approved this logical state model. It defines separate Central workflow states and Branch stock states. They must not be collapsed into one status because Central owns the online order/payment lifecycle while the Branch database owns the physical stock reservation.
+
+### 16.1 Central reservation/order states
+
+| State | Meaning | Allowed next states |
+|---|---|---|
+| `AwaitingBranchReservation` | Central has durably created the reservation command; Branch has not yet confirmed it | `AwaitingPayment`, `ReservationRejected`, `ReservationException` |
+| `AwaitingPayment` | Branch has durably reserved the requested quantity and Central has initiated the payment session; the approved 15-minute window is running | `PaymentVerificationPending`, `Confirmed`, `ReleasePending` |
+| `PaymentVerificationPending` | The 15-minute window elapsed or the payment result is uncertain; Central is obtaining an authoritative provider result | `Confirmed`, `ReleasePending`, `PaymentException` |
+| `Confirmed` | Payment is authoritatively successful and the order is confirmed | Fulfillment states defined by the order workflow |
+| `ReleasePending` | Central has decided the reservation must be released and has durably queued a release command | `Released`, `ReleaseException` |
+| `Released` | Branch has durably applied the release and acknowledged it | Terminal for this reservation |
+| `ReservationRejected` | Branch durably rejected the reservation, for example because sellable stock was insufficient | Terminal for this reservation attempt |
+| `ReservationException` / `PaymentException` / `ReleaseException` | A blocking technical or business exception requires reconciliation; no success is assumed | Explicitly resolved transition only |
+
+Central must not enter `AwaitingPayment` until it receives the Branch's durable `Accepted` outcome. A timeout before that acknowledgement leaves the workflow in `AwaitingBranchReservation` or `ReservationException`; it must not start the 15-minute payment window or claim stock is reserved.
+
+### 16.2 Branch stock-reservation states
+
+| State | Meaning |
+|---|---|
+| `Reserved` | Quantity is durably excluded from POS sellable stock |
+| `CommittedToOrder` | Reservation has been associated with the confirmed order/fulfillment workflow; it remains unavailable to POS |
+| `Released` | Reservation is durably released and its quantity becomes sellable subject to current stock rules |
+| `Rejected` | Reservation command was processed but no quantity was reserved |
+
+The Branch also stores the processed `OperationId` and original outcome. Repeated commands return that outcome and do not repeat stock changes. A release command must reference the exact reservation identity; it must never release an unrelated reservation or more quantity than that reservation holds.
+
+### 16.3 Normal flow
+
+1. Central creates the order/reservation intent and durable reservation command.
+2. Branch receives the command and atomically checks stock against POS sales and all active reservations.
+3. Branch commits either `Reserved` or `Rejected`, together with its processing receipt.
+4. Only after `Reserved` is acknowledged does Central initiate the payment session and enter `AwaitingPayment`.
+5. An authoritative successful payment result moves Central to `Confirmed`; Central sends the order-confirmation/commit instruction to the Branch, which moves the reservation to `CommittedToOrder`.
+6. If payment is authoritatively failed/cancelled, or the payment window expires and the provider confirms no successful payment, Central enters `ReleasePending` and sends an idempotent release command.
+7. Branch commits `Released`, acknowledges it, and only then may POS sell the released quantity. Central then enters `Released`.
+
+### 16.4 Payment uncertainty and expiry safety
+
+- The 15-minute payment window is a fixed approved business window; provider verification and webhook processing do not extend that window.
+- Expiry of the 15-minute clock is not, by itself, proof that payment failed.
+- If the provider outcome is still unknown at expiry, Central enters `PaymentVerificationPending`; it must not mark the order confirmed and must not release the Branch reservation while a successful payment could still be reported for that payment attempt.
+- When the provider reports a definitive success, Central follows the confirmation path. When it reports a definitive failure/cancellation, Central follows the release path.
+- If the provider cannot establish a definitive outcome or contradictory callbacks are received, the case enters `PaymentException` for reconciliation. No duplicate payment attempt or automatic stock release is inferred by this design.
+- This rule preserves the existing pending-verification/webhook approach and does not add a new payment window, customer objection period, or delivery attempt.
+
+### 16.5 Failure and retry rules
+
+- A lost reservation acknowledgement is resolved by querying/replaying the same `OperationId`; Central must not create a second reservation identity.
+- A Branch rejection is a business outcome, not a transport retry.
+- A transport failure before Branch commit may be retried with the same operation identity.
+- A release timeout leaves Central in `ReleasePending`; POS must continue excluding the quantity until Branch confirms `Released`.
+- If Branch committed an operation but its acknowledgement was lost, replay returns the stored result.
+- Invalid state transitions are rejected and audited. Manual reconciliation must create an explicit, attributable resolution; it must not overwrite historical outcomes.
+
+### 16.6 Approval boundary
+
+This state model is approved as the logical baseline. It defines logical states and safety transitions only. Detailed order statuses, payment-provider mapping, webhook contracts, timeout handling, and exception-resolution permissions will be specified in the API and payment integration design. No additional customer-facing policy is introduced here.
