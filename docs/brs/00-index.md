@@ -23,6 +23,8 @@ The BRS shall be interpreted together with the approved discovery records. Where
 | 3 | [Functional requirements — Units 05–07](03-functional-requirements-units-05-07.md) | Pricing/promotions; POS/sales/invoices; payments/refunds/returns | Consolidated corrected copy; replaces superseded open PR #7 if this review is accepted |
 | 4 | [Functional requirements — Units 08–10](04-functional-requirements-units-08-10.md) | Online store/orders; preparation/delivery; Offline/synchronization | Added in this review branch |
 | 5 | [Functional requirements — Units 11–12](05-functional-requirements-units-11-12.md) | Customers/loyalty/complaints; expenses/maintenance/alerts/reports | Existing; revised in this review branch |
+| 6 | [Cross-cutting non-functional requirements](06-cross-cutting-non-functional-requirements.md) | Audit, backup/recovery, security/access, historical integrity, precision | Added in this review branch |
+| — | [Decision traceability matrix](traceability-matrix.md) | Approved decision families mapped to BRS requirement areas | Added in this review branch |
 
 ## 3. Unit map
 
@@ -51,6 +53,10 @@ The BRS shall be interpreted together with the approved discovery records. Where
 - Offline sales stop when the centrally configured Offline limit expires; internet restoration alone does not resume sales.
 - Historical invoices and financial transactions are not rewritten by later master-data changes.
 
-## 5. Document control
+## 5. Traceability and non-functional controls
+
+The decision-family mapping is maintained in [traceability-matrix.md](traceability-matrix.md). Cross-cutting audit, backup/recovery, security/access, historical-integrity, and precision requirements are in [Part 6](06-cross-cutting-non-functional-requirements.md).
+
+## 6. Document control
 
 This index is a navigation and status document. It does not supersede the detailed source decision log, and it does not by itself approve the consolidated BRS. Approval is complete only when the project owner reviews and accepts the consolidated review pull request.
