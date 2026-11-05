@@ -2,7 +2,7 @@
 
 **Document:** TD-04  
 **Version:** 0.1  
-**Status:** Initial data architecture proposal — pending owner review  
+**Status:** Approved by project owner — data ownership baseline accepted (2026-11-06)  
 **Depends on:** Merged BRS, TD-01 Architecture Overview, TD-03 Backend Modules.
 
 ## 1. Database topology
