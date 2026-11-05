@@ -199,6 +199,8 @@ Maintain controlled branch operations during connectivity loss, preserve local t
 | OFF-018 | If any required synchronization, conflict resolution, reconciliation, data refresh, or central approval condition is incomplete, the branch shall remain in sales-stop mode and the system shall display the reason. | Must |
 | OFF-019 | Synchronization shall preserve the historical values of completed transactions. Later price, promotion, or master-data changes shall not rewrite completed invoices or financial records. | Must |
 | OFF-020 | The system shall retain a synchronization history sufficient to trace submitted operations, acknowledgements, failures, retries, conflicts, resolutions, and the actor responsible for each resolution. | Must |
+| OFF-021 | Central Administration shall be the authoritative source of truth when centrally managed data conflicts with branch data. | Must |
+| OFF-022 | Synchronization shall start automatically when connectivity returns, subject to the approved conflict-isolation and resumption rules. | Must |
 
 ## 10.3 Main scenarios
 
