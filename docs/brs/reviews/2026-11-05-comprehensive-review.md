@@ -34,6 +34,8 @@ These are review perspectives, not claims that external people participated.
 | REV-11 | Report access and period ownership were not explicit enough. | Restricted sales/profit/inventory reports to Central Administration and clarified central period selection and branch/period/product filtering. |
 | REV-12 | Approved stocktake session details were missing from Unit 04. | Added centrally defined sessions, multiple central counters, recount on variance, movement freeze by scope, central cancellation, session history, and central closeout. |
 | REV-13 | Backup, recovery, audit, security, historical integrity, and precision targets were scattered across decision records. | Added a cross-cutting non-functional requirements part and decision-family traceability matrix. |
+| REV-14 | Delivery attempt count and customer dispute timing needed final owner decisions. | Fixed the delivery attempt count at exactly one and removed any fixed customer dispute submission window; disputes may be submitted at any time. |
+| REV-15 | Offline duration needed explicit confirmation of its governance. | Confirmed that Central Administration sets the Offline operating duration; the configured limit applies uniformly across branches. |
 
 ## 3. Important consistency rules checked
 
