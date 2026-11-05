@@ -2,7 +2,7 @@
 
 **Document:** TD-07  
 **Version:** 0.1  
-**Status:** Initial API and integration design proposal — pending owner review  
+**Status:** Approved by project owner — baseline accepted for detailed design  
 **Depends on:** Approved BRS, TD-01 through TD-06.
 
 ## 1. Purpose and principles
