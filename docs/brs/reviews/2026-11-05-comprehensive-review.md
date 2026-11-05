@@ -32,6 +32,8 @@ These are review perspectives, not claims that external people participated.
 | REV-09 | Maintenance requirements omitted approved evidence and completion steps. | Added device/location/fault/photo-or-video/urgency, central technician assignment, technician report/cost, branch operational confirmation, and central closure. |
 | REV-10 | Internal alert channels and handling were underspecified. | Added in-system, email, and mobile push channels; centrally configured recipients; acknowledgement/action notes; and retained alert history. |
 | REV-11 | Report access and period ownership were not explicit enough. | Restricted sales/profit/inventory reports to Central Administration and clarified central period selection and branch/period/product filtering. |
+| REV-12 | Approved stocktake session details were missing from Unit 04. | Added centrally defined sessions, multiple central counters, recount on variance, movement freeze by scope, central cancellation, session history, and central closeout. |
+| REV-13 | Backup, recovery, audit, security, historical integrity, and precision targets were scattered across decision records. | Added a cross-cutting non-functional requirements part and decision-family traceability matrix. |
 
 ## 3. Important consistency rules checked
 
