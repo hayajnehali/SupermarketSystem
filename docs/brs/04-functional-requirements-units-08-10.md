@@ -112,10 +112,10 @@ Control preparation, item verification, assignment, delivery/pickup completion, 
 | DLV-010 | Each delivery task shall record the assigned delivery employee, assigning coordinator, assignment time, status changes, and relevant timestamps. | Must |
 | DLV-011 | The delivery employee shall confirm delivery manually in the system. Delivery confirmation shall not require OTP or electronic signature. The system shall record the employee identity and confirmation time. | Must |
 | DLV-012 | For pickup at a branch, the branch employee shall confirm handover after verifying the customer's identity. | Must |
-| DLV-013 | Central Administration shall define the permitted number of delivery attempts. The system shall track unsuccessful attempts against that limit. | Must |
+| DLV-013 | The permitted number of delivery attempts is exactly one. The system shall record the single attempt and its outcome; no additional delivery attempt shall be scheduled after an unsuccessful attempt. | Must |
 | DLV-014 | When the permitted delivery attempts are exhausted, the order shall be cancelled according to central policy and the products returned to the responsible branch for inspection. | Must |
 | DLV-015 | Products returned after failed delivery shall enter pending inspection and shall not become sellable stock automatically. Their disposition shall follow the approved inspection rules. | Must |
-| DLV-016 | A customer may dispute a delivery confirmation within a period defined by Central Administration. The order shall be marked disputed while retaining the original delivery confirmation and its history. | Must |
+| DLV-016 | A customer may dispute a delivery confirmation without a time limit. The system shall mark the order disputed while retaining the original delivery confirmation and its history. | Must |
 | DLV-017 | The system shall retain available delivery information for dispute review, including employee identity, assignment, timestamps, delivery confirmation, and any evidence available from the workflow. | Must |
 | DLV-018 | Central Administration shall review and accept or reject a delivery dispute, recording the decision and reason. A dispute shall not automatically trigger a refund. | Must |
 | DLV-019 | A paid pickup order created through a branch shall be treated as a completed sale if the customer does not attend. The centrally defined retention period and subsequent central decision shall be recorded; products shall not be returned to stock automatically and must be inspected before any inventory disposition. | Must |
@@ -148,7 +148,7 @@ Control preparation, item verification, assignment, delivery/pickup completion, 
 
 ### Scenario D — Customer disputes delivery
 
-1. The customer submits a dispute within the centrally configured period.
+1. The customer may submit a dispute at any time; no fixed submission window applies.
 2. The system marks the order disputed without deleting or overwriting the original delivery confirmation.
 3. Central Administration reviews the available assignment, employee, timing, status, and evidence.
 4. Central Administration accepts or rejects the dispute and records the reason.
@@ -163,9 +163,9 @@ Control preparation, item verification, assignment, delivery/pickup completion, 
 - Delivery assignment and completion record responsible employees and timestamps.
 - Manual delivery confirmation does not require OTP or electronic signature.
 - Pickup handover requires customer identity verification by the branch employee.
-- Failed delivery attempts are counted against the central limit; exhausted attempts cause cancellation and return to branch inspection.
+- Exactly one delivery attempt is permitted; an unsuccessful attempt causes cancellation and return to branch inspection.
 - Returned products are not sellable before inspection.
-- A delivery dispute preserves the original confirmation, is decided by Central Administration, and does not automatically trigger a refund.
+- A customer may dispute delivery at any time; the original confirmation is preserved, Central Administration decides the dispute, and submission alone does not automatically trigger a refund.
 
 ---
 
