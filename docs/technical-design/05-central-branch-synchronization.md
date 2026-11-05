@@ -2,7 +2,7 @@
 
 **Document:** TD-05  
 **Version:** 0.1  
-**Status:** Initial synchronization design proposal — pending owner review  
+**Status:** Approved by project owner — baseline accepted for detailed design  
 **Depends on:** Merged BRS, approved owner decisions, TD-01 Architecture Overview, TD-03 Backend Modules, TD-04 Database Topology and Data Ownership.
 
 ## 1. Purpose and invariants
