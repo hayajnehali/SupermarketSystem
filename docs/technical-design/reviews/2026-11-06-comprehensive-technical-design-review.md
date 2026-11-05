@@ -18,7 +18,7 @@ The eight technical design documents form a coherent high-level architecture for
 - Central governance of master data, pricing, policies, online orders and payment-provider workflows.
 - Branch ownership of physical stock and locally executed POS transactions.
 
-The review found no reason to replace the selected high-level architecture. However, the design is **not yet ready to freeze for implementation**. The key unresolved design issue is the atomic online stock-reservation handshake between Central and the selected Branch. There are also approval-state, detailed API, security, infrastructure and recovery details to close before coding.
+The review found no reason to replace the selected high-level architecture. The owner has now approved the core stock-concurrency invariant: the Branch database is authoritative for reservation acceptance and POS sale validation, and both operations must serialize against the same local stock/reservation state. The detailed cross-system handshake and its exception handling are still open, alongside detailed API, security, infrastructure and recovery work; the design is not yet ready to freeze for implementation.
 
 ## 2. Owner decisions preserved
 
@@ -42,16 +42,16 @@ The review preserves, and does not reopen, these decisions:
 
 **Severity:** High — must resolve before checkout implementation.
 
-TD-04 and TD-05 intentionally defer the exact reservation handshake, branch acknowledgement timeout and stock freshness threshold. TD-07 describes the checkout flow, but does not yet establish the atomic point at which a website reservation becomes protected against a concurrent POS sale.
+TD-04, TD-05 and TD-07 now record the owner's approval that Branch is the final authority for reservation acceptance and that website reservations and POS sales serialize against the same branch-local stock/reservation state. The remaining handshake contract, acknowledgement/timeout behavior and stock freshness threshold are not yet fully specified.
 
 **Risk:** Central may accept payment while the selected branch has not yet durably reserved the stock locally. A POS sale could consume the same units before the branch applies the website reservation.
 
-**Required design outcome:**
+**Approved outcome and remaining design work:**
 
 - Central creates a pending reservation command with a stable reservation/operation identifier.
-- The selected branch must atomically validate available, sellable, unreserved stock and persist the reservation in its local database before acknowledging acceptance.
-- POS sale validation and website reservation processing must serialize against the same branch stock/reservation state.
-- Central must not treat stock as confirmed for checkout/payment until the branch's durable acceptance is recorded.
+- **Owner-approved:** The selected Branch database is the final authority for accepting a reservation against its physical stock.
+- **Owner-approved:** Reservation processing and POS sale validation serialize against the same local stock/reservation state, so the same units cannot be reserved and sold.
+- **Owner-approved:** Branch persists the reservation durably before acknowledging acceptance; Central does not treat a transport send as proof of reservation.
 - The 15-minute business reservation/payment window must retain its approved meaning and must not silently start earlier or be extended by technical retries.
 - A technical pre-acceptance timeout/failure must not create a confirmed order or trigger a duplicate charge. The exact timeout and customer-facing outcome must be documented without changing the approved 15-minute rule.
 - Release/cancellation must be idempotent and acknowledged by the branch. The POS may sell released stock only after the branch has durably applied the release.
@@ -125,7 +125,7 @@ TD-07 now explicitly includes a delivery-disputes API group and workflow: custom
 | Resume after connectivity restoration | Consistent: synchronization/reconciliation and explicit Central authorization required |
 | One delivery attempt | Consistent; technical message retry is explicitly separate |
 | Delivery dispute deadline | No separate deadline; TD-07 now states this explicitly |
-| Online reservation/payment | 15-minute rule is preserved; atomic branch reservation handshake remains unresolved |
+| Online reservation/payment | Branch-local atomic stock concurrency invariant approved; detailed cross-system handshake and exception handling remain open |
 | Payment confirmation/refunds | Central provider callback verification and idempotency are consistently required |
 | Central recovery | RPO 15 minutes / RTO 4 hours preserved; operational proof remains required |
 | Branch recovery targets | Correctly left unspecified pending separate owner decision |
@@ -146,7 +146,7 @@ TD-07 now explicitly includes a delivery-disputes API group and workflow: custom
 ## 6. Recommended next sequence
 
 1. Record the owner's approval of TD-01 through TD-04 and the TD-02 technology baseline in the document index (completed).
-2. Complete the online reservation handshake and stock-concurrency contract (TD-04/TD-05/TD-07).
+2. Complete the remaining online reservation handshake details: transport/coordination, acknowledgement timeout, stock freshness, and failure/late-payment/release outcomes (TD-04/TD-05/TD-07).
 3. Produce the critical API contract catalogue.
 4. Complete security implementation threat model and identity/device decisions.
 5. Complete Central/Branch infrastructure sizing, backup policy and tested recovery plan.
