@@ -134,6 +134,7 @@ Exact HTTP status mapping and error schema belong in the API specification. A su
 - approvals — authorized central approvals and conflict decisions.
 - loyalty — centrally governed loyalty operations.
 - complaints — customer complaint submission and case management.
+- delivery-disputes — customer delivery dispute submission, Central Administration review, decision and recorded reason. No separate dispute submission deadline is introduced; customers may dispute at any time under the approved BRS.
 - reports — authorized central reporting.
 - sync — branch authentication, upload, download, acknowledgement and checkpoints.
 
@@ -182,6 +183,15 @@ Duplicate checkout/payment requests must not create duplicate orders, charges or
 - Branch.Worker downloads centrally published data and applies it transactionally to local snapshots.
 - Central never connects directly to branch databases.
 - Synchronization retry follows TD-05 and is not a second customer delivery attempt.
+
+### 6.5 Delivery dispute
+
+- The customer may submit a dispute about a recorded delivery outcome at any time; the API must not impose a new fixed dispute window.
+- The dispute references the original order and its preserved delivery confirmation/evidence.
+- Central Administration reviews and accepts or rejects the dispute, recording the decision, reason, actor and timestamp.
+- Submission of a dispute alone does not automatically cancel the order or trigger a refund.
+- Any refund or corrective financial action follows the separately approved refund authorization and payment workflow.
+- The original delivery confirmation and the single delivery-attempt history remain immutable; dispute review does not create another delivery attempt.
 
 ## 7. External integration boundaries
 
