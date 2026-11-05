@@ -164,6 +164,8 @@ Retrying with the same OperationId returns the original outcome and must not cre
 7. The selected branch receives a fulfillment instruction.
 8. Branch fulfillment facts are reported to Central through synchronization.
 
+**Stock concurrency requirement:** Before Central treats website stock as reserved, the selected Branch.Api must have durably accepted the reservation in the Branch database. Branch.Api serializes that reservation against POS sale validation using the same local stock/reservation state. A successful HTTP send alone is not acceptance; Central relies on the durable branch acknowledgement defined by TD-05. Exact endpoint DTOs, acknowledgement timeout and exceptional payment/release outcomes remain part of the detailed API contract.
+
 Duplicate checkout/payment requests must not create duplicate orders, charges or reservations.
 
 ### 6.3 Returns and refunds
