@@ -2,7 +2,7 @@
 
 **Document:** TD-01  
 **Version:** 0.1  
-**Status:** Initial architecture baseline — pending owner review  
+**Status:** Approved by project owner — architecture baseline accepted (2026-11-06)  
 **Source of truth:** Merged BRS in `master`, approved discovery decision log, and explicit owner decisions.  
 **Scope:** System boundaries, deployable applications, runtime responsibilities, data ownership principles, and communication paths.
 
