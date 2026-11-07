@@ -230,6 +230,7 @@ Do not introduce accounts receivable, customer debt, credit balances or a genera
 | `online.StorePolicies` | C | Central website policies such as minimum order amount and effective configuration version. |
 | `online.OrderCancellationRequests` | C | Customer cancellation request before preparation, routed for central approval. |
 | `online.OrderCancellationDecisions` | C | Central approve/reject decision with actor, time and reason. |
+| `online.OrderCancellationDecisionLines` | C | Per-order-line decision and product disposition after cancellation, especially after preparation starts. |
 
 | `online.OrderNotifications` | C | Website/email customer notification records. |
 | `online.NotificationDeliveryAttempts` | C | Delivery attempt/result history; notification failure does not change order/payment state. |
@@ -243,13 +244,21 @@ The 15-minute window, late-payment handling, central cancellation approval befor
 | `fulfillment.FulfillmentTasks` | C authoritative assignment; B assigned-work projection | Work item for the selected branch/order. |
 | `fulfillment.FulfillmentExceptions` | B execution fact; C decision authority | Picking shortages/unavailability and related evidence reported to Central. |
 | `fulfillment.FulfillmentExceptionDecisions` | C | Central decision for order exception/cancellation; branch cannot independently cancel the confirmed website order. |
+| `fulfillment.FulfillmentExceptionDecisionLines` | C | Per-order-line central outcome for unavailable items; no substitute is proposed or applied. |
 | `fulfillment.PickingSessions` | B | Picking execution session and responsible employee. |
 | `fulfillment.PickingLines` | B | Picked quantities and barcode verification results. |
+| `fulfillment.PickingLineScans` | B | Each scanned barcode attempt, match/mismatch result, employee and timestamp. |
 | `fulfillment.DeliveryShiftCoordinators` | C | Central appointment of coordinator by shift. |
 | `fulfillment.DeliveryAssignments` | C assignment authority; B assigned-task projection | Assigned delivery employee, coordinator and timestamps. |
 | `fulfillment.DeliveryAttempts` | B execution fact; C synchronized record | Exactly one permitted customer delivery attempt; preserve outcome. |
 | `fulfillment.DeliveryProofs` | B execution fact; C synchronized reference | Manual confirmation/evidence references; no OTP/e-signature requirement is introduced. |
+| `fulfillment.FailedDeliveryReturns` | B execution fact; C synchronized record | Returned failed-delivery order goods received back at the responsible branch. |
+| `fulfillment.FailedDeliveryReturnLines` | Same as parent | Item quantities returned to the branch after the single failed attempt. |
+| `fulfillment.DeliveryReturnInspections` | B execution fact; C synchronized | Inspection of failed-delivery goods before any stock disposition. |
 | `fulfillment.PickupHandovers` | B execution fact; C synchronized record | Pickup handover and completion. |
+| `fulfillment.PickupRetentionPolicies` | C | Central retention period for paid branch-created pickup orders not collected by the customer. |
+| `fulfillment.PickupNonCollectionCases` | C | Cases for paid pickup orders not collected within the centrally defined retention period. |
+| `fulfillment.PickupNonCollectionDecisions` | C | Central decision for uncollected paid pickup goods; no automatic stock release. |
 | `fulfillment.DeliveryDisputes` | C | Customer dispute record; no time limit is introduced. |
 | `fulfillment.DeliveryDisputeDecisions` | C | Central accept/reject decision, reason, actor and time. |
 
@@ -259,11 +268,15 @@ The 15-minute window, late-payment handling, central cancellation approval befor
 |---|---|---|
 | `crm.Customers` | C authoritative; B restricted local projection | Customer identity/profile; unique verified phone policy. |
 | `crm.CustomerPhoneVerifications` | C | OTP verification attempts/results; never store plaintext OTP values. |
+| `crm.CustomerDuplicateResolutions` | C | Central resolution of pre-existing duplicate customer accounts while preserving transaction history. |
 | `crm.LoyaltyProgramRules` | C | Centrally managed earning, redemption, expiry and eligibility rules. |
 | `crm.LoyaltyAccounts` | C authoritative; B restricted balance/eligibility projection | Customer points account and current governed balance. |
 | `crm.LoyaltyPointTransactions` | C authoritative; B local event/projection only as required for Offline sales | Earn, redeem, expire, reverse and adjust points as immutable ledger entries. |
+| `crm.LoyaltyPointLots` | C | Earned point lots with source transaction and expiry date. |
+| `crm.LoyaltyPointLotAllocations` | C | Allocation of earned lots to redemption/reversal transactions for traceable partial use and expiry. |
 | `crm.CustomerComplaints` | C | Complaint reference, status and responsible employee. |
 | `crm.ComplaintActions` | C | Chronological action/status history until closure. |
+| `crm.ComplaintAssignments` | C | Responsible employee assignment history for each complaint. |
 
 No reusable customer address-book table is proposed. Branch employees receive only the minimum customer data required for an assigned order and approved POS use.
 
