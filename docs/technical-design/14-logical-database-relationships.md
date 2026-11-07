@@ -198,6 +198,7 @@ A completed POS sale, inventory movement, payment allocations and Outbox message
 | `online.DeliveryAreas` | `online.DeliveryFeeRules` | 1:N | Central fee history/effective periods; a free-delivery rule is represented by the approved rule/configuration. |
 | `online.Orders` | `online.OrderCancellationRequests` | 0..N | Customer requests cancellation before preparation; Central decides. |
 | `online.OrderCancellationRequests` | `online.OrderCancellationDecisions` | 1:N | Central decision history. |
+| `online.OrderCancellationDecisions` | `online.OrderCancellationDecisionLines` | 1:N | Central decision for each order line and its disposition. |
 | `online.Orders` | `payments.PaymentTransactions` | 1:N | Central online payment transactions/attempts; late payments remain linked to the cancelled original order. |
 | `online.Orders` | `online.OrderNotifications` | 1:N | Central customer notifications (website and email). |
 | `online.OrderNotifications` | `online.NotificationDeliveryAttempts` | 1:N | Delivery results. |
@@ -206,10 +207,16 @@ A completed POS sale, inventory movement, payment allocations and Outbox message
 | `fulfillment.FulfillmentExceptions` | `fulfillment.FulfillmentExceptionDecisions` | 1:N | Central alone decides the order-level outcome. |
 | `fulfillment.FulfillmentTasks` | `fulfillment.PickingSessions` | 1:N | Branch execution. |
 | `fulfillment.PickingSessions` | `fulfillment.PickingLines` | 1:N | Picked quantities and barcode checks. |
+| `fulfillment.PickingLines` | `fulfillment.PickingLineScans` | 1:N | Each scan attempt is retained with match/mismatch result. |
 | `fulfillment.FulfillmentTasks` | `fulfillment.DeliveryAssignments` | 0..N | Central assignment history; one active assignment at a time if policy requires. |
 | `fulfillment.DeliveryAssignments` | `fulfillment.DeliveryAttempts` | 1:0..1 | The approved single customer delivery attempt is enforced by a unique constraint on the order/assignment business key. Technical retries of saving/synchronizing the same attempt do not create another attempt. |
 | `fulfillment.DeliveryAttempts` | `fulfillment.DeliveryProofs` | 1:0..N | Manual confirmation/evidence references. |
+| `fulfillment.DeliveryAttempts` | `fulfillment.FailedDeliveryReturns` | 0..1:1 | A failed single delivery attempt results in goods being returned to the responsible branch. |
+| `fulfillment.FailedDeliveryReturns` | `fulfillment.FailedDeliveryReturnLines` | 1:N | Returned order items and quantities. |
+| `fulfillment.FailedDeliveryReturnLines` | `fulfillment.DeliveryReturnInspections` | 1:N | Returned goods are inspected before inventory disposition. |
 | `fulfillment.FulfillmentTasks` | `fulfillment.PickupHandovers` | 0..1:N | Pickup branch execution and handover evidence. |
+| `fulfillment.PickupRetentionPolicies` | `fulfillment.PickupNonCollectionCases` | 1:N | Central retention policy governs uncollected paid pickup cases. |
+| `fulfillment.PickupNonCollectionCases` | `fulfillment.PickupNonCollectionDecisions` | 1:N | Central decision history; stock is not automatically returned. |
 | `online.Orders` | `fulfillment.DeliveryDisputes` | 1:N | Central dispute records; no customer objection deadline is introduced. |
 | `fulfillment.DeliveryDisputes` | `fulfillment.DeliveryDisputeDecisions` | 1:N | Central accept/reject decision history. |
 
@@ -218,11 +225,16 @@ A completed POS sale, inventory movement, payment allocations and Outbox message
 | Parent | Child / relationship | Cardinality | Boundary and notes |
 |---|---|---|---|
 | `crm.Customers` | `crm.CustomerPhoneVerifications` | 1:N | Central OTP attempt history; never store plaintext OTP. |
+| `crm.Customers` | `crm.CustomerDuplicateResolutions` | 1:N logical role | A duplicate customer record is linked to a canonical customer through a Central resolution; no customer row/history is deleted. |
 | `crm.Customers` | `crm.LoyaltyAccounts` | 1:0..1 | Unique customer loyalty account unless an approved multi-program design requires otherwise. |
 | `crm.LoyaltyProgramRules` | `crm.LoyaltyPointTransactions` | 1:N logical reference | Every points posting records the applicable rule/version snapshot. |
 | `crm.LoyaltyAccounts` | `crm.LoyaltyPointTransactions` | 1:N | Append-only earn/redeem/reverse/expire/adjust ledger. |
+| `crm.LoyaltyPointTransactions` | `crm.LoyaltyPointLots` | 1:0..N | Earn transactions create expiring point lots under the rule version applied. |
+| `crm.LoyaltyPointLots` | `crm.LoyaltyPointLotAllocations` | 1:N | Redemption/reversal allocations consume or restore portions of earned lots. |
+| `crm.LoyaltyPointTransactions` | `crm.LoyaltyPointLotAllocations` | 1:N | Each redemption/reversal transaction allocates against one or more lots. |
 | `crm.Customers` | `crm.CustomerComplaints` | 1:N | Central FK. |
 | `crm.CustomerComplaints` | `crm.ComplaintActions` | 1:N | Central action/status history. |
+| `crm.CustomerComplaints` | `crm.ComplaintAssignments` | 1:N | Central assignment history; current responsible employee is derived from latest active assignment. |
 | `sales.SalesReturns` / `online.Orders` | `crm.LoyaltyPointTransactions` | 0..N logical references | Return reversal and online/POS earning/redemption trace to source transaction; cross-db POS event uses GUID correlation only. |
 
 Points are credited only after completed sale and confirmed payment. Return-related reversals are calculated from the returned portion/value under the approved loyalty rules; the ledger is never rewritten in place.
