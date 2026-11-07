@@ -224,7 +224,7 @@ Branch-originated cancellation/return requests retain the same GUID when synchro
 | SalesInvoiceDiscountId | uniqueidentifier | No | PK; sequential Guid |
 | SalesInvoiceId | uniqueidentifier | No | FK → SalesInvoices |
 | SalesInvoiceLineId | uniqueidentifier | Yes | Optional FK → SalesInvoiceLines; null for basket-level discount |
-| DiscountSourceType | tinyint | No | ProductPromotion / BasketPromotion / Coupon / OtherApproved |
+| DiscountSourceType | tinyint | No | ProductPromotion / BasketPromotion / Coupon |
 | SourceDefinitionId | uniqueidentifier | Yes | Promotion/Coupon GUID |
 | SourceVersion | bigint | Yes | Applied publication/version reference |
 | DiscountDescription | nvarchar(300) | No | Historical display description |
