@@ -65,10 +65,12 @@ ASP.NET Core Identity framework tables (such as user-role joins) are implementat
 |---|---|---|---|
 | `procurement.Suppliers` | `procurement.SupplierContacts` | 1:N | Central FK. |
 | `procurement.Suppliers` | `procurement.SupplierProductTerms` | 1:N | Central FK. |
+| `procurement.Suppliers` | `procurement.SupplierReturnTerms` | 1:N | Versioned central supplier-specific return terms. |
 | `procurement.Suppliers` | `procurement.SupplierProductPrices` | 1:N | Central FK; product reference is central catalog identity. |
 | `catalog.Products` | `procurement.SupplierProductPrices` | 1:N | Central FK; price history/effective period. |
 | `procurement.PurchaseRequests` | `procurement.PurchaseRequestLines` | 1:N | Request header and requested products. |
 | `procurement.PurchaseRequests` | `procurement.PurchaseRequestDecisions` | 1:N | Central decision history: approve, reject, adjust or return for correction. |
+| `procurement.PurchaseRequestDecisions` | `procurement.PurchaseRequestDecisionLines` | 1:N | Approved/adjusted quantities for individual request lines. |
 | `procurement.Suppliers` | `procurement.PurchaseOrders` | 1:N | Central FK. |
 | `procurement.PurchaseOrders` | `procurement.PurchaseOrderLines` | 1:N | Central FK. |
 | `procurement.PurchaseRequests` | `procurement.PurchaseOrders` | 0..1:N | A purchase order may reference the approved need request; do not force a request link if the approved workflow permits direct central purchase. |
@@ -77,6 +79,7 @@ ASP.NET Core Identity framework tables (such as user-role joins) are implementat
 | `procurement.PurchaseOrderLines` | `procurement.PurchaseReceiptLines` | 1:N or 0..N | Optional on exceptional receipt; a receipt line may map to an approved PO line. |
 | `procurement.PurchaseReceiptLines` | `inventory.InventoryBatches` | 1:N | Each accepted received batch retains its own cost and optional expiry. Excess quantity is not available until Central approval. |
 | `procurement.PurchaseReceiptLines` | `procurement.PurchaseReceiptDecisions` | 1:N | Central decisions for excess/difference handling. |
+| `procurement.PurchaseReceiptDecisions` | `procurement.PurchaseReceiptDecisionLines` | 1:N | Line-level approved excess quantity and stock eligibility outcome. |
 | `procurement.SupplierInvoices` | `procurement.SupplierInvoiceLines` | 1:N | Invoice header and supplier-stated line items; Branch registration and Central approval copy. |
 | `procurement.SupplierInvoiceLines` | `procurement.SupplierInvoiceMatchLines` | 1:N | Each invoice line may be matched across one or more approved PO/receipt lines. |
 | `procurement.PurchaseOrderLines` | `procurement.SupplierInvoiceMatchLines` | 1:N | Three-way match reference. |
