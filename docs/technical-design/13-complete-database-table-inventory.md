@@ -298,6 +298,7 @@ No reusable customer address-book table is proposed. Branch employees receive on
 | `maintenance.MaintenanceAssignments` | C | Assigned technician/service provider and assignment history. |
 | `maintenance.MaintenanceWorkLogs` | C; B confirmation evidence | Technician report, work performed, cost and branch operational confirmation. |
 | `maintenance.MaintenanceDocuments` | C references; upload may originate at B | Photo/video/report/document metadata and storage references. |
+| `maintenance.MaintenanceRequestEvents` | C | Chronological maintenance status, assignment, branch confirmation and Central closure history. |
 
 Payroll remains limited to the approved central tracking scope. It does not imply attendance, leave, statutory deductions, automated payroll calculation, or general-ledger accounting.
 
@@ -309,10 +310,12 @@ Payroll remains limited to the approved central tracking scope. It does not impl
 | `alerts.AlertEvents` | C authoritative; branch source event may originate at B | Actual alert instances and severity/context. |
 | `alerts.AlertRecipients` | C | Recipients for each alert type/event. |
 | `alerts.AlertDeliveries` | C | In-app/email/push delivery results. |
-| `alerts.AlertAcknowledgements` | C | Recipient acknowledgement, note and action; does not delete alert history. |
+| `alerts.AlertAcknowledgements` | C | Recipient acknowledgement; does not delete alert history. |
+| `alerts.AlertActions` | C | One or more recipient notes/actions associated with an alert acknowledgement. |
 | `audit.AuditEntries` | C and B local | Append-only actor/action/time/target/correlation records within each database boundary. |
 | `audit.AuditChangeDetails` | C and B local | Before/after field details when required and safe to retain. |
 | `audit.SecurityEvents` | C; B security events synchronized | Sign-in anomalies, device/security events and investigations. |
+| `audit.SecurityEventReviews` | C | Central review outcome, reason and action for suspicious security events; no automatic account suspension is implied. |
 | `reporting.ReportRunRecords` | C, optional | Report request parameters, requester, time and output reference when report export/history is required. |
 | `reporting.*ReadModels` | C, derived | Authorized central reporting projections. These are derived data, not alternate operational authorities. |
 
