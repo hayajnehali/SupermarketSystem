@@ -291,7 +291,26 @@ A branch database does not contain the full Central employee directory. It conta
 - No FK to Central EmployeeId, RoleId, PermissionId or BranchId.
 - Do not put password hashes, OTPs, access tokens or reusable credentials in these tables. The secure Offline authentication verifier is not designed in TD-15.
 
-### 3.11 `org.BranchRuntimePolicies` — Branch projection
+### 3.11 `org.RuntimePolicies` — Central
+
+| Column | SQL Server type | Null | Rule |
+|---|---|---:|---|
+| RuntimePolicyId | uniqueidentifier | No | PK; sequential Guid |
+| PolicyCode | nvarchar(100) | No | Stable policy identifier |
+| PolicyVersion | bigint | No | Monotonic version per PolicyCode |
+| PolicyValue | nvarchar(max) | No | Structured policy payload; validated against the policy schema |
+| EffectiveFromUtc | datetime2(3) | No | UTC effective time |
+| PublishedAtUtc | datetime2(3) | No | UTC publication time |
+| PublishedByUserId | uniqueidentifier | No | Central actor identity reference |
+| IsActive | bit | No | Current centrally approved version |
+| RowVersion | rowversion | No | Concurrency token |
+
+**Constraints and indexes**
+- Unique `PolicyCode, PolicyVersion`.
+- Filtered unique index allowing at most one active version per PolicyCode.
+- Policy changes are centrally authorized and audited; a Branch cannot modify the source policy.
+
+### 3.12 `org.BranchRuntimePolicies` — Branch projection
 
 | Column | SQL Server type | Null | Rule |
 |---|---|---:|---|
