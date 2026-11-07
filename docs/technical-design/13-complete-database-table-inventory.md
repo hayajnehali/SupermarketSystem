@@ -63,6 +63,7 @@ The following is the complete first-pass inventory derived from the BRS units 01
 | Candidate table | Placement | Purpose / notes |
 |---|---|---|
 | `catalog.ProductCategories` | C; B read-only projection | Hierarchical categories/subcategories. |
+| `catalog.ProductBranchAvailability` | C; B read-only projection | Central selection of branches where a product is permitted for sale. |
 | `catalog.Brands` | C; B read-only projection | Centrally managed product brands displayed in the catalogue. |
 | `catalog.Countries` | C; B read-only projection | Country-of-origin reference values used by product details. |
 | `catalog.ProductRequests` | B request origin; C approval authority | Branch requests for a new product or product change; central approval precedes activation. |
