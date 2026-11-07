@@ -197,6 +197,8 @@ Branch pricing data is an approved versioned snapshot. Expired promotions stop a
 
 | Candidate table | Placement | Purpose / notes |
 |---|---|---|
+| `payments.PaymentProviders` | C | Approved electronic payment provider definitions. |
+| `payments.PaymentProviderConfigurations` | C | Provider configuration metadata and protected secret references; never plaintext credentials. |
 | `payments.PaymentMethods` | C; B approved configuration projection | Centrally enabled cash/electronic tender types. |
 | `payments.PaymentTransactions` | B for POS tender; C for online payment | Financial transaction identity and final result by channel. |
 | `payments.PaymentAttempts` | Same authority as parent transaction | Provider/terminal attempts, pending/failed/success outcomes. |
@@ -204,7 +206,10 @@ Branch pricing data is an approved versioned snapshot. Expired promotions stop a
 | `payments.Refunds` | C for online and centrally approved cases; B execution record for permitted local cash refund | Refund decision and lifecycle, linked to original payment/sale. |
 | `payments.RefundLines` | Same as parent | Returned invoice lines/quantities/amounts where line allocation is required. |
 | `payments.RefundAttempts` | Same as parent | Provider refund attempts and outcomes; repeated notifications cannot duplicate the financial effect. |
-| `payments.PaymentReconciliations` | C | Reconciliation batches/results for payment provider and recorded transactions. |
+| `payments.RefundMethodExceptionRequests` | B request origin; C review copy | Request to refund through a method other than the original payment method. |
+| `payments.RefundMethodExceptionDecisions` | C | Central approval/rejection and reason for refund-method exception. |
+| `payments.PaymentReconciliations` | C | Reconciliation batch header and provider settlement summary. |
+| `payments.PaymentReconciliationLines` | C | Per-transaction/provider-settlement match, mismatch and resolution references. |
 
 Do not introduce accounts receivable, customer debt, credit balances or a general ledger. Payment, refund and return states remain separately traceable.
 
