@@ -52,7 +52,9 @@ ASP.NET Core Identity framework tables (such as user-role joins) are implementat
 | `catalog.Products` | `catalog.ProductUnits` | 1:N | Product-specific approved selling/base units. |
 | `catalog.ProductUnits` | `catalog.ProductUnitConversions` | 1:N | Conversion rows connect a source unit and target unit belonging to the same product; enforce uniqueness and positive precision. |
 | `catalog.Products` | `catalog.CompositeProductComponents` | 1:N as composite parent | Component rows also reference a component Product; this is a product-to-product self relationship through the component table. |
-| `catalog.Products` | `catalog.ProductAttributes` | 1:N | Structured product attribute values. |
+| `catalog.ProductCategories` | `catalog.ProductAttributeDefinitions` | 1:N optional scope | Attribute definitions may be global or applicable to a category. |
+| `catalog.ProductAttributeDefinitions` | `catalog.ProductAttributes` | 1:N | Typed attribute definition to product values. |
+| `catalog.Products` | `catalog.ProductAttributes` | 1:N | Product-specific additional information, measurements and warnings. |
 | `catalog.Products` | `catalog.ProductMedia` | 1:N | Media metadata; binary content remains in managed file/object storage. |
 | `catalog.ProductRequests` | `catalog.ProductRequestLines` | 1:N | Branch request origin, Central approval authority; branch-to-central relationship uses request GUID, not FK. |
 | `catalog.ProductRequests` | `catalog.ProductRequestDecisions` | 1:N | Central decision history: approve, reject or return for correction. |
