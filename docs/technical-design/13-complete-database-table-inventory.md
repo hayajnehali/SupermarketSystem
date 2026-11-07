@@ -139,9 +139,11 @@ The following is the complete first-pass inventory derived from the BRS units 01
 | `inventory.InventoryDisposalRequests` | B request origin; C approval authority | Branch submits isolated damaged/expired stock for central disposal approval. |
 | `inventory.InventoryDisposalRequestLines` | Same as parent | Product, batch, quantity, reason and quarantine linkage. |
 | `inventory.InventoryDisposalDecisions` | C | Central approval/rejection before physical disposal. |
+| `inventory.InventoryDisposalDecisionLines` | C | Per-quarantine-line approved disposal quantities and conditions. |
 | `inventory.InventoryDisposals` | B execution fact; C synchronized record | Actual disposal only after approval, including executor, date/time and evidence. |
 | `inventory.InventoryDisposalLines` | Same as parent | Actual disposed quantities and batch/cost references. |
 | `inventory.ReorderPolicies` | C policy; B approved local projection | Centrally approved branch/product reorder thresholds. |
+| `inventory.ExpiryAlertPolicies` | C policy; B approved local projection | Centrally defined near-expiry alert thresholds for products/batches requiring expiry tracking. |
 | `inventory.StockIncreaseRequests` | B request origin; C review/decision authority | Branch may submit a stock-increase request; Central also monitors thresholds proactively and does not depend on branch requests. |
 | `inventory.StockIncreaseRequestDecisions` | C | Central approval/rejection history for branch-submitted stock-increase requests. |
 
