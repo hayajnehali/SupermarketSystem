@@ -171,13 +171,21 @@ Branch pricing data is an approved versioned snapshot. Expired promotions stop a
 | Candidate table | Placement | Purpose / notes |
 |---|---|---|
 | `sales.CashierShifts` | B authoritative; C synchronized history | Opening/closing, cashier, device, branch and shift state. |
+| `sales.CashDrawerReconciliations` | B authoritative; C synchronized history | Expected vs counted cash at shift close, difference and reason. |
+| `sales.SuspendedSales` | B | Suspended POS cart before invoice completion. |
+| `sales.SuspendedSaleLines` | B | Product/unit/quantity state for a suspended cart; repriced on resume. |
 | `sales.CashDrawerTransactions` | B authoritative; C synchronized history | Opening float, cash in/out and recorded drawer movements. |
 | `sales.SalesInvoices` | B authoritative; C immutable synchronized history | Completed/cancelled invoice header and historical totals; includes `SequenceYear` and branch/year invoice number. |
 | `sales.SalesInvoiceLines` | B authoritative; C immutable synchronized history | Product/unit/quantity/price/discount snapshots. |
+| `sales.SalesInvoiceDiscounts` | B authoritative; C immutable synchronized history | Detailed product, basket, promotion and coupon discount components applied to an invoice. |
+| `sales.InvoiceCancellationRequests` | B request origin; C approval authority for paid invoice cancellation | Auditable cancellation request and reason. |
+| `sales.InvoiceCancellationDecisions` | C | Central approve/reject decision for paid invoice cancellation. |
 | `sales.SalesInvoiceBatchIssues` | B authoritative; C synchronized history | Exact inventory batches and costs issued to each invoice line. |
 | `sales.CompositeSaleComponentIssues` | B authoritative; C synchronized history | Component quantities and batch costs consumed by a composite-product sale, linked to the invoice line. |
 | `sales.SalesReturns` | B authoritative; C synchronized history | Return header linked to original invoice; no-invoice exceptions require central referral. |
 | `sales.SalesReturnLines` | Same as parent | Returned product, unit, quantity/weight, original sale price/discount and original batch-cost references. |
+| `sales.SalesReturnBatchAllocations` | B authoritative; C synchronized history | Returned quantities allocated to the exact original invoice batch issues and costs. |
+| `sales.SalesReturnExceptionDecisions` | C | Central decision for exceptional return without an original invoice. |
 | `sales.SalesReturnInspections` | B execution fact; C synchronized | Inspection outcome per returned item: sellable, quarantine/review, or damaged/expired. |
 | `sales.SalesReturnDispositions` | B execution fact; C synchronized | Authorized return-to-stock or quarantine/disposal disposition; disposal remains subject to central approval. |
 | `sales.ExchangeLinks` | B authoritative; C synchronized history | Links a return to its replacement sale without merging their financial/stock records. |
