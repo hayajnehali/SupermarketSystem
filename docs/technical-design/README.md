@@ -23,6 +23,7 @@
 | [TD-13 — Complete Database Table Inventory](13-complete-database-table-inventory.md) | First-pass full table catalogue, Central/Branch ownership, projections and database design sequence | Proposed for owner review |
 | [TD-14 — Logical Database Relationships](14-logical-database-relationships.md) | Conceptual parent/child cardinalities, local FK boundaries, cross-site correlations and transaction boundaries | Proposed for owner review |
 | [TD-15 — Organization and Access Detailed Schema](15-organization-access-detailed-schema.md) | First table-level specification for branches, employees, assignments, RBAC, devices and branch access snapshots | Proposed for owner review |
+| [TD-16 — Product Catalog Detailed Schema](16-product-catalog-detailed-schema.md) | Table-level specification for products, categories, brands, barcodes, selling units, conversions, composites, attributes and media | Proposed for owner review |
 
 ## Reviews
 

@@ -41,6 +41,10 @@ ASP.NET Core Identity framework tables (such as user-role joins) are implementat
 | Parent | Child / relationship | Cardinality | Boundary and notes |
 |---|---|---|---|
 | `catalog.ProductCategories` | `catalog.Products` | 1:N | A product may have one assigned category unless the approved catalog rules later require multiple categorization. |
+| `catalog.Products` | `catalog.ProductBranchAvailability` | 1:N | Central FK; each row defines availability for one branch. |
+| `procurement.Suppliers` | `procurement.SupplierProductIdentifiers` | 1:N | Central FK. |
+| `catalog.Products` | `procurement.SupplierProductIdentifiers` | 1:N | Central FK; unique supplier + product + identifier value as applicable. |
+| `org.Branches` | `catalog.ProductBranchAvailability` | 1:N | Central FK; unique ProductId + BranchId. Branch consumes approved projection only. |
 | `catalog.ProductCategories` | `catalog.ProductCategories` | 1:N | Optional parent category to child category self-reference. |
 | `catalog.Brands` | `catalog.Products` | 1:N | A brand may be absent where not applicable. |
 | `catalog.Countries` | `catalog.Products` | 1:N | Country of origin is an optional reference. |
@@ -48,7 +52,9 @@ ASP.NET Core Identity framework tables (such as user-role joins) are implementat
 | `catalog.Products` | `catalog.ProductUnits` | 1:N | Product-specific approved selling/base units. |
 | `catalog.ProductUnits` | `catalog.ProductUnitConversions` | 1:N | Conversion rows connect a source unit and target unit belonging to the same product; enforce uniqueness and positive precision. |
 | `catalog.Products` | `catalog.CompositeProductComponents` | 1:N as composite parent | Component rows also reference a component Product; this is a product-to-product self relationship through the component table. |
-| `catalog.Products` | `catalog.ProductAttributes` | 1:N | Structured product attribute values. |
+| `catalog.ProductCategories` | `catalog.ProductAttributeDefinitions` | 1:N optional scope | Attribute definitions may be global or applicable to a category. |
+| `catalog.ProductAttributeDefinitions` | `catalog.ProductAttributes` | 1:N | Typed attribute definition to product values. |
+| `catalog.Products` | `catalog.ProductAttributes` | 1:N | Product-specific additional information, measurements and warnings. |
 | `catalog.Products` | `catalog.ProductMedia` | 1:N | Media metadata; binary content remains in managed file/object storage. |
 | `catalog.ProductRequests` | `catalog.ProductRequestLines` | 1:N | Branch request origin, Central approval authority; branch-to-central relationship uses request GUID, not FK. |
 | `catalog.ProductRequests` | `catalog.ProductRequestDecisions` | 1:N | Central decision history: approve, reject or return for correction. |
@@ -121,6 +127,7 @@ ASP.NET Core Identity framework tables (such as user-role joins) are implementat
 |---|---|---|---|
 | `pricing.PriceVersions` | `pricing.ProductPrices` | 1:N | Central version publication. |
 | `catalog.Products` | `pricing.ProductPrices` | 1:N | Central product price history; branch consumes approved versioned projection. |
+| `catalog.ProductUnits` | `pricing.ProductPrices` | 1:N | Each price applies to a specific approved selling unit; price rows are versioned by effective period. |
 | `pricing.Promotions` | `pricing.PromotionConditions` | 1:N | Central promotion definition. |
 | `pricing.Promotions` | `pricing.PromotionRewards` | 1:N | Central promotion effects. |
 | `pricing.Coupons` | `pricing.CouponRedemptions` | 1:N | Central coupon usage authority; branch Offline event may be pending synchronization if permitted. |

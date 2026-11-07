@@ -63,6 +63,8 @@ The following is the complete first-pass inventory derived from the BRS units 01
 | Candidate table | Placement | Purpose / notes |
 |---|---|---|
 | `catalog.ProductCategories` | C; B read-only projection | Hierarchical categories/subcategories. |
+| `catalog.ProductBranchAvailability` | C; B read-only projection | Central selection of branches where a product is permitted for sale. |
+| `procurement.SupplierProductIdentifiers` | C | Supplier-specific product code/barcode for a product when supplied. |
 | `catalog.Brands` | C; B read-only projection | Centrally managed product brands displayed in the catalogue. |
 | `catalog.Countries` | C; B read-only projection | Country-of-origin reference values used by product details. |
 | `catalog.ProductRequests` | B request origin; C approval authority | Branch requests for a new product or product change; central approval precedes activation. |
@@ -73,7 +75,8 @@ The following is the complete first-pass inventory derived from the BRS units 01
 | `catalog.ProductUnits` | C; B read-only projection | Selling/base units and open-pack capability. |
 | `catalog.ProductUnitConversions` | C; B read-only projection | Approved conversion factors and precision. |
 | `catalog.CompositeProductComponents` | C; B read-only projection | Component definitions for composite products. |
-| `catalog.ProductAttributes` | C; B read-only projection | Optional structured attribute definitions/values where required by catalog search/display. |
+| `catalog.ProductAttributeDefinitions` | C; B read-only projection | Centrally managed attribute definitions by product/category, such as ingredients, nutrition, warnings and measurements. |
+| `catalog.ProductAttributes` | C; B read-only projection | Product-specific values for the applicable attribute definitions. |
 | `catalog.ProductMedia` | C; B read-only projection or media reference | Product image/media metadata; binary files should use managed file/object storage, not database blobs by default. |
 
 ### 3.3 Suppliers and procurement
@@ -143,7 +146,7 @@ The following is the complete first-pass inventory derived from the BRS units 01
 | Candidate table | Placement | Purpose / notes |
 |---|---|---|
 | `pricing.PriceVersions` | C | Versioned price publication/effective periods. |
-| `pricing.ProductPrices` | C; B approved price projection | Centrally approved base prices with effective dates. |
+| `pricing.ProductPrices` | C; B approved price projection | Centrally approved prices by product and selling unit, with effective dates. |
 | `pricing.Promotions` | C; B approved promotion projection | Promotion definitions, validity and status. |
 | `pricing.PromotionConditions` | C; B projection | Eligibility/condition rules. |
 | `pricing.PromotionRewards` | C; B projection | Discount/reward effects and calculation inputs. |
