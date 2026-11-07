@@ -138,6 +138,7 @@ A Branch redemption event and its Central synchronized copy share the same GUID.
 | Column | SQL Server type | Null | Rule |
 |---|---|---:|---|
 | PromotionId | uniqueidentifier | No | PK; sequential Guid |
+| PromotionVersionId | uniqueidentifier | No | FK → PromotionVersions |
 | PromotionCode | nvarchar(60) | No | Stable promotion code |
 | Version | int | No | Positive version per PromotionCode |
 | Name | nvarchar(160) | No | Display name |
@@ -161,6 +162,7 @@ A Branch redemption event and its Central synchronized copy share the same GUID.
 | RowVersion | rowversion | No | Concurrency token |
 
 **Constraints and indexes**
+- FK PromotionVersionId → PromotionVersions; restrict delete.
 - Unique PromotionCode + Version.
 - Check Version > 0; EffectiveToUtc > EffectiveFromUtc; maximum limits are null or non-negative.
 - Published/active versions are immutable; modifications create a new version.
