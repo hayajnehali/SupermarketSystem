@@ -51,6 +51,8 @@ The following is the complete first-pass inventory derived from the BRS units 01
 | `org.RegisteredDevices` | C; B local validation projection | Device registration, status, ownership and revocation metadata. |
 | `org.EmployeeSessions` | C; B local offline-session state | Session/revocation records needed for centrally managed sessions and bounded local validation. |
 | `org.BranchAccessSnapshots` | B | Approved branch-local employee/role/permission snapshot required for Offline authorization; not an authority. |
+| `org.BranchAccessSnapshotEmployees` | B | Effective employee authorization entries within the active local snapshot. |
+| `org.BranchAccessSnapshotPermissions` | B | Permission rows attached to a snapshot employee entry; local snapshot data only.
 | `org.BranchRuntimePolicies` | B projection of C | Last centrally approved Offline/runtime policy and version. |
 
 **Identity implementation note:** ASP.NET Core Identity persistence tables are framework-owned implementation tables. Their exact schema and relationship to `org.Employees` will be specified in the identity design; do not create a second custom password/credential store. Local Offline authentication material must follow TD-06 security constraints.
@@ -130,6 +132,8 @@ The following is the complete first-pass inventory derived from the BRS units 01
 | `inventory.InventoryDisposals` | B execution fact; C synchronized record | Actual disposal only after approval, including executor, date/time and evidence. |
 | `inventory.InventoryDisposalLines` | Same as parent | Actual disposed quantities and batch/cost references. |
 | `inventory.ReorderPolicies` | C policy; B approved local projection | Centrally approved branch/product reorder thresholds. |
+| `inventory.StockIncreaseRequests` | B request origin; C review/decision authority | Branch may submit a stock-increase request; Central also monitors thresholds proactively and does not depend on branch requests. |
+| `inventory.StockIncreaseRequestDecisions` | C | Central approval/rejection history for branch-submitted stock-increase requests. |
 
 **Inventory modeling constraints:** FIFO applies to non-expiry-tracked products and FEFO to expiry-tracked products according to product policy. Batch issue details must be retained against sales and returns. A balance is a controlled projection, not a replacement for the stock movement ledger. Do not use weighted-average costing. Central employees conduct stock counts at branches; Central defines the full/partial scope, freezes the relevant stock-changing operations, controls recounts and investigates each variance. Branch stock effects from approved adjustments, transfers and disposal are applied only through authorized commands and recorded in the branch stock ledger.
 
