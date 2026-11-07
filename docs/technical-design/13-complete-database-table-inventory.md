@@ -52,7 +52,7 @@ The following is the complete first-pass inventory derived from the BRS units 01
 | `org.EmployeeSessions` | C; B local offline-session state | Session/revocation records needed for centrally managed sessions and bounded local validation. |
 | `org.BranchAccessSnapshots` | B | Approved branch-local employee/role/permission snapshot required for Offline authorization; not an authority. |
 | `org.BranchAccessSnapshotEmployees` | B | Effective employee authorization entries within the active local snapshot. |
-| `org.BranchAccessSnapshotPermissions` | B | Permission rows attached to a snapshot employee entry; local snapshot data only.
+| `org.BranchAccessSnapshotPermissions` | B | Permission rows attached to a snapshot employee entry; local snapshot data only. |
 | `org.BranchRuntimePolicies` | B projection of C | Last centrally approved Offline/runtime policy and version. |
 
 **Identity implementation note:** ASP.NET Core Identity persistence tables are framework-owned implementation tables. Their exact schema and relationship to `org.Employees` will be specified in the identity design; do not create a second custom password/credential store. Local Offline authentication material must follow TD-06 security constraints.
