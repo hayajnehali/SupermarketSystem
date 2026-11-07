@@ -125,6 +125,7 @@ ASP.NET Core Identity framework tables (such as user-role joins) are implementat
 | `inventory.InventoryQuarantines` | `inventory.InventoryDisposalRequests` | 1:N | A quarantine record may be submitted for disposal; only the approved quantity can be disposed. |
 | `inventory.InventoryDisposalRequests` | `inventory.InventoryDisposalRequestLines` | 1:N | Branch request to Central. |
 | `inventory.InventoryDisposalRequests` | `inventory.InventoryDisposalDecisions` | 1:N | Central approval/rejection history. |
+| `inventory.InventoryDisposalDecisions` | `inventory.InventoryDisposalDecisionLines` | 1:N | Approved quantity per requested quarantine line. |
 | `inventory.InventoryDisposalRequests` | `inventory.InventoryDisposals` | 0..1:N | Physical disposal follows approval and is recorded in Branch DB. |
 | `inventory.InventoryDisposals` | `inventory.InventoryDisposalLines` | 1:N | Actual batch/quantity disposed and evidence references. |
 
