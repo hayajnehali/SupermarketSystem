@@ -28,9 +28,11 @@
 | `org.Permissions` | `org.RolePermissions` | 1:N | Central FK; Roles and Permissions are M:N through RolePermissions. |
 | Identity user | `org.Employees` | 1:0..1 or 1:1 | Exact direction and Identity key mapping deferred to TD-06 implementation design; do not duplicate credentials. |
 | `org.Employees` | `org.EmployeePermissionGrants` | 1:N | Central FK. |
+| `org.BranchAccessSnapshots` | `org.BranchAccessSnapshotEmployees` | 1:N | Branch-local FK within the same active snapshot. |
+| `org.BranchAccessSnapshotEmployees` | `org.BranchAccessSnapshotPermissions` | 1:N | Branch-local FK; effective permission snapshot for one employee. |
 | `org.RegisteredDevices` | Branch local device-validation snapshot | 1:0..N | Cross-database projection/reference only; no FK. |
 | Central employee/role/permission records | `org.BranchAccessSnapshots` | 1:N per branch snapshot | Projection built from approved central state; local snapshot rows relate only within the Branch DB. |
-| Central runtime policy | `org.BranchRuntimePolicies` | 1:N | Versioned central-to-branch projection; no cross-database FK. |
+| `org.RuntimePolicies` | `org.BranchRuntimePolicies` | 1:N logical publication | Centrally owned versioned policy; branch applies the authenticated local projection with no cross-database FK. |
 
 ASP.NET Core Identity framework tables (such as user-role joins) are implementation-owned and must be mapped in the identity design rather than recreated as parallel custom tables.
 
@@ -93,6 +95,8 @@ ASP.NET Core Identity framework tables (such as user-role joins) are implementat
 | `online.OrderReservations` (Central) | `inventory.StockReservations` (Branch) | 1:N logical link | Cross-database correlation by reservation/order GUID; no SQL FK. Branch reservation acceptance is persisted before Central acknowledgement. |
 | `inventory.StockReservations` | `inventory.InventoryBatches` | N:1 or N:M via reservation allocation | If a reservation is allocated to exact batches, use a separate allocation child table; do not assume one reservation consumes one batch. |
 | `inventory.StockReservations` | `inventory.StockReservationAllocations` | 1:N | Optional exact batch allocations when required; each allocation references one local batch. |
+| `inventory.ReorderPolicies` | `inventory.StockIncreaseRequests` | 1:N logical branch/product relationship | Central proactively monitors thresholds; branch requests are an additional input, not a prerequisite for replenishment. |
+| `inventory.StockIncreaseRequests` | `inventory.StockIncreaseRequestDecisions` | 1:N | Branch-originated request with Central decision history. |
 | `inventory.Stocktakes` | `inventory.StocktakeScopeLines` | 1:N | Central session and explicit full/partial scope. |
 | `inventory.Stocktakes` | `inventory.StocktakeAssignments` | 1:N | Central employees assigned to session/scope. |
 | `inventory.Stocktakes` | `inventory.StocktakeLines` | 1:N | Central blind count entries; expected quantity is hidden from counters. |
