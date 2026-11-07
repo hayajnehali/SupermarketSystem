@@ -39,6 +39,8 @@
 
 | [TD-28 — Solution and Project Structure Blueprint](28-solution-project-structure-blueprint.md) | Exact .NET solution layout, Central/Branch project responsibilities, module folders, dependency rules, EF Core and test boundaries | Proposed for owner approval |
 
+| [TD-29 — Identity Persistence and Employee/Customer Separation](29-identity-persistence-and-separation.md) | ASP.NET Core Identity Guid mapping, separate employee/customer stores and schemes, role integration, Central-only credentials and Offline boundary | Proposed for owner approval |
+
 ## Reviews
 
 - [Comprehensive Technical Design Review — 2026-11-06](reviews/2026-11-06-comprehensive-technical-design-review.md) — cross-document consistency, unresolved design risks, approval status and readiness actions.
