@@ -64,6 +64,7 @@ The following is the complete first-pass inventory derived from the BRS units 01
 |---|---|---|
 | `catalog.ProductCategories` | C; B read-only projection | Hierarchical categories/subcategories. |
 | `catalog.ProductBranchAvailability` | C; B read-only projection | Central selection of branches where a product is permitted for sale. |
+| `procurement.SupplierProductIdentifiers` | C | Supplier-specific product code/barcode for a product when supplied. |
 | `catalog.Brands` | C; B read-only projection | Centrally managed product brands displayed in the catalogue. |
 | `catalog.Countries` | C; B read-only projection | Country-of-origin reference values used by product details. |
 | `catalog.ProductRequests` | B request origin; C approval authority | Branch requests for a new product or product change; central approval precedes activation. |
@@ -144,7 +145,7 @@ The following is the complete first-pass inventory derived from the BRS units 01
 | Candidate table | Placement | Purpose / notes |
 |---|---|---|
 | `pricing.PriceVersions` | C | Versioned price publication/effective periods. |
-| `pricing.ProductPrices` | C; B approved price projection | Centrally approved base prices with effective dates. |
+| `pricing.ProductPrices` | C; B approved price projection | Centrally approved prices by product and selling unit, with effective dates. |
 | `pricing.Promotions` | C; B approved promotion projection | Promotion definitions, validity and status. |
 | `pricing.PromotionConditions` | C; B projection | Eligibility/condition rules. |
 | `pricing.PromotionRewards` | C; B projection | Discount/reward effects and calculation inputs. |
