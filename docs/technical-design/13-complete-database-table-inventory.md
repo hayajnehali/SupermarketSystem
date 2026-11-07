@@ -60,6 +60,10 @@ The following is the complete first-pass inventory derived from the BRS units 01
 | Candidate table | Placement | Purpose / notes |
 |---|---|---|
 | `catalog.ProductCategories` | C; B read-only projection | Hierarchical categories/subcategories. |
+| `catalog.Brands` | C; B read-only projection | Centrally managed product brands displayed in the catalogue. |
+| `catalog.Countries` | C; B read-only projection | Country-of-origin reference values used by product details. |
+| `catalog.ProductRequests` | B request origin; C approval authority | Branch requests for a new product or product change; central approval precedes activation. |
+| `catalog.ProductRequestLines` | Same as parent | Requested product attributes, units, barcodes and supporting details. |
 | `catalog.Products` | C; B read-only projection | Product/SKU master and centrally managed attributes. Distinct SKU for each distinct size/type. |
 | `catalog.ProductBarcodes` | C; B read-only projection | One or more barcodes per product; uniqueness enforced at the correct scope. |
 | `catalog.ProductUnits` | C; B read-only projection | Selling/base units and open-pack capability. |
@@ -75,13 +79,19 @@ The following is the complete first-pass inventory derived from the BRS units 01
 | `procurement.Suppliers` | C | Supplier master, activation and terms. |
 | `procurement.SupplierContacts` | C | Supplier contact details. |
 | `procurement.SupplierProductTerms` | C | Supplier/product-specific supply and return terms where recorded. |
+| `procurement.SupplierProductPrices` | C | Supplier-specific purchase price history/effective values; actual received batch cost remains on the inventory batch. |
 | `procurement.PurchaseRequests` | C authoritative workflow; B request origin/projection | Branch needs request and central review/decision. |
 | `procurement.PurchaseRequestLines` | Same as parent | Requested products and quantities. |
 | `procurement.PurchaseOrders` | C | Centrally created/approved supplier purchase orders. |
 | `procurement.PurchaseOrderLines` | C | Ordered products, quantities, prices and terms. |
 | `procurement.PurchaseReceipts` | B execution record; C synchronized projection | Full/partial receiving and exceptional receiving evidence. |
-| `procurement.PurchaseReceiptLines` | Same as parent | Received quantities, batch/cost/expiry references. |
-| `procurement.SupplierInvoices` | C record; B attachment/evidence only if originated there | Supplier invoice/document reference and amounts; not a full accounts-payable ledger. |
+| `procurement.PurchaseReceiptLines` | Same as parent | Actual, ordered, accepted and excess quantities, with batch/cost/expiry references. |
+| `procurement.PurchaseReceiptDecisions` | C | Central approval/rejection of excess quantities and exceptional receiving differences before stock availability. |
+| `procurement.SupplierInvoices` | B registration; C approval authority | Branch records supplier invoice; Central performs three-way match and approval. |
+| `procurement.SupplierInvoiceMatchLines` | C | Match invoice lines to approved purchase-order lines and actual receipt lines. |
+| `procurement.SupplierInvoiceDiscrepancies` | C | Quantity/price/terms mismatch requiring central review before invoice approval. |
+| `procurement.SupplierInvoiceDueDates` | C | Contractual due date/installment schedule used for central reminders. |
+| `procurement.SupplierPayments` | C | Central-approved and centrally executed supplier payment records; not a general ledger or accounts-payable subledger. |
 | `procurement.SupplierReturns` | C approval workflow; B execution record/projection | Supplier return request, approval and outcome. |
 | `procurement.SupplierReturnLines` | Same as parent | Product, batch, quantity, reason and compensation linkage. |
 
@@ -96,19 +106,28 @@ The following is the complete first-pass inventory derived from the BRS units 01
 | `inventory.InventoryMovements` | B authoritative; C immutable synchronized history | Receipts, issues, sales, returns, transfers, quarantine, adjustments and other stock events. |
 | `inventory.InventoryMovementLines` | Same as parent | Product/unit/batch/quantity/cost detail. |
 | `inventory.StockReservations` | B authoritative for physical reservation; C coordination record/projection | Website order reservations and other explicitly approved reserved quantities. The branch's atomic stock state remains final for acceptance and POS exclusion. |
-| `inventory.Stocktakes` | C session authority; B read/execute projection only if required | Centrally created stocktake session and scope. |
+| `inventory.Stocktakes` | C | Central-created and controlled stocktake session; central employees perform the physical count at the branch. |
+| `inventory.StocktakeScopeLines` | C | Explicit product/area scope for full-branch or partial stocktake. |
+| `inventory.StocktakeFreezeAcknowledgements` | C record of B acknowledgement | Confirms the branch has frozen stock-changing operations for the session scope before counting. |
 | `inventory.StocktakeAssignments` | C | Assigned counters and scoped responsibility. |
-| `inventory.StocktakeLines` | C count records or B only when counting is executed locally | Expected quantity is not exposed to blind counters; captured counts and recounts are preserved. |
-| `inventory.StocktakeRecounts` | Same database as stocktake | Recount attempts and submitted quantities. |
-| `inventory.StocktakeVarianceDecisions` | C | Investigation, approval/rejection and authorized adjustment decisions. |
-| `inventory.StockTransfers` | C workflow authority; B local dispatch/receipt facts | Inter-branch transfer request, approval and lifecycle. |
-| `inventory.StockTransferLines` | Same as parent | Product, batch, quantity and cost lineage. |
-| `inventory.StockTransferEvents` | C and/or B according to event origin | Dispatch, in-transit and physical receipt evidence; immutable events, not competing status authorities. |
+| `inventory.StocktakeLines` | C | Blind count entries by central counters; expected stock is hidden during entry. |
+| `inventory.StocktakeRecounts` | C | Second count and any further controlled recount attempts. |
+| `inventory.StocktakeVarianceCases` | C | Individually tracked variance case per product/scope, reason and investigation. |
+| `inventory.StocktakeVarianceDecisions` | C | Central investigation result and approval/rejection of adjustment. |
+| `inventory.StocktakeSessionEvents` | C | Start, cancel, close and freeze-release history; cancellation requires reason. |
+| `inventory.StockTransfers` | C | Branch-originated transfer request; central review, approval and execution control. |
+| `inventory.StockTransferLines` | C | Products, source/destination branches, quantities, batch and cost lineage. |
+| `inventory.StockTransferBranchEvents` | B source/destination event facts; C synchronized | Branch-side execution acknowledgements and stock-ledger posting references generated from central commands. |
+| `inventory.StockTransferEvents` | C | Central transfer lifecycle and command history; branch physical stock effects remain in each branch ledger. |
 | `inventory.InventoryQuarantines` | B authoritative; C projection | Quarantined/damaged/expired stock, reason, batch, quantity, actor and timestamp. |
+| `inventory.InventoryDisposalRequests` | B request origin; C approval authority | Branch submits isolated damaged/expired stock for central disposal approval. |
+| `inventory.InventoryDisposalRequestLines` | Same as parent | Product, batch, quantity, reason and quarantine linkage. |
+| `inventory.InventoryDisposalDecisions` | C | Central approval/rejection before physical disposal. |
+| `inventory.InventoryDisposals` | B execution fact; C synchronized record | Actual disposal only after approval, including executor, date/time and evidence. |
+| `inventory.InventoryDisposalLines` | Same as parent | Actual disposed quantities and batch/cost references. |
 | `inventory.ReorderPolicies` | C policy; B approved local projection | Centrally approved branch/product reorder thresholds. |
-| `inventory.StockIncreaseRequests` | B request origin; C approval workflow | Branch requests for stock increase/replenishment. |
 
-**Inventory modeling constraints:** FIFO applies to non-expiry-tracked products and FEFO to expiry-tracked products according to product policy. Batch issue details must be retained against sales and returns. A balance is a controlled projection, not a replacement for the stock movement ledger. Do not use weighted-average costing.
+**Inventory modeling constraints:** FIFO applies to non-expiry-tracked products and FEFO to expiry-tracked products according to product policy. Batch issue details must be retained against sales and returns. A balance is a controlled projection, not a replacement for the stock movement ledger. Do not use weighted-average costing. Central employees conduct stock counts at branches; Central defines the full/partial scope, freezes the relevant stock-changing operations, controls recounts and investigates each variance. Branch stock effects from approved adjustments, transfers and disposal are applied only through authorized commands and recorded in the branch stock ledger.
 
 ### 3.5 Pricing, promotions and coupons
 
@@ -133,6 +152,12 @@ Branch pricing data is an approved versioned snapshot. Expired promotions stop a
 | `sales.SalesInvoices` | B authoritative; C immutable synchronized history | Completed/cancelled invoice header and historical totals; includes `SequenceYear` and branch/year invoice number. |
 | `sales.SalesInvoiceLines` | B authoritative; C immutable synchronized history | Product/unit/quantity/price/discount snapshots. |
 | `sales.SalesInvoiceBatchIssues` | B authoritative; C synchronized history | Exact inventory batches and costs issued to each invoice line. |
+| `sales.CompositeSaleComponentIssues` | B authoritative; C synchronized history | Component quantities and batch costs consumed by a composite-product sale, linked to the invoice line. |
+| `sales.SalesReturns` | B authoritative; C synchronized history | Return header linked to original invoice; no-invoice exceptions require central referral. |
+| `sales.SalesReturnLines` | Same as parent | Returned product, unit, quantity/weight, original sale price/discount and original batch-cost references. |
+| `sales.SalesReturnInspections` | B execution fact; C synchronized | Inspection outcome per returned item: sellable, quarantine/review, or damaged/expired. |
+| `sales.SalesReturnDispositions` | B execution fact; C synchronized | Authorized return-to-stock or quarantine/disposal disposition; disposal remains subject to central approval. |
+| `sales.ExchangeLinks` | B authoritative; C synchronized history | Links a return to its replacement sale without merging their financial/stock records. |
 | `sales.InvoiceSequences` | B authoritative | Branch/year sequential number allocator; sequence value is not a primary key. |
 | `sales.SalePaymentAllocations` | B authoritative; C synchronized financial history | Split tender allocation against an invoice; only confirmed full payment completes a sale. |
 | `sales.InvoicePrintRecords` | B | Optional print/reprint audit; reprint never creates another invoice or stock movement. |
@@ -162,17 +187,26 @@ Do not introduce accounts receivable, customer debt, credit balances or a genera
 | `online.OrderLines` | C authoritative; assigned B projection | Immutable confirmed product/price/discount/quantity snapshots. |
 | `online.OrderStatusHistory` | C | Order lifecycle transitions; payment/refund state is not collapsed into order status. |
 | `online.OrderReservations` | C coordination; linked to B authoritative `inventory.StockReservations` | Central 15-minute reservation/payment lifecycle and branch acknowledgement references. |
-| `online.OrderDeliveryDetails` | C; assigned B minimal projection | Per-order city/area and free-text address details. No reusable saved-address book is introduced. |
+| `online.OrderDeliveryDetails` | C; assigned B minimal projection | Per-order selected city/area and free-text address details. No reusable saved-address book is introduced. |
+| `online.DeliveryCities` | C | Centrally managed city reference data. |
+| `online.DeliveryAreas` | C | Areas/regions belonging to a city. |
+| `online.DeliveryFeeRules` | C | Central delivery fee by area and approved free-delivery conditions. |
+| `online.StorePolicies` | C | Central website policies such as minimum order amount and effective configuration version. |
+| `online.OrderCancellationRequests` | C | Customer cancellation request before preparation, routed for central approval. |
+| `online.OrderCancellationDecisions` | C | Central approve/reject decision with actor, time and reason. |
+
 | `online.OrderNotifications` | C | Website/email customer notification records. |
 | `online.NotificationDeliveryAttempts` | C | Delivery attempt/result history; notification failure does not change order/payment state. |
 
-The 15-minute window, late-payment handling and no-order-edit-after-confirmation behavior remain governed by the approved BRS and TD-05/TD-09 contracts.
+The 15-minute window, late-payment handling, central cancellation approval before preparation, no customer content edits after confirmation, area-based delivery fees, minimum order amount and central decision on fulfillment unavailability remain governed by the approved BRS and TD-05/TD-09 contracts. Customer selects a city and area and enters free-text address details per order; no saved address book or delivery-time selection is introduced.
 
 ### 3.9 Fulfillment, picking, pickup and delivery
 
 | Candidate table | Placement | Purpose / notes |
 |---|---|---|
 | `fulfillment.FulfillmentTasks` | C authoritative assignment; B assigned-work projection | Work item for the selected branch/order. |
+| `fulfillment.FulfillmentExceptions` | B execution fact; C decision authority | Picking shortages/unavailability and related evidence reported to Central. |
+| `fulfillment.FulfillmentExceptionDecisions` | C | Central decision for order exception/cancellation; branch cannot independently cancel the confirmed website order. |
 | `fulfillment.PickingSessions` | B | Picking execution session and responsible employee. |
 | `fulfillment.PickingLines` | B | Picked quantities and barcode verification results. |
 | `fulfillment.DeliveryShiftCoordinators` | C | Central appointment of coordinator by shift. |
@@ -189,6 +223,7 @@ The 15-minute window, late-payment handling and no-order-edit-after-confirmation
 |---|---|---|
 | `crm.Customers` | C authoritative; B restricted local projection | Customer identity/profile; unique verified phone policy. |
 | `crm.CustomerPhoneVerifications` | C | OTP verification attempts/results; never store plaintext OTP values. |
+| `crm.LoyaltyProgramRules` | C | Centrally managed earning, redemption, expiry and eligibility rules. |
 | `crm.LoyaltyAccounts` | C authoritative; B restricted balance/eligibility projection | Customer points account and current governed balance. |
 | `crm.LoyaltyPointTransactions` | C authoritative; B local event/projection only as required for Offline sales | Earn, redeem, expire, reverse and adjust points as immutable ledger entries. |
 | `crm.CustomerComplaints` | C | Complaint reference, status and responsible employee. |
@@ -205,9 +240,7 @@ No reusable customer address-book table is proposed. Branch employees receive on
 | `operations.ExpenseRequestDocuments` | C; branch upload origin | Quotation/pro-forma and supporting document references. |
 | `operations.ExpenseApprovals` | C | Approve/reject/return decision, reason and actor. |
 | `operations.ExpenseExecutions` | B execution evidence; C reviewed record | Actual amount, final invoice/payment proof and completion review. |
-| `operations.PayrollPeriods` | C | Centrally managed limited payroll-tracking periods. |
-| `operations.PayrollRecords` | C | Approved payroll tracking records; no statutory payroll calculation or payroll accounting. |
-| `operations.PayrollAdjustments` | C | Audited manual tracking adjustments where authorized. |
+| `operations.PayrollTrackingRecords` | C | Placeholder for the centrally managed payroll-tracking scope only; exact fields and supporting entities remain deferred until the approved FIN-03 scope is mapped. No statutory calculation or payroll accounting is implied. |
 | `operations.CashDeposits` | C | Central management of cash collected from branches and deposited/received centrally. |
 | `operations.CashDepositLines` | C | Breakdown/source linkage for each deposit, such as branch/shift/collection references. |
 | `maintenance.MaintainableAssets` | C master; B local reference | Devices/assets and branch locations subject to maintenance. |
@@ -281,7 +314,19 @@ The following should not automatically become tables:
 | Audit | Central actions and synchronized branch facts | Local operational/security facts |
 | Durable messaging | Central command ledger and central streams | Local branch messaging state |
 
-## 6. Risks and questions intentionally deferred to table-level design
+## 6. Coverage clarifications from approved BRS decisions
+
+The following explicit workflows are included in the candidate table inventory and must be represented in the eventual ER model:
+
+- Supplier invoices are registered by the Branch, matched centrally against the approved purchase order and actual received quantities (three-way match), approved by Central, and paid only by Central. Due-date reminders are generated centrally. This is not a general ledger or accounts-payable accounting module.
+- Stocktake is centrally created and performed physically by Central employees at the branch. The Central system defines the scope, assignments, blind counts, recounts, per-item variance investigations and closure/cancellation reason. The Branch database enforces the scoped stock-movement freeze and records acknowledgements/authorized stock effects.
+- Damaged/expired inventory is quarantined locally, submitted to Central for approval, then physically disposed by Branch staff with quantities, batches, executor, timestamp and evidence recorded.
+- Customer returns are linked to the original invoice, inspected before any stock re-entry, and separately linked to refund/payment and loyalty adjustments. Exchanges are a linked return plus a separate replacement sale.
+- Online delivery city/area, area-based fees, minimum order policy, pre-preparation cancellation requests and central decisions for picking unavailability are represented explicitly.
+- Transfer governance and execution are central. The source/destination branch databases record only their own authorized physical stock movements and acknowledgements; they do not create cross-database foreign keys.
+- Supplier-specific purchase prices are maintained centrally, while the actual cost of each received batch is stored independently on that branch's inventory batch.
+
+## 7. Risks and questions intentionally deferred to table-level design
 
 These are technical modeling tasks, not requests to reopen approved business policy:
 
@@ -293,7 +338,7 @@ These are technical modeling tasks, not requests to reopen approved business pol
 6. Define retention, archival, privacy classification and file-storage references before implementation.
 7. Resolve any discrepancy between the BRS index's historical review status and the owner-approved decision records by using the latest explicit owner-approved decisions; do not treat a document's old index label as a new business decision.
 
-## 7. Next design sequence
+## 8. Next design sequence
 
 1. Review and approve/correct this inventory and its Central/Branch ownership labels.
 2. Produce the ER model and relationship/cardinality map for all modules.
