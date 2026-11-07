@@ -205,7 +205,7 @@ Status transitions are append-only. Payment status is never encoded as an OrderS
 | ReleasedAtUtc | datetime2(3) | Yes | UTC |
 | ReleaseReason | tinyint | Yes | PaymentExpired / Cancelled / FulfillmentConsumed / CentralDecision |
 | BranchStockReservationId | uniqueidentifier | Yes | Branch stock reservation GUID; no cross-db FK |
-| OperationId | uniqueidentifier | No | Idempotency key; unique within the LoyaltyPointTransactions authority |
+| OperationId | uniqueidentifier | No | Idempotency key; unique within the OrderReservations authority |
 | RowVersion | rowversion | No | Concurrency token |
 
 **Constraints**
@@ -493,7 +493,7 @@ Cancellation before preparation requires Central approval. Cancellation after pr
 | SourceTransactionId | uniqueidentifier | No | Invoice/order/return GUID |
 | RuleVersion | bigint | No | Loyalty rule version applied |
 | OccurredAtUtc | datetime2(3) | No | UTC |
-| OperationId | uniqueidentifier | No | Idempotency key |
+| OperationId | uniqueidentifier | No | Idempotency key; unique within the LoyaltyPointTransactions authority |
 | Reason | nvarchar(500) | Yes | Required for adjustment/reversal exception |
 | RowVersion | rowversion | No | Concurrency token |
 
