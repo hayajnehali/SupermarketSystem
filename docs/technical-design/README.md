@@ -21,6 +21,7 @@
 | [TD-11 — Worker Execution and Recovery](11-worker-execution-and-recovery.md) | Central/Branch worker polling, atomic leases, retry classification, idempotent crash recovery, ordering, shutdown and observability | Approved by owner (2026-11-06) |
 | [TD-12 — SQL Server Durable Messaging Schema](12-sql-server-durable-messaging-schema.md) | SQL Server physical table mapping, keys, filtered indexes, constraints, rowversion, transaction boundaries and EF Core mapping requirements | Approved by owner (2026-11-06) |
 | [TD-13 — Complete Database Table Inventory](13-complete-database-table-inventory.md) | First-pass full table catalogue, Central/Branch ownership, projections and database design sequence | Proposed for owner review |
+| [TD-14 — Logical Database Relationships](14-logical-database-relationships.md) | Conceptual parent/child cardinalities, local FK boundaries, cross-site correlations and transaction boundaries | Proposed for owner review |
 
 ## Reviews
 
