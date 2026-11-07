@@ -18,8 +18,8 @@
 | [TD-08 — Deployment, Infrastructure, Backup, and Disaster Recovery](08-deployment-infrastructure-backup-disaster-recovery.md) | Central/branch deployment, networking, SQL operations, backups, RPO/RTO, recovery, release and monitoring | Approved by owner (2026-11-06) |
 | [TD-09 — Detailed API Contracts](09-api-contracts-reservation-and-sync.md) | Customer reservation/status APIs, Branch.Worker command polling and acknowledgements, transaction boundaries, idempotency, security scopes and compatibility | Approved by owner (2026-11-06) |
 | [TD-10 — Durable Messaging Data Model](10-durable-messaging-data-model.md) | Logical Outbox/Inbox/ProcessedOperations, BranchCommands, checkpoints, uniqueness, indexes, transaction boundaries and worker leases | Proposed for owner review |
-| [TD-11 — Worker Execution and Recovery](11-worker-execution-and-recovery.md) | Central/Branch worker polling, atomic leases, retry classification, idempotent crash recovery, ordering, shutdown and observability | Proposed for owner review |
-| [TD-12 — SQL Server Durable Messaging Schema](12-sql-server-durable-messaging-schema.md) | SQL Server physical table mapping, keys, filtered indexes, constraints, rowversion, transaction boundaries and EF Core mapping requirements | Proposed for owner review |
+| [TD-11 — Worker Execution and Recovery](11-worker-execution-and-recovery.md) | Central/Branch worker polling, atomic leases, retry classification, idempotent crash recovery, ordering, shutdown and observability | Approved by owner (2026-11-06) |
+| [TD-12 — SQL Server Durable Messaging Schema](12-sql-server-durable-messaging-schema.md) | SQL Server physical table mapping, keys, filtered indexes, constraints, rowversion, transaction boundaries and EF Core mapping requirements | Approved by owner (2026-11-06) |
 
 ## Reviews
 
@@ -27,13 +27,11 @@
 
 ## Next design sequence
 
-1. Confirm architecture and technology baseline.
-2. Review backend module boundaries and dependency rules.
-3. Review database topology and data ownership.
-4. Define synchronization contracts, idempotency, retries, conflict isolation, and resumption.
-5. Define identity, authentication, authorization, and security controls.
-6. Define API boundaries and external integrations.
-7. Define deployment, backup, monitoring, and disaster recovery.
-8. Review the complete technical design before implementation planning.
+1. Publish a complete database inventory derived from the approved BRS, module map, and data-ownership rules.
+2. Assign every proposed table to Central DB, each Branch DB, or both; identify replicated projections separately from authoritative data.
+3. Define primary keys (`Guid` only), foreign keys, unique constraints, check constraints, and cross-module ownership boundaries.
+4. Review the complete entity relationship map for omissions, duplication, cycles, and cross-database FK violations.
+5. Design table groups in dependency order, beginning with organization/access and product catalog, then inventory, pricing, procurement, POS/sales, payments, online orders/fulfillment, loyalty, audit, and reporting.
+6. Only after logical schema approval, produce SQL physical details and EF Core entity/configuration designs, then migrations and integration tests.
 
-No application code should be generated until the relevant design baseline is approved.
+TD-10 through TD-12 are synchronization infrastructure design documents; they do not represent the complete supermarket database. No application migrations should be generated before the complete logical schema is approved.
