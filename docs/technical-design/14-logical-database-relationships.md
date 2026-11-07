@@ -32,7 +32,7 @@
 | `org.BranchAccessSnapshotEmployees` | `org.BranchAccessSnapshotPermissions` | 1:N | Branch-local FK; effective permission snapshot for one employee. |
 | `org.RegisteredDevices` | Branch local device-validation snapshot | 1:0..N | Cross-database projection/reference only; no FK. |
 | Central employee/role/permission records | `org.BranchAccessSnapshots` | 1:N per branch snapshot | Projection built from approved central state; local snapshot rows relate only within the Branch DB. |
-| Central runtime policy | `org.BranchRuntimePolicies` | 1:N | Versioned central-to-branch projection; no cross-database FK. |
+| `org.RuntimePolicies` | `org.BranchRuntimePolicies` | 1:N logical publication | Centrally owned versioned policy; branch applies the authenticated local projection with no cross-database FK. |
 
 ASP.NET Core Identity framework tables (such as user-role joins) are implementation-owned and must be mapped in the identity design rather than recreated as parallel custom tables.
 
