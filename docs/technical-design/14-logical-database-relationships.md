@@ -163,6 +163,9 @@ ASP.NET Core Identity framework tables (such as user-role joins) are implementat
 | `sales.SuspendedSales` | `sales.SuspendedSaleLines` | 1:N | Branch-local suspended cart; not an invoice and does not commit stock/payment. |
 | `sales.SalesInvoices` | `sales.SalePaymentAllocations` | 1:N | Split tender rows; confirmed total must equal full invoice amount. |
 | `payments.PaymentTransactions` | `payments.PaymentAttempts` | 1:N | Payment attempt history is independent from invoice/order status. |
+| `payments.PaymentProviders` | `payments.PaymentProviderConfigurations` | 1:N | Central provider configuration; secrets stored outside relational rows and referenced securely. |
+| `payments.PaymentProviders` | `payments.PaymentMethods` | 1:N optional | Electronic methods may use a provider; cash does not require one. |
+| `payments.PaymentReconciliations` | `payments.PaymentReconciliationLines` | 1:N | Central reconciliation batch to transaction-level matching outcomes. |
 | `payments.PaymentMethods` | `sales.SalePaymentAllocations` | 1:N logical reference | Central payment-method configuration is projected to Branch; no cross-db FK if not copied as a local table. |
 | `sales.SalesInvoices` | `sales.SalesReturns` | 1:N | Normal returns require original invoice. No-invoice exception is centrally referred and approved. |
 | `sales.SalesReturns` | `sales.SalesReturnLines` | 1:N | Return header and returned quantities. |

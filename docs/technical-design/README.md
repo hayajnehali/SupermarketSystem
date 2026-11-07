@@ -28,6 +28,7 @@
 | [TD-18 — Inventory and Stock Detailed Schema](18-inventory-stock-detailed-schema.md) | Table-level specification for branch stock ledger, batches, balances, reservations, stocktaking, transfers, quarantine and disposal | Proposed for owner review |
 | [TD-19 — Pricing, Promotions and Coupons Detailed Schema](19-pricing-promotions-detailed-schema.md) | Table-level specification for unit prices, price/promotion versions, promotions, conditions, rewards, coupons and redemption limits | Proposed for owner review |
 | [TD-20 — POS, Sales, Returns and Exchanges Detailed Schema](20-pos-sales-returns-detailed-schema.md) | Table-level specification for shifts, drawers, suspended carts, invoices, batch issues, cancellation, returns, inspection and exchanges | Proposed for owner review |
+| [TD-21 — Payments and Refunds Detailed Schema](21-payments-refunds-detailed-schema.md) | Table-level specification for providers, payment methods/transactions, attempts, trusted events, refunds, exceptions and reconciliation | Proposed for owner review |
 
 ## Reviews
 
