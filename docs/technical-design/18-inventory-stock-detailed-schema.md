@@ -319,7 +319,17 @@
 
 ### 7.5 `inventory.StocktakeSessionEvents`, `StocktakeFreezeAcknowledgements` — Central; `StocktakeLocks` — Branch
 
-**`StocktakeSessionEvents`** records Started, Cancelled, Closed, FreezeRequested and FreezeReleased events with actor/time/reason.
+**`StocktakeSessionEvents`** — Central
+
+| Column | SQL Server type | Null | Rule |
+|---|---|---:|---|
+| StocktakeSessionEventId | uniqueidentifier | No | PK; sequential Guid |
+| StocktakeId | uniqueidentifier | No | FK → Stocktakes |
+| EventType | tinyint | No | Started / Cancelled / Closed / FreezeRequested / FreezeReleased |
+| ActorUserId | uniqueidentifier | No | Central actor |
+| OccurredAtUtc | datetime2(3) | No | UTC |
+| Reason | nvarchar(1000) | Yes | Required for cancellation and exception events |
+| CorrelationId | uniqueidentifier | No | Workflow trace |
 
 **`StocktakeFreezeAcknowledgements`**
 
