@@ -16,7 +16,7 @@ The model must provide:
 - Traceability through CorrelationId and CausationId.
 - No coupling between technical retry/lease timing and approved business deadlines.
 
-This is a logical schema, not a final migration script. SQL types, clustered-key choices, partitioning, and exact retention are finalized through implementation and workload testing.
+This is a logical schema, not a final migration script. Every primary key is `Guid` / `uniqueidentifier`; integer identity primary keys are prohibited. SQL physical details, clustered-key choices, partitioning, and exact retention are finalized through implementation and workload testing.
 
 ## 2. Identity model
 
@@ -34,13 +34,15 @@ Do not use MessageId as a substitute for OperationId. One operation may produce 
 
 ## 3. Outbox table
 
+**Primary-key convention:** `OutboxMessageId` is `Guid` in application code and `uniqueidentifier` in SQL Server. All other primary keys in this document follow the same system-wide Guid rule.
+
 Create an Outbox in every database that originates durable messages: Central and each Branch database.
 
 ### 3.1 Logical columns
 
 | Column | Logical type | Rules |
 |---|---|---|
-| OutboxId | uniqueidentifier / bigint | Internal primary key |
+| OutboxMessageId | uniqueidentifier | Internal primary key (`Guid` in C#) |
 | MessageId | uniqueidentifier | Required, globally unique |
 | OperationId | uniqueidentifier | Required, stable business operation identity |
 | MessageType | nvarchar | Required, allowlisted contract name |
@@ -87,7 +89,7 @@ Create an Inbox in every database that receives messages from another applicatio
 
 | Column | Logical type | Rules |
 |---|---|---|
-| InboxId | uniqueidentifier / bigint | Internal primary key |
+| InboxMessageId | uniqueidentifier | Internal primary key (`Guid` in C#) |
 | MessageId | uniqueidentifier | Required |
 | OperationId | uniqueidentifier | Required |
 | MessageType | nvarchar | Required |
@@ -123,7 +125,7 @@ Use a dedicated ProcessedOperations ledger for command/business-effect deduplica
 
 | Column | Logical type | Rules |
 |---|---|---|
-| ProcessedOperationId | uniqueidentifier / bigint | Internal primary key |
+| ProcessedOperationId | uniqueidentifier | Internal primary key (`Guid` in C#) |
 | OperationId | uniqueidentifier | Required |
 | OperationType | nvarchar | Required |
 | ProcessingScope | nvarchar | Stable scope, e.g. Branch or Central module |
@@ -185,7 +187,7 @@ Logical table: SyncCheckpoints.
 
 | Column | Logical type | Rules |
 |---|---|---|
-| CheckpointId | uniqueidentifier / bigint | Internal primary key |
+| SyncCheckpointId | uniqueidentifier | Internal primary key (`Guid` in C#) |
 | Direction | nvarchar | CentralToBranch or BranchToCentral |
 | BranchId | uniqueidentifier | Required for branch stream |
 | StreamName | nvarchar | Contract/message stream |

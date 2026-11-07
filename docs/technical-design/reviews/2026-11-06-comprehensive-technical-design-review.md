@@ -156,3 +156,18 @@ TD-07 now explicitly includes a delivery-disputes API group and workflow: custom
 ## 7. Review boundary
 
 This report identifies design gaps and required technical decisions. It does not alter approved business requirements, choose an unapproved technology/provider, invent operational time limits, set branch RPO/RTO, or authorize application coding.
+
+
+## 8. Status reconciliation addendum — 2026-11-07
+
+This addendum supersedes only the historical approval-state statements above where later owner decisions or GitHub integration status changed. It does not erase the findings or claim that implementation gaps have been closed.
+
+- TD-01 through TD-08 were subsequently recorded as owner-approved in their document headers and the technical-design index.
+- TD-09 is recorded as owner-approved.
+- TD-10 remains proposed for owner review; its logical primary-key declarations must follow the system-wide rule: every PK is `Guid` / SQL Server `uniqueidentifier` (no integer identity PKs). The physical names and SQL types in TD-12 are authoritative where the logical draft is stale.
+- TD-11 is recorded as approved by the owner (2026-11-06).
+- TD-12 is approved by the owner (2026-11-06).
+- PR #17 was merged into `master`. PR #18 was merged into `docs/durable-messaging-data-model`, and PR #19 was merged into `docs/worker-execution-recovery-model`; therefore, the latter two merges did not by themselves publish TD-11 and TD-12 to `master`. A follow-up integration PR is required.
+- The original review's technical findings about API contracts, security implementation, reservation handshake details, capacity, and operational recovery proof remain separate technical follow-up items. They must not be represented as business-policy re-openings.
+
+The database-design work may proceed with a complete logical table inventory, but table-level implementation and EF Core migrations remain gated by approval of the full schema.
