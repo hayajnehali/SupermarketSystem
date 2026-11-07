@@ -85,23 +85,29 @@ The following is the complete first-pass inventory derived from the BRS units 01
 |---|---|---|
 | `procurement.Suppliers` | C | Supplier master, activation and terms. |
 | `procurement.SupplierContacts` | C | Supplier contact details. |
-| `procurement.SupplierProductTerms` | C | Supplier/product-specific supply and return terms where recorded. |
+| `procurement.SupplierProductTerms` | C | Supplier/product-specific supply terms where recorded. |
+| `procurement.SupplierReturnTerms` | C | Versioned supplier-specific return conditions, deadlines, accepted reasons, packaging/condition, expiry, transport and compensation terms. |
 | `procurement.SupplierProductPrices` | C | Supplier-specific purchase price history/effective values; actual received batch cost remains on the inventory batch. |
 | `procurement.PurchaseRequests` | C authoritative workflow; B request origin/projection | Branch needs request and central review/decision. |
 | `procurement.PurchaseRequestLines` | Same as parent | Requested products and quantities. |
 | `procurement.PurchaseRequestDecisions` | C | Central approve/reject/adjust/return-for-correction decisions with actor, reason and time. |
+| `procurement.PurchaseRequestDecisionLines` | C | Per-request-line approved/adjusted quantity outcomes for central decisions. |
 | `procurement.PurchaseOrders` | C | Centrally created/approved supplier purchase orders. |
 | `procurement.PurchaseOrderLines` | C | Ordered products, quantities, prices and terms. |
 | `procurement.PurchaseReceipts` | B execution record; C synchronized projection | Full/partial receiving and exceptional receiving evidence. |
 | `procurement.PurchaseReceiptLines` | Same as parent | Actual, ordered, accepted and excess quantities, with batch/cost/expiry references. |
 | `procurement.PurchaseReceiptDecisions` | C | Central approval/rejection of excess quantities and exceptional receiving differences before stock availability. |
+| `procurement.PurchaseReceiptDecisionLines` | C | Per-receipt-line excess quantity approval and resulting accepted quantity. |
 | `procurement.SupplierInvoices` | B registration; C approval authority | Branch records supplier invoice; Central performs three-way match and approval. |
+| `procurement.SupplierInvoiceLines` | B registration; C approval copy | Supplier invoice line items, quantities, prices and totals used for three-way matching. |
 | `procurement.SupplierInvoiceMatchLines` | C | Match invoice lines to approved purchase-order lines and actual receipt lines. |
 | `procurement.SupplierInvoiceDiscrepancies` | C | Quantity/price/terms mismatch requiring central review before invoice approval. |
 | `procurement.SupplierInvoiceDueDates` | C | Contractual due date/installment schedule used for central reminders. |
 | `procurement.SupplierPayments` | C | Central-approved and centrally executed supplier payment records; not a general ledger or accounts-payable subledger. |
 | `procurement.SupplierReturns` | C approval workflow; B execution record/projection | Supplier return request, approval and outcome. |
 | `procurement.SupplierReturnLines` | Same as parent | Product, batch, quantity, reason and compensation linkage. |
+| `procurement.SupplierReturnEvents` | B execution facts; C synchronized history | Preparation, handover, supplier response and completion evidence. |
+| `procurement.SupplierReturnSettlements` | C | Central record of supplier compensation outcome: refund, replacement or credit note reference. |
 
 ### 3.4 Inventory and stock
 
