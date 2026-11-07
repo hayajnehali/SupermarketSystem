@@ -1,147 +1,153 @@
-# TD-29 — Identity Persistence and Employee/Customer Separation
+# TD-29 — Unified Identity Account Model
 
-**Version:** 0.1  
-**Status:** Proposed for owner approval  
+**Version:** 0.2  
+**Status:** Revised for owner review  
 **Date:** 2026-11-08  
-**Depends on:** Approved TD-06, TD-15, TD-27 and TD-28; .NET 10 / ASP.NET Core Identity baseline in TD-02.
+**Depends on:** Approved TD-06, TD-15, TD-22, TD-27 and TD-28; .NET 10 / ASP.NET Core Identity baseline in TD-02.
 
 ## 1. Decision requested
 
-Use **ASP.NET Core Identity with Guid keys**, while keeping employee and customer authentication domains separate at the persistence and authorization boundaries.
+Use one ASP.NET Core Identity user store with Guid keys for both employees and customers. An account must be exactly one account type: Employee or Customer. The same account cannot represent both.
 
-Recommended mapping:
+This replaces the earlier proposal for separate employee and customer Identity user tables.
 
-- Employee authentication users are stored separately from the employee profile in `org.EmployeeIdentityUsers`; each user has a one-to-one link to `org.Employees`.
-- Customer authentication users are stored separately in `crm.CustomerIdentityUsers`; each user has a one-to-one link to the authoritative customer profile.
-- Employee roles use the existing `org.Roles` catalogue as the single role authority. Do not create a second competing role catalogue.
-- Customer accounts do not participate in employee RBAC and do not receive employee roles.
-- All Identity-owned tables use a single Guid primary key, including user-role, user-claim, user-login, role-claim and user-token tables. Use explicit custom Identity entity types where needed to replace framework-default composite join keys with Guid surrogate PKs.
-- Central is the only identity authority. Branches receive only the minimum approved local authorization snapshot and a separately designed protected Offline credential-verification artifact.
+The account type is an explicit AccountType discriminator on the unified Identity user. It is not inferred only from role membership.
 
-This is a persistence and application architecture decision. It does not change the approved employee/customer business requirements or offline time limits.
+- One IdentityUser<Guid>-based record in the unified auth.Users table.
+- An Employee account has exactly one linked org.Employees profile and no crm.Customers profile.
+- A Customer account has exactly one linked crm.Customers profile and no org.Employees profile.
+- The application and database enforce these mutually exclusive relationships.
 
-## 2. Why separate employee and customer identity stores
+Changing an account from Employee to Customer (or vice versa) is not an ordinary profile edit. It requires a dedicated, audited lifecycle operation that handles existing relationships, sessions and permissions. The default policy is to create a separate account rather than convert an existing one.
 
-Employees and customers have different trust boundaries, authorization rules, lifecycle operations and exposure risks.
+## 2. Rationale
 
-Separate user tables and separate authentication schemes make it harder to accidentally:
-- accept a customer token at an employee endpoint;
-- apply employee roles to a customer account;
-- expose employee credential/session data to customer-facing flows;
-- let branch staff query customer authentication records.
+A unified Identity user store is appropriate because both account types share credential management, password hashing, lockout, security stamps, recovery and account lifecycle primitives.
 
-The employee profile (`org.Employees`) and customer profile remain business records; authentication credentials belong to Identity user records. Neither profile table stores password hashes.
+The business profiles remain separate because employees and customers have different attributes and workflows. This is not a reason to duplicate authentication users.
 
-## 3. Proposed entity and table mapping
+A shared user table does not by itself make the system insecure. Security is enforced through account type, authentication schemes/audiences, authorization policies, resource ownership and database constraints.
 
-### 3.1 Employee identity
+## 3. Logical entity and table mapping
 
-- `EmployeeIdentityUser : IdentityUser<Guid>` (or an equivalent custom Identity user type).
-- Table: `org.EmployeeIdentityUsers`.
-- PK: `EmployeeIdentityUserId` as Guid / uniqueidentifier.
-- Required unique FK: `EmployeeId` → `org.Employees.EmployeeId`.
-- Identity credential columns (normalized username/email, password hash, security stamp, lockout fields and two-factor fields) remain in the employee identity table as required by the selected Identity configuration.
-- Employee display name, employment status, employee number and branch assignments remain in `org.Employees` and related business tables.
-- Enforce one identity user per employee; enforce uniqueness of the EmployeeId FK.
+### 3.1 Unified Identity user
 
-### 3.2 Customer identity
+- Custom Identity user type based on IdentityUser<Guid>.
+- Table: auth.Users.
+- PK: UserId as Guid / uniqueidentifier.
+- Required AccountType discriminator: Employee or Customer.
+- Shared credential and security fields (normalized username/email, password hash, security stamp, lockout and configured two-factor fields) are stored once.
+- All Identity user identifiers and references use Guid / uniqueidentifier.
+- Identity credentials remain Central-only; Branch databases do not store password hashes, security stamps or reusable central credentials.
 
-- `CustomerIdentityUser : IdentityUser<Guid>` (or an equivalent custom Identity user type).
-- Table: `crm.CustomerIdentityUsers`.
-- PK: `CustomerIdentityUserId` as Guid / uniqueidentifier.
-- Required unique FK: `CustomerId` → the authoritative customer profile PK in `crm.Customers`.
-- Customer credentials and lockout/security fields remain here; customer name, phone ownership state, addresses, loyalty and complaint data remain in the business profile/domain tables.
-- Enforce one identity user per customer; enforce uniqueness of the CustomerId FK.
-- The approved normalized unique phone rule remains enforced on the authoritative customer profile/account identity according to the final TD-22 mapping. Do not assume email is required or globally unique unless the approved requirement says so.
+The final physical column names and schema mapping must be reconciled with TD-13, TD-15 and TD-22 before implementation.
 
-### 3.3 Employee roles and permissions
+### 3.2 Mutually exclusive business profiles
 
-- Keep `org.Roles` as the single employee role catalogue.
-- Map the ASP.NET Core Identity role entity to `org.Roles` using a custom `IdentityRole<Guid>` subtype and explicit EF Core property mapping.
-- Map Identity's normalized role name to the stable `RoleCode` (or an explicitly approved normalized-code column); do not duplicate role IDs or role definitions in a separate `AspNetRoles` table.
-- Retain `org.Permissions`, `org.RolePermissions` and `org.EmployeePermissionGrants` as the fine-grained authorization catalogue and audited grant/revoke history.
-- Identity roles provide the role membership integration; permission evaluation additionally checks branch assignment, explicit grants/revocations, resource ownership, approval authority and Offline policy.
-- Customer Identity has no navigation or foreign-key path to employee roles or permissions.
+- org.Employees contains employee business data and has a unique required FK UserId to auth.Users.
+- crm.Customers contains customer business data and has a unique required FK UserId to auth.Users.
+- Every active Identity account must have exactly one matching profile according to AccountType.
+- An Employee account must not have a row in crm.Customers.
+- A Customer account must not have a row in org.Employees.
+- Enforce one-to-one uniqueness on each profile's UserId, and enforce cross-table exclusivity using a database-supported design (for example a shared account-subtype registry with a unique UserId, or an equivalent transactionally enforced constraint strategy). Do not rely only on UI validation.
+- Account creation is atomic: create the Identity user and its one matching profile in one application transaction.
+
+SQL Server CHECK constraints cannot directly validate rows in another table, so the final physical design must choose and test an enforceable cross-table invariant. A simple CHECK constraint is not sufficient.
+
+### 3.3 Roles and permissions
+
+- Keep org.Roles, org.Permissions, org.RolePermissions and org.EmployeePermissionGrants as the employee operational RBAC catalogue already defined by the organization/access design.
+- Employee role membership is available only to accounts whose AccountType is Employee.
+- Customer access is determined by AccountType = Customer and customer-specific authorization policies; customers do not receive employee operational roles.
+- If Identity role membership is mapped to org.Roles, use a custom IdentityRole<Guid> entity and explicit EF Core mapping. Do not create a duplicate employee role catalogue.
+- Authorization rejects attempts to grant an employee role to a Customer account in both the application layer and persistence workflow.
+- A role assignment cannot change AccountType; account classification and role membership are separate concepts.
 
 ### 3.4 Identity relationship tables
 
-Use explicit custom Identity entity types and Fluent API mappings for the employee Identity store. Any required user-role, user-claim, user-login, role-claim and user-token persistence tables must:
-- have a Guid surrogate primary key;
-- retain required Identity uniqueness constraints (for example normalized login/provider key and user/role membership);
-- use Guid FKs to the owning Identity user/role;
-- be mapped under the appropriate module schema;
-- be included in the final table inventory and ERD before physical implementation.
+Use explicit custom Identity entity types and Fluent API mappings. Any required user-role, user-claim, user-login, role-claim and user-token tables must:
+- have Guid surrogate primary keys, in line with the approved Guid-PK standard;
+- retain required Identity uniqueness constraints;
+- use Guid FKs to the unified user and applicable role;
+- be explicitly mapped and included in the final inventory and ERD.
 
-Customer Identity uses only the Identity tables/features it actually needs; do not create unused role/claim/login/token tables merely by convention. If external login or token persistence is enabled, document its table and retention requirements first.
+Create only the Identity features actually required. Do not add unused external-login, claim, token or role tables by convention without documenting their purpose.
 
-## 4. Authentication and token boundaries
+## 4. Authentication and authorization boundaries
 
-- Register separate employee and customer authentication schemes/audiences (for example employee API tokens and customer API tokens).
-- Employee APIs accept only employee authentication; customer APIs accept only customer authentication. A token must carry an unambiguous identity type and audience, and authorization policies must validate both.
-- Employee authorization uses roles/permissions plus branch/device/session context. Customer authorization is limited to the authenticated customer's own resources and explicitly public capabilities.
-- Employee sessions remain represented by `org.EmployeeSessions` with the required identity-user GUID reference.
-- Customer session/revocation persistence is designed separately in the CRM/security schema if required by the chosen token/session strategy; do not overload `org.EmployeeSessions`.
-- Never accept a customer token as proof of employee identity, even if the underlying user GUID happens to match a value in another table.
+- Use separate employee and customer authentication schemes and/or token audiences even though both authenticate against the same user store.
+- Employee endpoints accept only Employee accounts; customer endpoints accept only Customer accounts.
+- Tokens carry an unambiguous account type and audience. Server-side policies validate both; a client-supplied account type is never trusted.
+- Employee authorization uses employee roles/permissions plus branch, device, session and Offline context.
+- Customer authorization is limited to the authenticated customer's own resources and explicitly public capabilities.
+- Employee sessions remain represented by org.EmployeeSessions with a Guid reference to auth.Users.
+- Customer session/revocation persistence is designed according to the selected token strategy; do not overload org.EmployeeSessions.
+- Reject a token for the wrong endpoint even if it was signed by the same issuer.
 
 ## 5. Central and Branch persistence boundary
 
-- Identity credential stores are Central-only. Branch databases must not contain employee or customer password hashes, Identity security stamps, refresh-token secrets or reusable central credentials.
-- Branch local authentication must use a dedicated Offline credential-verification design, not a copy of the central Identity user row.
-- The Branch authorization snapshot may contain only the minimum employee identifier, active status, allowed branch assignments, role/permission snapshot, device context and policy/version/expiry data needed for local authorization.
-- Offline credential-verifier material must be separately protected, purpose-built, revocable, time-bounded and excluded from ordinary synchronization payloads/logs. Its cryptographic construction and at-rest protection require a focused threat review before implementation.
-- Customer login and customer account recovery remain Central-only.
+- The unified Identity credential store is Central-only.
+- Branch databases must not contain employee or customer password hashes, Identity security stamps, refresh-token secrets or reusable central credentials.
+- Branch local employee authentication uses a dedicated Offline credential-verification design, not a copy of the central Identity user row.
+- Branch authorization snapshots contain only the minimum approved employee identifier, active status, allowed branch assignments, role/permission snapshot, device context and policy/version/expiry data.
+- Customer login and account recovery remain Central-only.
+- Offline verifier material remains separately protected, purpose-built, revocable and time-bounded; its cryptographic construction and at-rest protection require a focused threat review before implementation.
 
 ## 6. ASP.NET Core Identity implementation constraints
 
-1. Use Guid generic Identity types throughout; never use the default string or integer key configuration.
-2. Replace default composite-key Identity join entities with custom entities having Guid surrogate PKs, preserving unique indexes on their natural key combinations.
-3. Explicitly map table/schema/column names and constraint/index names; no convention-generated production schema.
-4. Keep Identity EF Core mappings in `Central.Infrastructure`; Domain and Application do not reference EF Core or Identity persistence types.
-5. Use Identity managers behind Application ports/use cases; controllers must not call DbContext or manipulate password hashes directly.
-6. Password hashing uses the supported ASP.NET Core Identity password hasher; no custom password cryptography.
-7. Password reset, phone verification, lockout, credential rotation and revocation are audited and centrally governed.
-8. Do not persist bearer tokens or refresh tokens in plaintext. Select a revocable token/session design before implementation.
+1. Use Guid generic Identity types throughout.
+2. Use custom Identity relationship entities with Guid surrogate PKs where required, preserving natural-key uniqueness.
+3. Explicitly map table/schema/column names, constraints and indexes.
+4. Keep Identity EF Core mappings in Central.Infrastructure; Domain and Application do not reference EF Core persistence types.
+5. Use Identity managers behind Application use cases/ports; controllers do not manipulate password hashes directly.
+6. Use the supported ASP.NET Core Identity password hasher; do not implement custom password cryptography.
+7. Audit password reset, phone verification, lockout, credential rotation, account-type lifecycle operations and revocation.
+8. Do not persist bearer or refresh tokens in plaintext.
 9. Seed stable employee roles and permissions idempotently; never seed production user passwords or hard-coded credentials.
-10. All user/role/session/claim/token identifiers and references remain Guid/uniqueidentifier.
+10. Enforce account-type compatibility for every employee role assignment and every employee/customer endpoint.
 
 ## 7. Required schema follow-up
 
-Before generating entities or migrations, update the logical inventory/ERD to include:
-- employee Identity user table and its one-to-one relationship to `org.Employees`;
-- customer Identity user table and its one-to-one relationship to `crm.Customers`;
-- employee Identity role mapping to `org.Roles`;
+Before generating entities or migrations, update the logical inventory and ERDs to include:
+- one unified auth.Users Identity table with AccountType;
+- one-to-one employee and customer profile relationships;
+- the enforceable database design for cross-profile exclusivity;
+- employee role membership mapped to the existing org.Roles catalogue;
 - only the required custom Identity relationship tables with Guid PKs;
-- customer session/revocation table only if required by the selected session/token strategy;
-- a separate protected Offline credential-verifier store only after its threat model and data lifecycle are approved.
+- session/revocation persistence only where required by the selected token strategy;
+- a separate protected Offline credential-verifier store only after its threat model and lifecycle are approved.
 
-Do not treat framework-generated Identity schema as invisible infrastructure; every physical table must be inventoried, owned, reviewed and migrated explicitly.
+Every physical table must be inventoried, owned, reviewed and migrated explicitly.
 
 ## 8. Acceptance tests
 
-- Customer token is rejected by every employee/branch administration endpoint.
-- Employee token is rejected by customer-only endpoints unless an explicitly authorized employee workflow is defined.
-- Employee user maps to exactly one employee profile; customer user maps to exactly one customer profile.
-- Customer cannot receive employee role membership.
-- Role/permission revocation is enforced centrally and propagated according to the approved Offline policy.
-- Branch DB contains no central password hashes, Identity security stamps or reusable refresh/access tokens.
+- An account can be created as Employee or Customer, never both.
+- An Employee account has exactly one org.Employees profile and no crm.Customers profile.
+- A Customer account has exactly one crm.Customers profile and no org.Employees profile.
+- Concurrent or direct persistence attempts cannot attach both profiles to one user.
+- Customer accounts cannot receive employee role membership.
+- Employee token is rejected by customer-only endpoints; customer token is rejected by employee/branch endpoints.
+- Employee user can have only employee-compatible roles; account type cannot be changed by role assignment.
+- Branch DB contains no central password hashes, Identity security stamps or reusable central tokens.
 - Expired Offline credential material is rejected and cannot be extended locally.
 - Every Identity table has a Guid PK and all FKs use uniqueidentifier.
-- Identity migrations preserve the single `org.Roles` catalogue and do not create a duplicate role table.
-- Account disablement and credential/session revocation are audited.
+- Identity mapping reuses the approved org.Roles catalogue without creating a duplicate role table.
+- Account disablement, role changes and account-type lifecycle operations are audited.
 
 ## 9. Explicitly deferred
 
-This proposal does not select:
+This document does not select:
 - JWT versus cookie/session token format;
 - access/refresh token lifetime and revocation implementation;
 - MFA policy/provider;
 - Offline verifier cryptographic construction, key protection and exact local table fields;
 - SMS/OTP delivery provider;
 - external social login;
-- detailed customer session retention.
+- detailed customer session retention;
+- final SQL Server enforcement mechanism for cross-table profile exclusivity (to be selected and tested during physical schema reconciliation).
 
-These remain focused security/integration decisions and must not be guessed during initial project scaffolding.
+These must be resolved before implementation; do not guess during project scaffolding.
 
 ## 10. Approval boundary
 
-Approval of TD-29 accepts the recommended Identity persistence boundary and employee/customer separation. It does not authorize generating Identity tables, EF Core entities, DDL or migrations. The logical inventory and ERD must first be updated and approved, then the implementation can be built and tested.
+This revision records the proposed unified account model and the owner's requirement that one account cannot be both an employee and a customer. It does not authorize generating Identity tables, EF Core entities, DDL or migrations. The logical inventory and ERD must first be updated and approved, then implementation can be built and tested.
