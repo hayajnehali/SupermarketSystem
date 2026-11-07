@@ -53,7 +53,7 @@
 | Column | SQL Server type | Null | Rule |
 |---|---|---:|---|
 | CustomerPhoneVerificationId | uniqueidentifier | No | PK; sequential Guid |
-| CustomerId | uniqueidentifier | Yes | FK → Customers; nullable only before customer row is finalized |
+| CustomerId | uniqueidentifier | No | FK → Customers; verification belongs to a pending customer account |
 | PhoneNumber | nvarchar(32) | No | Normalized target phone |
 | OtpHash | varbinary(64) | No | One-way verifier; never plaintext OTP |
 | ProviderReference | nvarchar(150) | Yes | OTP delivery provider reference |
@@ -205,7 +205,7 @@ Status transitions are append-only. Payment status is never encoded as an OrderS
 | ReleasedAtUtc | datetime2(3) | Yes | UTC |
 | ReleaseReason | tinyint | Yes | PaymentExpired / Cancelled / FulfillmentConsumed / CentralDecision |
 | BranchStockReservationId | uniqueidentifier | Yes | Branch stock reservation GUID; no cross-db FK |
-| OperationId | uniqueidentifier | No | Idempotency key |
+| OperationId | uniqueidentifier | No | Idempotency key; unique within the LoyaltyPointTransactions authority |
 | RowVersion | rowversion | No | Concurrency token |
 
 **Constraints**
@@ -527,7 +527,7 @@ Cancellation before preparation requires Central approval. Cancellation after pr
 
 **Constraints and rules**
 - Unique EarnTransactionId on LoyaltyPointLots.
-- Unique OperationId on LoyaltyPointLotAllocations.
+- Unique LoyaltyPointTransactionId + LoyaltyPointLotId + AllocationType on LoyaltyPointLotAllocations; idempotency is enforced by the parent LoyaltyPointTransactions.OperationId.
 - Customer → LoyaltyAccount is 1:0..1.
 - Account → PointTransactions is 1:N.
 - Earn transaction creates one point lot with expiry based on the rule version used.
