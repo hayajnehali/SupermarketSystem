@@ -35,6 +35,8 @@
 | [TD-25 — Module-Level ERD Package](25-module-level-erd-package.md) | Module-by-module Mermaid ERDs for organization, catalog, procurement, inventory, pricing, POS, payments, online/CRM/fulfillment and operations | Proposed for owner review |
 | [TD-26 — SQL Server Physical Schema Standards](26-sql-server-physical-schema-standards.md) | SQL Server 2025 data types, Guid keys, constraints, indexes, concurrency, EF Core 10 mappings and migration standards | Proposed for owner review |
 
+| [TD-27 — Clean Architecture and Pragmatic DDD](27-clean-architecture-and-pragmatic-ddd.md) | Dependency direction, Domain/Application/Infrastructure/hosts, pragmatic DDD, project boundaries and testing rules | Proposed for owner approval |
+
 ## Reviews
 
 - [Comprehensive Technical Design Review — 2026-11-06](reviews/2026-11-06-comprehensive-technical-design-review.md) — cross-document consistency, unresolved design risks, approval status and readiness actions.
