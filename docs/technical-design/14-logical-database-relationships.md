@@ -191,7 +191,7 @@ A completed POS sale, inventory movement, payment allocations and Outbox message
 | `crm.Customers` | `online.Orders` | 1:N | Central FK. |
 | `online.Orders` | `online.OrderLines` | 1:N | Central FK; immutable confirmed snapshots. |
 | `online.Orders` | `online.OrderStatusHistory` | 1:N | Central append-only status transitions. |
-| `online.Orders` | `online.OrderReservations` | 1:N | Central reservation/payment lifecycle; the 15-minute reservation and late-payment rules remain as approved. |
+| `online.Orders` | `online.OrderReservations` | 1:1 | One 15-minute reservation per confirmed checkout; late-payment lifecycle is retained in status/payment events. |
 | `online.OrderReservations` | `inventory.StockReservations` | 1:N logical cross-site relationship | Central reservation and Branch stock reservation are correlated by GUID; Branch acceptance is authoritative for physical stock. |
 | `online.Orders` | `online.OrderDeliveryDetails` | 1:1 or 0..1:1 | One delivery/pickup destination detail set per order when applicable; city/area references are central. |
 | `online.DeliveryCities` | `online.DeliveryAreas` | 1:N | Central FK. |
