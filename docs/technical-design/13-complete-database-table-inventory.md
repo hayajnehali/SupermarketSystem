@@ -227,6 +227,7 @@ Do not introduce accounts receivable, customer debt, credit balances or a genera
 | `online.DeliveryCities` | C | Centrally managed city reference data. |
 | `online.DeliveryAreas` | C | Areas/regions belonging to a city. |
 | `online.DeliveryFeeRules` | C | Central delivery fee by area and approved free-delivery conditions. |
+| `online.FreeDeliveryRules` | C | Centrally managed free-delivery offers/conditions and effective periods. |
 | `online.StorePolicies` | C | Central website policies such as minimum order amount and effective configuration version. |
 | `online.OrderCancellationRequests` | C | Customer cancellation request before preparation, routed for central approval. |
 | `online.OrderCancellationDecisions` | C | Central approve/reject decision with actor, time and reason. |
