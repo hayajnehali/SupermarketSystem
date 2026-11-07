@@ -32,6 +32,7 @@
 | [TD-22 — Online, Customer, Loyalty and Fulfillment Detailed Schema](22-online-crm-fulfillment-detailed-schema.md) | Table-level specification for customers, carts/orders, reservations, delivery, loyalty, complaints, picking, failed delivery, disputes and pickup retention | Proposed for owner review |
 | [TD-23 — Operations, Maintenance, Alerts, Audit and Reporting](23-operations-maintenance-alerts-audit-reporting-schema.md) | Table-level specification for expense approvals, cash deposits, maintenance, alert workflows, audit/security history and Central reports | Proposed for owner review |
 | [TD-24 — Comprehensive Database Schema Consistency Review](24-comprehensive-database-schema-consistency-review.md) | Cross-document verification of table inventory, ownership, Guid PKs, FK boundaries, ERD baseline and remaining technical gates | Proposed for owner review |
+| [TD-25 — Module-Level ERD Package](25-module-level-erd-package.md) | Module-by-module Mermaid ERDs for organization, catalog, procurement, inventory, pricing, POS, payments, online/CRM/fulfillment and operations | Proposed for owner review |
 
 ## Reviews
 
