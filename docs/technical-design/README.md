@@ -33,6 +33,7 @@
 | [TD-23 — Operations, Maintenance, Alerts, Audit and Reporting](23-operations-maintenance-alerts-audit-reporting-schema.md) | Table-level specification for expense approvals, cash deposits, maintenance, alert workflows, audit/security history and Central reports | Proposed for owner review |
 | [TD-24 — Comprehensive Database Schema Consistency Review](24-comprehensive-database-schema-consistency-review.md) | Cross-document verification of table inventory, ownership, Guid PKs, FK boundaries, ERD baseline and remaining technical gates | Proposed for owner review |
 | [TD-25 — Module-Level ERD Package](25-module-level-erd-package.md) | Module-by-module Mermaid ERDs for organization, catalog, procurement, inventory, pricing, POS, payments, online/CRM/fulfillment and operations | Proposed for owner review |
+| [TD-26 — SQL Server Physical Schema Standards](26-sql-server-physical-schema-standards.md) | SQL Server 2025 data types, Guid keys, constraints, indexes, concurrency, EF Core 10 mappings and migration standards | Proposed for owner review |
 
 ## Reviews
 
@@ -40,11 +41,11 @@
 
 ## Next design sequence
 
-1. Publish a complete database inventory derived from the approved BRS, module map, and data-ownership rules.
-2. Assign every proposed table to Central DB, each Branch DB, or both; identify replicated projections separately from authoritative data.
-3. Define primary keys (`Guid` only), foreign keys, unique constraints, check constraints, and cross-module ownership boundaries.
-4. Review the complete entity relationship map for omissions, duplication, cycles, and cross-database FK violations.
-5. Design table groups in dependency order, beginning with organization/access and product catalog, then inventory, pricing, procurement, POS/sales, payments, online orders/fulfillment, loyalty, audit, and reporting.
-6. Only after logical schema approval, produce SQL physical details and EF Core entity/configuration designs, then migrations and integration tests.
+1. Review and approve the complete logical schema package TD-13–TD-25, including the inventory, ownership map, relationships and module ERDs.
+2. Resolve the implementation-impacting technical gates recorded in TD-24 (identity mapping, provider topology, Offline usage limits, rounding, concurrency and retention).
+3. Review/approve the physical SQL Server and EF Core standards in TD-26.
+4. Finalize physical mappings module by module, starting with Organization/Access, then Catalog/Pricing, Procurement/Inventory, POS/Payments, Online/CRM/Fulfillment and Operations.
+5. Produce Central/Branch EF Core configurations and separate migration plans.
+6. Generate SQL migrations/scripts only after the physical schema is approved; validate with integration, concurrency, backup and recovery tests.
 
-TD-10 through TD-12 are synchronization infrastructure design documents; they do not represent the complete supermarket database. No application migrations should be generated before the complete logical schema is approved.
+TD-12 covers only the five durable synchronization infrastructure tables; it is not the complete supermarket database. No production SQL tables or migrations have been created by the design documents.
