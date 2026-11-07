@@ -24,6 +24,7 @@
 | [TD-14 — Logical Database Relationships](14-logical-database-relationships.md) | Conceptual parent/child cardinalities, local FK boundaries, cross-site correlations and transaction boundaries | Proposed for owner review |
 | [TD-15 — Organization and Access Detailed Schema](15-organization-access-detailed-schema.md) | First table-level specification for branches, employees, assignments, RBAC, devices and branch access snapshots | Proposed for owner review |
 | [TD-16 — Product Catalog Detailed Schema](16-product-catalog-detailed-schema.md) | Table-level specification for products, categories, brands, barcodes, selling units, conversions, composites, attributes and media | Proposed for owner review |
+| [TD-17 — Supplier and Procurement Detailed Schema](17-procurement-detailed-schema.md) | Table-level specification for suppliers, requests, purchase orders, receiving, supplier invoices, three-way matching, payments and returns | Proposed for owner review |
 
 ## Reviews
 
