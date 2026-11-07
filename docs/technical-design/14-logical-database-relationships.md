@@ -137,6 +137,8 @@ ASP.NET Core Identity framework tables (such as user-role joins) are implementat
 | `pricing.PriceVersions` | `pricing.BranchPricingSnapshots` | 1:N logical publication | Branch records the last applied price/promotion version and hash; no cross-database FK. |
 | `catalog.Products` | `pricing.ProductPrices` | 1:N | Central product price history; branch consumes approved versioned projection. |
 | `catalog.ProductUnits` | `pricing.ProductPrices` | 1:N | Each price applies to a specific approved selling unit; price rows are versioned by effective period. |
+| `pricing.PromotionVersions` | `pricing.Promotions` | 1:N | Central publication version containing approved promotion definitions. |
+| `pricing.PromotionVersions` | `pricing.BranchPricingSnapshots` | 1:N logical publication | Branch records last applied promotion publication version; no cross-db FK. |
 | `pricing.Promotions` | `pricing.PromotionConditions` | 1:N | Central promotion definition. |
 | `pricing.Promotions` | `pricing.PromotionRewards` | 1:N | Central promotion effects. |
 | `pricing.Coupons` | `pricing.CouponRedemptions` | 1:N | Central coupon usage authority; branch Offline event may be pending synchronization if permitted. |
