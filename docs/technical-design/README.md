@@ -26,20 +26,17 @@
 | [TD-16 — Product Catalog Detailed Schema](16-product-catalog-detailed-schema.md) | Table-level specification for products, categories, brands, barcodes, selling units, conversions, composites, attributes and media | Proposed for owner review |
 | [TD-17 — Supplier and Procurement Detailed Schema](17-procurement-detailed-schema.md) | Table-level specification for suppliers, requests, purchase orders, receiving, supplier invoices, three-way matching, payments and returns | Proposed for owner review |
 | [TD-18 — Inventory and Stock Detailed Schema](18-inventory-stock-detailed-schema.md) | Table-level specification for branch stock ledger, batches, balances, reservations, stocktaking, transfers, quarantine and disposal | Proposed for owner review |
-| [TD-19 — Pricing, Promotions and Coupons Detailed Schema](19-pricing-promotions-detailed-schema.md) | Table-level specification for unit prices, price/promotion versions, promotions, conditions, rewards, coupons and redemption limits | Proposed for owner review |
-| [TD-20 — POS, Sales, Returns and Exchanges Detailed Schema](20-pos-sales-returns-detailed-schema.md) | Table-level specification for shifts, drawers, suspended carts, invoices, batch issues, cancellation, returns, inspection and exchanges | Proposed for owner review |
+| [TD-19 — Pricing, Promotions and Coupons Detailed Schema](19-pricing-promotions-coupons-detailed-schema.md) | Table-level specification for unit prices, price/promotion versions, promotions, conditions, rewards, coupons and redemption limits | Proposed for owner review |
+| [TD-20 — POS, Sales, Returns and Exchanges Detailed Schema](20-pos-sales-returns-exchanges-detailed-schema.md) | Table-level specification for shifts, drawers, suspended carts, invoices, batch issues, cancellation, returns, inspection and exchanges | Proposed for owner review |
 | [TD-21 — Payments and Refunds Detailed Schema](21-payments-refunds-detailed-schema.md) | Table-level specification for providers, payment methods/transactions, attempts, trusted events, refunds, exceptions and reconciliation | Proposed for owner review |
 | [TD-22 — Online, Customer, Loyalty and Fulfillment Detailed Schema](22-online-crm-fulfillment-detailed-schema.md) | Table-level specification for customers, carts/orders, reservations, delivery, loyalty, complaints, picking, failed delivery, disputes and pickup retention | Proposed for owner review |
 | [TD-23 — Operations, Maintenance, Alerts, Audit and Reporting](23-operations-maintenance-alerts-audit-reporting-schema.md) | Table-level specification for expense approvals, cash deposits, maintenance, alert workflows, audit/security history and Central reports | Proposed for owner review |
 | [TD-24 — Comprehensive Database Schema Consistency Review](24-comprehensive-database-schema-consistency-review.md) | Cross-document verification of table inventory, ownership, Guid PKs, FK boundaries, ERD baseline and remaining technical gates | Proposed for owner review |
 | [TD-25 — Module-Level ERD Package](25-module-level-erd-package.md) | Module-by-module Mermaid ERDs for organization, catalog, procurement, inventory, pricing, POS, payments, online/CRM/fulfillment and operations | Proposed for owner review |
 | [TD-26 — SQL Server Physical Schema Standards](26-sql-server-physical-schema-standards.md) | SQL Server 2025 data types, Guid keys, constraints, indexes, concurrency, EF Core 10 mappings and migration standards | Proposed for owner review |
-
 | [TD-27 — Clean Architecture and Pragmatic DDD](27-clean-architecture-and-pragmatic-ddd.md) | Dependency direction, Domain/Application/Infrastructure/hosts, pragmatic DDD, project boundaries and testing rules | Proposed for owner approval |
-
 | [TD-28 — Solution and Project Structure Blueprint](28-solution-project-structure-blueprint.md) | Exact .NET solution layout, Central/Branch project responsibilities, module folders, dependency rules, EF Core and test boundaries | Proposed for owner approval |
-
-| [TD-29 — Identity Persistence and Employee/Customer Separation](29-identity-persistence-and-separation.md) | ASP.NET Core Identity Guid mapping, separate employee/customer stores and schemes, role integration, Central-only credentials and Offline boundary | Proposed for owner approval |
+| [TD-29 — Unified Identity Account Model](29-identity-persistence-and-separation.md) | One ASP.NET Core Identity user store; exclusive Employee/Customer account type; separate business profiles; role and Offline boundaries | Revised for owner review |
 
 ## Reviews
 
