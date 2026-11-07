@@ -153,13 +153,16 @@ The following is the complete first-pass inventory derived from the BRS units 01
 
 | Candidate table | Placement | Purpose / notes |
 |---|---|---|
-| `pricing.PriceVersions` | C | Versioned price publication/effective periods. |
+| `pricing.PriceVersions` | C; B approved version projection | Versioned price publication/effective periods. |
+| `pricing.BranchPricingSnapshots` | B | Last successfully applied approved price/promotion publication version and payload hash. |
 | `pricing.ProductPrices` | C; B approved price projection | Centrally approved prices by product and selling unit, with effective dates. |
+| `pricing.PromotionVersions` | C; B approved version projection | Centrally published promotion/coupon configuration versions. |
 | `pricing.Promotions` | C; B approved promotion projection | Promotion definitions, validity and status. |
 | `pricing.PromotionConditions` | C; B projection | Eligibility/condition rules. |
 | `pricing.PromotionRewards` | C; B projection | Discount/reward effects and calculation inputs. |
 | `pricing.Coupons` | C; B projection only if required for local validation | Centrally managed coupon codes/rules. |
-| `pricing.CouponRedemptions` | C authoritative; B durable local event only when Offline redemption is permitted | Redemption use and idempotency linkage. |
+| `pricing.CouponRedemptions` | C authoritative; B durable local event only when Offline redemption is permitted | Coupon redemption use and idempotency linkage. |
+| `pricing.PromotionRedemptions` | C authoritative; B durable local event/projection | Tracks promotion use and customer/order limits across POS and online orders. |
 
 Branch pricing data is an approved versioned snapshot. Expired promotions stop applying; the last approved base price remains the fallback under the approved Offline rule. Historical invoice snapshots are immutable.
 

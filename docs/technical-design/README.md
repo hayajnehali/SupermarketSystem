@@ -26,6 +26,7 @@
 | [TD-16 — Product Catalog Detailed Schema](16-product-catalog-detailed-schema.md) | Table-level specification for products, categories, brands, barcodes, selling units, conversions, composites, attributes and media | Proposed for owner review |
 | [TD-17 — Supplier and Procurement Detailed Schema](17-procurement-detailed-schema.md) | Table-level specification for suppliers, requests, purchase orders, receiving, supplier invoices, three-way matching, payments and returns | Proposed for owner review |
 | [TD-18 — Inventory and Stock Detailed Schema](18-inventory-stock-detailed-schema.md) | Table-level specification for branch stock ledger, batches, balances, reservations, stocktaking, transfers, quarantine and disposal | Proposed for owner review |
+| [TD-19 — Pricing, Promotions and Coupons Detailed Schema](19-pricing-promotions-detailed-schema.md) | Table-level specification for unit prices, price/promotion versions, promotions, conditions, rewards, coupons and redemption limits | Proposed for owner review |
 
 ## Reviews
 
