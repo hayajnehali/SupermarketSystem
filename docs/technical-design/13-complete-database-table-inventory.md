@@ -156,6 +156,7 @@ The following is the complete first-pass inventory derived from the BRS units 01
 | `pricing.PriceVersions` | C; B approved version projection | Versioned price publication/effective periods. |
 | `pricing.BranchPricingSnapshots` | B | Last successfully applied approved price/promotion publication version and payload hash. |
 | `pricing.ProductPrices` | C; B approved price projection | Centrally approved prices by product and selling unit, with effective dates. |
+| `pricing.PromotionVersions` | C; B approved version projection | Centrally published promotion/coupon configuration versions. |
 | `pricing.Promotions` | C; B approved promotion projection | Promotion definitions, validity and status. |
 | `pricing.PromotionConditions` | C; B projection | Eligibility/condition rules. |
 | `pricing.PromotionRewards` | C; B projection | Discount/reward effects and calculation inputs. |
