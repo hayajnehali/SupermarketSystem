@@ -134,11 +134,13 @@ ASP.NET Core Identity framework tables (such as user-role joins) are implementat
 | Parent | Child / relationship | Cardinality | Boundary and notes |
 |---|---|---|---|
 | `pricing.PriceVersions` | `pricing.ProductPrices` | 1:N | Central version publication. |
+| `pricing.PriceVersions` | `pricing.BranchPricingSnapshots` | 1:N logical publication | Branch records the last applied price/promotion version and hash; no cross-database FK. |
 | `catalog.Products` | `pricing.ProductPrices` | 1:N | Central product price history; branch consumes approved versioned projection. |
 | `catalog.ProductUnits` | `pricing.ProductPrices` | 1:N | Each price applies to a specific approved selling unit; price rows are versioned by effective period. |
 | `pricing.Promotions` | `pricing.PromotionConditions` | 1:N | Central promotion definition. |
 | `pricing.Promotions` | `pricing.PromotionRewards` | 1:N | Central promotion effects. |
 | `pricing.Coupons` | `pricing.CouponRedemptions` | 1:N | Central coupon usage authority; branch Offline event may be pending synchronization if permitted. |
+| `pricing.Promotions` | `pricing.PromotionRedemptions` | 1:N | Records actual promotion applications for usage limits and history. |
 | `crm.Customers` / `online.Orders` | `pricing.CouponRedemptions` | 1:N logical references | Customer/order references are same-DB Central; branch event references are correlated without cross-db FKs. |
 
 ## 7. POS sales, returns, payments and cash shifts
