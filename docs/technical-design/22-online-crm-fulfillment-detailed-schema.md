@@ -86,7 +86,7 @@
 
 **Constraints**
 - DuplicateCustomerId must differ from CanonicalCustomerId.
-- A duplicate customer can be merged into only one canonical customer; enforce unique DuplicateCustomerId.
+- A duplicate customer can be merged into only one canonical customer; enforce unique DuplicateCustomerId and prohibit merge cycles.
 - No physical deletion or destructive rewrite of historical order/payment/loyalty references. A resolution preserves both identities and records a canonical lookup/merge mapping.
 - Central-only operation; all affected customer profile/loyalty links are updated through an audited, transaction-safe process.
 
@@ -209,7 +209,7 @@ Status transitions are append-only. Payment status is never encoded as an OrderS
 | RowVersion | rowversion | No | Concurrency token |
 
 **Constraints**
-- Order → Reservation is 1:N only for reservation lifecycle history; at most one active reservation per order.
+- Order → OrderReservation is 1:1; unique OrderId prevents duplicate reservations for the same checkout. Reservation lifecycle changes are retained in OrderStatusHistory and synchronization events.
 - The 15-minute deadline is centrally calculated. Branch does not independently extend the deadline.
 - If payment is not confirmed by expiry, Central cancels the order and sends an idempotent release command.
 - If payment is confirmed in time, the order proceeds to fulfillment; the 15-minute deadline no longer cancels it.
@@ -801,7 +801,6 @@ Delivery confirmation is manual. No OTP or electronic signature is required.
 |---|---|---:|---|
 | PickupRetentionPolicyId | uniqueidentifier | No | PK; sequential Guid |
 | Version | bigint | No | Monotonic policy version |
-| RetentionDuration | time | No | Approved retention duration representation; use a duration unit/value pair if longer than one day |
 | RetentionDurationValue | int | No | Positive duration value |
 | RetentionDurationUnit | tinyint | No | Hours / Days |
 | EffectiveFromUtc | datetime2(3) | No | UTC |
