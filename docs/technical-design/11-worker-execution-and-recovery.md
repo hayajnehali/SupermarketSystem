@@ -1,7 +1,7 @@
 # TD-11 — Worker Execution and Recovery Model
 
 **Version:** 0.1  
-**Status:** Proposed for owner review  
+**Status:** Approved by owner (2026-11-06)  
 **Scope:** Runtime behavior for Central.Worker and Branch.Worker when polling, claiming, processing, acknowledging, retrying, and recovering durable work.  
 **Depends on:** TD-05, TD-09, and the proposed logical data model in TD-10.
 
