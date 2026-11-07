@@ -82,6 +82,7 @@ The following is the complete first-pass inventory derived from the BRS units 01
 | `procurement.SupplierProductPrices` | C | Supplier-specific purchase price history/effective values; actual received batch cost remains on the inventory batch. |
 | `procurement.PurchaseRequests` | C authoritative workflow; B request origin/projection | Branch needs request and central review/decision. |
 | `procurement.PurchaseRequestLines` | Same as parent | Requested products and quantities. |
+| `procurement.PurchaseRequestDecisions` | C | Central approve/reject/adjust/return-for-correction decisions with actor, reason and time. |
 | `procurement.PurchaseOrders` | C | Centrally created/approved supplier purchase orders. |
 | `procurement.PurchaseOrderLines` | C | Ordered products, quantities, prices and terms. |
 | `procurement.PurchaseReceipts` | B execution record; C synchronized projection | Full/partial receiving and exceptional receiving evidence. |
