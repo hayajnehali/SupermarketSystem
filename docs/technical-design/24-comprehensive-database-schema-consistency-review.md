@@ -100,6 +100,7 @@ flowchart LR
     FC["Fulfillment Control"]
     OPS["Expenses and Maintenance"]
     CTRL["Alerts, Audit, Security and Reports"]
+    CSYNC["Central APIs and Workers"]
   end
 
   subgraph B["Each Branch Database"]
