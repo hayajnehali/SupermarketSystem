@@ -153,15 +153,23 @@ ASP.NET Core Identity framework tables (such as user-role joins) are implementat
 |---|---|---|---|
 | `sales.CashierShifts` | `sales.SalesInvoices` | 1:N | Branch-local FK; each invoice belongs to the active shift that created it. |
 | `sales.SalesInvoices` | `sales.SalesInvoiceLines` | 1:N | Branch-local FK; invoice line snapshots product/unit/price/discount. |
+| `sales.SalesInvoices` / `sales.SalesInvoiceLines` | `sales.SalesInvoiceDiscounts` | 1:N logical reference | Detailed discount components retained in the invoice snapshot. |
+| `sales.SalesInvoices` | `sales.InvoiceCancellationRequests` | 0..N | Paid invoice cancellation requires a Central decision; unpaid pre-payment cancellation follows permissions. |
+| `sales.InvoiceCancellationRequests` | `sales.InvoiceCancellationDecisions` | 1:N | Central approve/reject history. |
 | `sales.SalesInvoiceLines` | `sales.SalesInvoiceBatchIssues` | 1:N | Exact batch costs and quantities issued to each sold line. |
 | `sales.SalesInvoiceLines` | `sales.CompositeSaleComponentIssues` | 0..N | Only for composite products; each component consumption references its batch. |
 | `sales.CashierShifts` | `sales.CashDrawerTransactions` | 1:N | Branch-local FK. |
+| `sales.CashierShifts` | `sales.CashDrawerReconciliations` | 1:0..1 | One closing reconciliation per shift; expected/counted difference is immutable after close. |
+| `sales.SuspendedSales` | `sales.SuspendedSaleLines` | 1:N | Branch-local suspended cart; not an invoice and does not commit stock/payment. |
 | `sales.SalesInvoices` | `sales.SalePaymentAllocations` | 1:N | Split tender rows; confirmed total must equal full invoice amount. |
 | `payments.PaymentTransactions` | `payments.PaymentAttempts` | 1:N | Payment attempt history is independent from invoice/order status. |
 | `payments.PaymentMethods` | `sales.SalePaymentAllocations` | 1:N logical reference | Central payment-method configuration is projected to Branch; no cross-db FK if not copied as a local table. |
 | `sales.SalesInvoices` | `sales.SalesReturns` | 1:N | Normal returns require original invoice. No-invoice exception is centrally referred and approved. |
 | `sales.SalesReturns` | `sales.SalesReturnLines` | 1:N | Return header and returned quantities. |
 | `sales.SalesInvoiceLines` | `sales.SalesReturnLines` | 1:N | Each return line references original sold line; cumulative returned quantity/weight cannot exceed eligible sold quantity. |
+| `sales.SalesInvoiceBatchIssues` | `sales.SalesReturnBatchAllocations` | 1:N | Returned quantities trace to original batch issue and cost. |
+| `sales.SalesReturnLines` | `sales.SalesReturnBatchAllocations` | 1:N | A return line may span multiple original batch issues. |
+| `sales.SalesReturns` | `sales.SalesReturnExceptionDecisions` | 0..N | Central decision is required when no original invoice is available. |
 | `sales.SalesReturnLines` | `sales.SalesReturnInspections` | 1:N | Inspection history and responsible authorized employee. |
 | `sales.SalesReturnLines` | `sales.SalesReturnDispositions` | 1:N | Return-to-stock, quarantine or other approved disposition. |
 | `sales.SalesReturns` | `payments.Refunds` | 0..N | A return can have no refund, one refund, or multiple partial refund records; cumulative successful refund cannot exceed amount paid. |
