@@ -49,7 +49,7 @@ ASP.NET Core Identity framework tables (such as user-role joins) are implementat
 | `catalog.Products` | `catalog.ProductAttributes` | 1:N | Structured product attribute values. |
 | `catalog.Products` | `catalog.ProductMedia` | 1:N | Media metadata; binary content remains in managed file/object storage. |
 | `catalog.ProductRequests` | `catalog.ProductRequestLines` | 1:N | Branch request origin, Central approval authority; branch-to-central relationship uses request GUID, not FK. |
-| `catalog.ProductRequests` | Central decision record | 1:N | Decision history is owned centrally; if repeated decisions are required, represent them as append-only decisions rather than overwriting the request. |
+| `catalog.ProductRequests` | `catalog.ProductRequestDecisions` | 1:N | Central decision history: approve, reject or return for correction. |
 
 ## 4. Suppliers and procurement
 
@@ -92,6 +92,7 @@ ASP.NET Core Identity framework tables (such as user-role joins) are implementat
 | `inventory.WarehouseLocations` | `inventory.InventoryMovementLines` | 1:N | Source/destination location references remain within Branch DB. |
 | `online.OrderReservations` (Central) | `inventory.StockReservations` (Branch) | 1:N logical link | Cross-database correlation by reservation/order GUID; no SQL FK. Branch reservation acceptance is persisted before Central acknowledgement. |
 | `inventory.StockReservations` | `inventory.InventoryBatches` | N:1 or N:M via reservation allocation | If a reservation is allocated to exact batches, use a separate allocation child table; do not assume one reservation consumes one batch. |
+| `inventory.StockReservations` | `inventory.StockReservationAllocations` | 1:N | Optional exact batch allocations when required; each allocation references one local batch. |
 | `inventory.Stocktakes` | `inventory.StocktakeScopeLines` | 1:N | Central session and explicit full/partial scope. |
 | `inventory.Stocktakes` | `inventory.StocktakeAssignments` | 1:N | Central employees assigned to session/scope. |
 | `inventory.Stocktakes` | `inventory.StocktakeLines` | 1:N | Central blind count entries; expected quantity is hidden from counters. |
@@ -100,6 +101,7 @@ ASP.NET Core Identity framework tables (such as user-role joins) are implementat
 | `inventory.StocktakeVarianceCases` | `inventory.StocktakeVarianceDecisions` | 1:N | Central investigation and final adjustment approval/rejection. |
 | `inventory.Stocktakes` | `inventory.StocktakeSessionEvents` | 1:N | Start/cancel/close/freeze-release history. |
 | `inventory.Stocktakes` | `inventory.StocktakeFreezeAcknowledgements` | 1:N | Central records acknowledgement from the relevant Branch DB; freeze is applied locally for the scoped products. |
+| `inventory.Stocktakes` (via central freeze command) | `inventory.StocktakeLocks` (Branch) | 1:N logical link | Branch persists the active scoped lock locally; Central releases it only after authorized session closure/cancellation. |
 | `inventory.StockTransfers` | `inventory.StockTransferLines` | 1:N | Central request, approval and execution workflow. |
 | `inventory.StockTransfers` | `inventory.StockTransferEvents` | 1:N | Central lifecycle and command history. |
 | `inventory.StockTransfers` | `inventory.StockTransferBranchEvents` | 1:N logical link | Branch source/destination acknowledgements correlated by transfer/line GUID; no cross-database FK. |
