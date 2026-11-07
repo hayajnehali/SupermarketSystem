@@ -209,7 +209,7 @@ Status transitions are append-only. Payment status is never encoded as an OrderS
 | RowVersion | rowversion | No | Concurrency token |
 
 **Constraints**
-- Order → OrderReservation is 1:1; unique OrderId prevents duplicate reservations for the same checkout. Reservation lifecycle changes are retained in OrderStatusHistory and synchronization events.
+- Unique OrderId; one reservation per confirmed checkout. Reservation lifecycle changes are retained in OrderStatusHistory and synchronization events.
 - The 15-minute deadline is centrally calculated. Branch does not independently extend the deadline.
 - If payment is not confirmed by expiry, Central cancels the order and sends an idempotent release command.
 - If payment is confirmed in time, the order proceeds to fulfillment; the 15-minute deadline no longer cancels it.
@@ -526,6 +526,8 @@ Cancellation before preparation requires Central approval. Cancellation after pr
 | OperationId | uniqueidentifier | No | Idempotency key |
 
 **Constraints and rules**
+- Unique EarnTransactionId on LoyaltyPointLots.
+- Unique OperationId on LoyaltyPointLotAllocations.
 - Customer → LoyaltyAccount is 1:0..1.
 - Account → PointTransactions is 1:N.
 - Earn transaction creates one point lot with expiry based on the rule version used.
@@ -669,6 +671,9 @@ Cancellation before preparation requires Central approval. Cancellation after pr
 | AssignedAtUtc | datetime2(3) | No | UTC |
 | AssignmentStatus | tinyint | No | Assigned / Accepted / InProgress / Completed / Cancelled |
 | RowVersion | rowversion | No | Concurrency token |
+
+**Constraints**
+- At most one active assignment per FulfillmentTask; assignment history is preserved when coordinator or delivery employee changes.
 
 ### 10.3 `fulfillment.DeliveryAttempts` — Branch execution; Central synchronized
 
@@ -836,7 +841,8 @@ Delivery confirmation is manual. No OTP or electronic signature is required.
 | DecidedByUserId | uniqueidentifier | No | Central actor |
 | DecidedAtUtc | datetime2(3) | No | UTC |
 
-**Rules**
+**Constraints and rules**
+- Unique OrderId; one active non-collection case per paid pickup order.
 - Paid pickup orders created through a Branch are treated as completed sales if the customer does not attend.
 - Central retention duration is applied; after it expires, Central decides the next action.
 - Products are not automatically returned to stock. They must be physically inspected before any inventory disposition.
