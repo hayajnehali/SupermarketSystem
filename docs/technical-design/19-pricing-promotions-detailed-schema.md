@@ -30,6 +30,7 @@
 | `pricing.PriceVersions` | Authoritative | Approved version projection |
 | `pricing.ProductPrices` | Authoritative | Read-only approved price projection |
 | `pricing.BranchPricingSnapshots` | No | Local applied-version/hash record |
+| `pricing.PromotionVersions` | Authoritative | Approved version projection |
 | `pricing.Promotions` | Authoritative | Read-only approved promotion projection |
 | `pricing.PromotionConditions` | Authoritative | Read-only approved projection |
 | `pricing.PromotionRewards` | Authoritative | Read-only approved projection |
@@ -108,9 +109,31 @@ A Branch redemption event and its Central synchronized copy share the same GUID.
 - The active snapshot is advanced only after the full validated publication is durably applied.
 - Branch cannot change version numbers, extend validity or create a local override.
 
-## 4. Promotions
+## 4. Promotion publication and promotions
 
-### 4.1 `pricing.Promotions` — Central; approved Branch projection
+### 4.1 `pricing.PromotionVersions` — Central; approved projection to Branch
+
+| Column | SQL Server type | Null | Rule |
+|---|---|---:|---|
+| PromotionVersionId | uniqueidentifier | No | PK; sequential Guid |
+| VersionNumber | bigint | No | Monotonic Central publication version |
+| VersionStatus | tinyint | No | Draft / Approved / Published / Superseded |
+| EffectiveFromUtc | datetime2(3) | No | UTC |
+| EffectiveToUtc | datetime2(3) | Yes | Exclusive end |
+| CreatedAtUtc | datetime2(3) | No | UTC |
+| CreatedByUserId | uniqueidentifier | No | Central actor |
+| ApprovedAtUtc | datetime2(3) | Yes | UTC |
+| ApprovedByUserId | uniqueidentifier | Yes | Central approver |
+| PublishedAtUtc | datetime2(3) | Yes | UTC |
+| PayloadHash | binary(32) | Yes | SHA-256 of canonical promotion/coupon publication |
+| RowVersion | rowversion | No | Concurrency token |
+
+**Constraints and indexes**
+- Unique VersionNumber; VersionNumber > 0.
+- Published versions are immutable; corrections create a new publication version.
+- A Branch advances PromotionVersionNumber only after the complete promotion/coupon snapshot is validated and durably applied.
+
+### 4.2 `pricing.Promotions` — Central; approved Branch projection
 
 | Column | SQL Server type | Null | Rule |
 |---|---|---:|---|
@@ -146,7 +169,7 @@ A Branch redemption event and its Central synchronized copy share the same GUID.
 - The engine first evaluates eligible product-level promotions, chooses the best customer result unless explicit stacking is enabled, then evaluates basket-level promotions/coupons according to the configured combination rules.
 - The same promotion/discount identity cannot be applied twice to the same transaction line.
 
-### 4.2 `pricing.PromotionConditions` — Central; approved Branch projection
+### 4.3 `pricing.PromotionConditions` — Central; approved Branch projection
 
 | Column | SQL Server type | Null | Rule |
 |---|---|---:|---|
@@ -172,7 +195,7 @@ A Branch redemption event and its Central synchronized copy share the same GUID.
 - Product/category references are local FKs in Central; Branch projection uses local catalog IDs only where present.
 - The exact allowlisted ConditionType/Operator catalogue is a code-level contract versioned with promotion schema.
 
-### 4.3 `pricing.PromotionRewards` — Central; approved Branch projection
+### 4.4 `pricing.PromotionRewards` — Central; approved Branch projection
 
 | Column | SQL Server type | Null | Rule |
 |---|---|---:|---|
