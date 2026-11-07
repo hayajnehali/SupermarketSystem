@@ -564,9 +564,38 @@
 
 Branch-originated requests are optional inputs; Central proactively monitors thresholds and determines replenishment independently.
 
-- `StockIncreaseRequests`: Guid PK, source BranchId, requested employee, product/unit, requested quantity, reason, status and UTC timestamps. Branch origin copy is synchronized to Central using the same GUID.
-- `StockIncreaseRequestDecisions`: Guid PK, Central FK to request, approve/reject, approved quantity, reason, Central actor and decision timestamp.
-- No request or approval itself creates inventory. Stock changes only through approved receiving or transfer workflows.
+**`StockIncreaseRequests`** — Branch origin; Central review copy
+
+| Column | SQL Server type | Null | Rule |
+|---|---|---:|---|
+| StockIncreaseRequestId | uniqueidentifier | No | PK; generated at Branch and preserved centrally |
+| SourceBranchId | uniqueidentifier | No | Branch identity; Central FK only in Central copy |
+| ProductId | uniqueidentifier | No | Product GUID |
+| ProductUnitId | uniqueidentifier | No | Product unit GUID |
+| RequestedQuantity | decimal(18,3) | No | Positive requested quantity |
+| Reason | nvarchar(1000) | No | Required reason |
+| RequestedByEmployeeId | uniqueidentifier | No | Branch employee |
+| RequestedAtUtc | datetime2(3) | No | UTC |
+| RequestStatus | tinyint | No | Submitted / UnderReview / Approved / Rejected |
+| ReceivedAtCentralUtc | datetime2(3) | Yes | UTC |
+| RowVersion | rowversion | No | Concurrency token |
+
+**`StockIncreaseRequestDecisions`** — Central
+
+| Column | SQL Server type | Null | Rule |
+|---|---|---:|---|
+| StockIncreaseRequestDecisionId | uniqueidentifier | No | PK; sequential Guid |
+| StockIncreaseRequestId | uniqueidentifier | No | FK → Central StockIncreaseRequests |
+| Decision | tinyint | No | Approve / Reject / Adjust |
+| ApprovedQuantity | decimal(18,3) | Yes | Required when approved/adjusted; null when rejected |
+| Reason | nvarchar(1000) | No | Central decision reason |
+| DecidedByUserId | uniqueidentifier | No | Central actor |
+| DecidedAtUtc | datetime2(3) | No | UTC |
+
+**Constraints and rules**
+- Product/unit must be valid and compatible; RequestedQuantity > 0.
+- A decision does not create stock or a purchase order by itself.
+- Stock changes only through approved procurement receiving or transfer workflows.
 
 ## 10. Requirement traceability
 
