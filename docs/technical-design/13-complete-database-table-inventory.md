@@ -317,9 +317,8 @@ Payroll remains limited to the approved central tracking scope. It does not impl
 | `audit.SecurityEvents` | C; B security events synchronized | Sign-in anomalies, device/security events and investigations. |
 | `audit.SecurityEventReviews` | C | Central review outcome, reason and action for suspicious security events; no automatic account suspension is implied. |
 | `reporting.ReportRunRecords` | C, optional | Report request parameters, requester, time and output reference when report export/history is required. |
-| `reporting.*ReadModels` | C, derived | Authorized central reporting projections. These are derived data, not alternate operational authorities. |
 
-Reporting initially uses relational read models/projections. This inventory does not assume a separate data warehouse or analytics platform.
+Reporting initially uses relational read models/projections. These are derived query projections, not a concrete business table or alternate operational authority. This inventory does not assume a separate data warehouse or analytics platform.
 
 ### 3.13 Offline and synchronization infrastructure
 
