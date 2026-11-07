@@ -217,7 +217,7 @@
 - Acceptance, reserved-balance update and durable reservation record commit in one Branch DB transaction before Central acknowledgement.
 - POS sale validation and website reservation acceptance serialize against the same Branch stock/reservation state.
 - Reservation release/consumption is idempotent; a duplicate central command cannot release or consume twice.
-- Central 15-minute reservation/payment lifecycle remains authoritative for website checkout; Branch acceptance is authoritative for physical stock exclusion.
+- Central 15-minute reservation/payment lifecycle remains authoritative for website checkout; Branch acceptance is authoritative for physical stock exclusion. Branch must not locally release an accepted reservation merely because its own clock reaches 15 minutes; it releases only after a valid Central release/cancel/expiry command or the approved fulfillment completion event.
 
 ## 7. Central stocktaking and Branch freeze
 
@@ -391,6 +391,7 @@
 | RequestedQuantity | decimal(18,3) | No | Positive quantity |
 | ApprovedQuantity | decimal(18,3) | No | Central-approved dispatch quantity |
 | DispatchedQuantity | decimal(18,3) | Yes | Actual dispatch quantity |
+| DestinationInventoryBatchId | uniqueidentifier | Yes | Destination Branch batch GUID created on actual receipt; no cross-db FK |
 | ReceivedQuantity | decimal(18,3) | Yes | Actual destination receipt quantity |
 | UnitCostSnapshot | decimal(18,3) | No | Original source batch cost |
 | DifferenceQuantity | decimal(18,3) | Yes | Dispatched minus received |
@@ -469,17 +470,28 @@
 | InventoryBatchId | uniqueidentifier | No | FK to local batch |
 | RequestedQuantity | decimal(18,3) | No | Positive; cannot exceed quarantined available quantity |
 
-### 9.3 `inventory.InventoryDisposalDecisions` — Central
+### 9.3 `inventory.InventoryDisposalDecisions` and `InventoryDisposalDecisionLines` — Central
+
+**`InventoryDisposalDecisions`**
 
 | Column | SQL Server type | Null | Rule |
 |---|---|---:|---|
 | InventoryDisposalDecisionId | uniqueidentifier | No | PK; sequential Guid |
 | InventoryDisposalRequestId | uniqueidentifier | No | Central request GUID |
 | Decision | tinyint | No | Approve / Reject |
-| ApprovedQuantity | decimal(18,3) | Yes | Required for approval |
 | Reason | nvarchar(1000) | No | Central decision reason |
 | DecidedByUserId | uniqueidentifier | No | Central actor |
 | DecidedAtUtc | datetime2(3) | No | UTC |
+
+**`InventoryDisposalDecisionLines`**
+
+| Column | SQL Server type | Null | Rule |
+|---|---|---:|---|
+| InventoryDisposalDecisionLineId | uniqueidentifier | No | PK; sequential Guid |
+| InventoryDisposalDecisionId | uniqueidentifier | No | FK → InventoryDisposalDecisions |
+| InventoryDisposalRequestLineId | uniqueidentifier | No | Central request-line GUID |
+| ApprovedQuantity | decimal(18,3) | No | Approved quantity; zero when rejected |
+| Reason | nvarchar(500) | Yes | Optional line-specific reason |
 
 ### 9.4 `inventory.InventoryDisposals` and `InventoryDisposalLines` — Branch execution; Central synchronized evidence
 
