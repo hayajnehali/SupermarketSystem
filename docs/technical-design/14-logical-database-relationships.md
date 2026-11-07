@@ -41,6 +41,8 @@ ASP.NET Core Identity framework tables (such as user-role joins) are implementat
 | Parent | Child / relationship | Cardinality | Boundary and notes |
 |---|---|---|---|
 | `catalog.ProductCategories` | `catalog.Products` | 1:N | A product may have one assigned category unless the approved catalog rules later require multiple categorization. |
+| `catalog.Products` | `catalog.ProductBranchAvailability` | 1:N | Central FK; each row defines availability for one branch. |
+| `org.Branches` | `catalog.ProductBranchAvailability` | 1:N | Central FK; unique ProductId + BranchId. Branch consumes approved projection only. |
 | `catalog.ProductCategories` | `catalog.ProductCategories` | 1:N | Optional parent category to child category self-reference. |
 | `catalog.Brands` | `catalog.Products` | 1:N | A brand may be absent where not applicable. |
 | `catalog.Countries` | `catalog.Products` | 1:N | Country of origin is an optional reference. |
