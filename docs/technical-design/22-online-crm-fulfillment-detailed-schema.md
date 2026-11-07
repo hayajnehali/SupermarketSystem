@@ -349,7 +349,7 @@ Minimum order value is uniform across cities/areas. Confirmation is blocked belo
 
 Cancellation before preparation requires Central approval. Cancellation after preparation begins also requires a Central decision for each affected product's disposition. Products are not automatically returned to sellable stock.
 
-### 5.2 `fulfillment.FulfillmentTasks`, `FulfillmentExceptions`, `FulfillmentExceptionDecisions` and lines
+### 5.2 `fulfillment.FulfillmentTasks`, `FulfillmentExceptions`, `FulfillmentExceptionDecisions` and `FulfillmentExceptionDecisionLines`
 
 **`FulfillmentTasks`** — Central assignment; Branch assigned-work projection
 
