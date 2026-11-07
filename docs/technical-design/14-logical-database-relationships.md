@@ -196,6 +196,7 @@ A completed POS sale, inventory movement, payment allocations and Outbox message
 | `online.Orders` | `online.OrderDeliveryDetails` | 1:1 or 0..1:1 | One delivery/pickup destination detail set per order when applicable; city/area references are central. |
 | `online.DeliveryCities` | `online.DeliveryAreas` | 1:N | Central FK. |
 | `online.DeliveryAreas` | `online.DeliveryFeeRules` | 1:N | Central fee history/effective periods; a free-delivery rule is represented by the approved rule/configuration. |
+| `online.FreeDeliveryRules` | `online.DeliveryFeeRules` | 1:N logical scope | Central free-delivery conditions can apply to a fee rule/area; exact eligible transaction scope is validated centrally. |
 | `online.Orders` | `online.OrderCancellationRequests` | 0..N | Customer requests cancellation before preparation; Central decides. |
 | `online.OrderCancellationRequests` | `online.OrderCancellationDecisions` | 1:N | Central decision history. |
 | `online.OrderCancellationDecisions` | `online.OrderCancellationDecisionLines` | 1:N | Central decision for each order line and its disposition. |
