@@ -63,7 +63,7 @@ The following is the complete first-pass inventory derived from the BRS units 01
 | `catalog.Brands` | C; B read-only projection | Centrally managed product brands displayed in the catalogue. |
 | `catalog.Countries` | C; B read-only projection | Country-of-origin reference values used by product details. |
 | `catalog.ProductRequests` | B request origin; C approval authority | Branch requests for a new product or product change; central approval precedes activation. |
-| `catalog.ProductRequestLines` | Same as parent | Requested product attributes, units, barcodes and supporting details.
+| `catalog.ProductRequestLines` | Same as parent | Requested product attributes, units, barcodes and supporting details. |
 | `catalog.Products` | C; B read-only projection | Product/SKU master and centrally managed attributes. Distinct SKU for each distinct size/type. |
 | `catalog.ProductBarcodes` | C; B read-only projection | One or more barcodes per product; uniqueness enforced at the correct scope. |
 | `catalog.ProductUnits` | C; B read-only projection | Selling/base units and open-pack capability. |
@@ -111,7 +111,6 @@ The following is the complete first-pass inventory derived from the BRS units 01
 | `inventory.StocktakeFreezeAcknowledgements` | C record of B acknowledgement | Confirms the branch has frozen stock-changing operations for the session scope before counting. |
 | `inventory.StocktakeAssignments` | C | Assigned counters and scoped responsibility. |
 | `inventory.StocktakeLines` | C | Blind count entries by central counters; expected stock is hidden during entry. |
-| `inventory.StocktakeCountAssignments` | C | Assigns scope/items to central employees; multiple counters may work one session. |
 | `inventory.StocktakeRecounts` | C | Second count and any further controlled recount attempts. |
 | `inventory.StocktakeVarianceCases` | C | Individually tracked variance case per product/scope, reason and investigation. |
 | `inventory.StocktakeVarianceDecisions` | C | Central investigation result and approval/rejection of adjustment. |
@@ -125,9 +124,8 @@ The following is the complete first-pass inventory derived from the BRS units 01
 | `inventory.InventoryDisposalRequestLines` | Same as parent | Product, batch, quantity, reason and quarantine linkage. |
 | `inventory.InventoryDisposalDecisions` | C | Central approval/rejection before physical disposal. |
 | `inventory.InventoryDisposals` | B execution fact; C synchronized record | Actual disposal only after approval, including executor, date/time and evidence. |
-| `inventory.InventoryDisposalLines` | Same as parent | Actual disposed quantities and batch/cost references.
+| `inventory.InventoryDisposalLines` | Same as parent | Actual disposed quantities and batch/cost references. |
 | `inventory.ReorderPolicies` | C policy; B approved local projection | Centrally approved branch/product reorder thresholds. |
-| `inventory.StockIncreaseRequests` | B request origin; C approval workflow | Branch requests for stock increase/replenishment. |
 
 **Inventory modeling constraints:** FIFO applies to non-expiry-tracked products and FEFO to expiry-tracked products according to product policy. Batch issue details must be retained against sales and returns. A balance is a controlled projection, not a replacement for the stock movement ledger. Do not use weighted-average costing. Central employees conduct stock counts at branches; Central defines the full/partial scope, freezes the relevant stock-changing operations, controls recounts and investigates each variance. Branch stock effects from approved adjustments, transfers and disposal are applied only through authorized commands and recorded in the branch stock ledger.
 
@@ -159,7 +157,7 @@ Branch pricing data is an approved versioned snapshot. Expired promotions stop a
 | `sales.SalesReturnLines` | Same as parent | Returned product, unit, quantity/weight, original sale price/discount and original batch-cost references. |
 | `sales.SalesReturnInspections` | B execution fact; C synchronized | Inspection outcome per returned item: sellable, quarantine/review, or damaged/expired. |
 | `sales.SalesReturnDispositions` | B execution fact; C synchronized | Authorized return-to-stock or quarantine/disposal disposition; disposal remains subject to central approval. |
-| `sales.ExchangeLinks` | B authoritative; C synchronized history | Links a return to its replacement sale without merging their financial/stock records.
+| `sales.ExchangeLinks` | B authoritative; C synchronized history | Links a return to its replacement sale without merging their financial/stock records. |
 | `sales.InvoiceSequences` | B authoritative | Branch/year sequential number allocator; sequence value is not a primary key. |
 | `sales.SalePaymentAllocations` | B authoritative; C synchronized financial history | Split tender allocation against an invoice; only confirmed full payment completes a sale. |
 | `sales.InvoicePrintRecords` | B | Optional print/reprint audit; reprint never creates another invoice or stock movement. |
@@ -196,7 +194,7 @@ Do not introduce accounts receivable, customer debt, credit balances or a genera
 | `online.StorePolicies` | C | Central website policies such as minimum order amount and effective configuration version. |
 | `online.OrderCancellationRequests` | C | Customer cancellation request before preparation, routed for central approval. |
 | `online.OrderCancellationDecisions` | C | Central approve/reject decision with actor, time and reason. |
-| `online.OrderAvailabilityExceptions` | C | Branch reports item unavailable during preparation; central decides the permitted order outcome.
+
 | `online.OrderNotifications` | C | Website/email customer notification records. |
 | `online.NotificationDeliveryAttempts` | C | Delivery attempt/result history; notification failure does not change order/payment state. |
 
@@ -208,7 +206,7 @@ The 15-minute window, late-payment handling, central cancellation approval befor
 |---|---|---|
 | `fulfillment.FulfillmentTasks` | C authoritative assignment; B assigned-work projection | Work item for the selected branch/order. |
 | `fulfillment.FulfillmentExceptions` | B execution fact; C decision authority | Picking shortages/unavailability and related evidence reported to Central. |
-| `fulfillment.FulfillmentExceptionDecisions` | C | Central decision for order exception/cancellation; branch cannot independently cancel the confirmed website order.
+| `fulfillment.FulfillmentExceptionDecisions` | C | Central decision for order exception/cancellation; branch cannot independently cancel the confirmed website order. |
 | `fulfillment.PickingSessions` | B | Picking execution session and responsible employee. |
 | `fulfillment.PickingLines` | B | Picked quantities and barcode verification results. |
 | `fulfillment.DeliveryShiftCoordinators` | C | Central appointment of coordinator by shift. |
