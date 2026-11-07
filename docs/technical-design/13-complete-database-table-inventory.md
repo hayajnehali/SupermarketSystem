@@ -75,7 +75,8 @@ The following is the complete first-pass inventory derived from the BRS units 01
 | `catalog.ProductUnits` | C; B read-only projection | Selling/base units and open-pack capability. |
 | `catalog.ProductUnitConversions` | C; B read-only projection | Approved conversion factors and precision. |
 | `catalog.CompositeProductComponents` | C; B read-only projection | Component definitions for composite products. |
-| `catalog.ProductAttributes` | C; B read-only projection | Optional structured attribute definitions/values where required by catalog search/display. |
+| `catalog.ProductAttributeDefinitions` | C; B read-only projection | Centrally managed attribute definitions by product/category, such as ingredients, nutrition, warnings and measurements. |
+| `catalog.ProductAttributes` | C; B read-only projection | Product-specific values for the applicable attribute definitions. |
 | `catalog.ProductMedia` | C; B read-only projection or media reference | Product image/media metadata; binary files should use managed file/object storage, not database blobs by default. |
 
 ### 3.3 Suppliers and procurement
