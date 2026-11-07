@@ -42,6 +42,8 @@ ASP.NET Core Identity framework tables (such as user-role joins) are implementat
 |---|---|---|---|
 | `catalog.ProductCategories` | `catalog.Products` | 1:N | A product may have one assigned category unless the approved catalog rules later require multiple categorization. |
 | `catalog.Products` | `catalog.ProductBranchAvailability` | 1:N | Central FK; each row defines availability for one branch. |
+| `procurement.Suppliers` | `procurement.SupplierProductIdentifiers` | 1:N | Central FK. |
+| `catalog.Products` | `procurement.SupplierProductIdentifiers` | 1:N | Central FK; unique supplier + product + identifier value as applicable. |
 | `org.Branches` | `catalog.ProductBranchAvailability` | 1:N | Central FK; unique ProductId + BranchId. Branch consumes approved projection only. |
 | `catalog.ProductCategories` | `catalog.ProductCategories` | 1:N | Optional parent category to child category self-reference. |
 | `catalog.Brands` | `catalog.Products` | 1:N | A brand may be absent where not applicable. |
@@ -123,6 +125,7 @@ ASP.NET Core Identity framework tables (such as user-role joins) are implementat
 |---|---|---|---|
 | `pricing.PriceVersions` | `pricing.ProductPrices` | 1:N | Central version publication. |
 | `catalog.Products` | `pricing.ProductPrices` | 1:N | Central product price history; branch consumes approved versioned projection. |
+| `catalog.ProductUnits` | `pricing.ProductPrices` | 1:N | Each price applies to a specific approved selling unit; price rows are versioned by effective period. |
 | `pricing.Promotions` | `pricing.PromotionConditions` | 1:N | Central promotion definition. |
 | `pricing.Promotions` | `pricing.PromotionRewards` | 1:N | Central promotion effects. |
 | `pricing.Coupons` | `pricing.CouponRedemptions` | 1:N | Central coupon usage authority; branch Offline event may be pending synchronization if permitted. |
