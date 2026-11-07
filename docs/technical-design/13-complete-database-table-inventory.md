@@ -64,6 +64,7 @@ The following is the complete first-pass inventory derived from the BRS units 01
 | `catalog.Countries` | C; B read-only projection | Country-of-origin reference values used by product details. |
 | `catalog.ProductRequests` | B request origin; C approval authority | Branch requests for a new product or product change; central approval precedes activation. |
 | `catalog.ProductRequestLines` | Same as parent | Requested product attributes, units, barcodes and supporting details. |
+| `catalog.ProductRequestDecisions` | C | Central approve/reject/return-for-correction decisions with actor, reason and time. |
 | `catalog.Products` | C; B read-only projection | Product/SKU master and centrally managed attributes. Distinct SKU for each distinct size/type. |
 | `catalog.ProductBarcodes` | C; B read-only projection | One or more barcodes per product; uniqueness enforced at the correct scope. |
 | `catalog.ProductUnits` | C; B read-only projection | Selling/base units and open-pack capability. |
@@ -107,9 +108,11 @@ The following is the complete first-pass inventory derived from the BRS units 01
 | `inventory.InventoryMovements` | B authoritative; C immutable synchronized history | Receipts, issues, sales, returns, transfers, quarantine, adjustments and other stock events. |
 | `inventory.InventoryMovementLines` | Same as parent | Product/unit/batch/quantity/cost detail. |
 | `inventory.StockReservations` | B authoritative for physical reservation; C coordination record/projection | Website order reservations and other explicitly approved reserved quantities. The branch's atomic stock state remains final for acceptance and POS exclusion. |
+| `inventory.StockReservationAllocations` | B | Optional exact batch allocations for a reservation when batch-level reservation is required; one reservation may span multiple batches. |
 | `inventory.Stocktakes` | C | Central-created and controlled stocktake session; central employees perform the physical count at the branch. |
 | `inventory.StocktakeScopeLines` | C | Explicit product/area scope for full-branch or partial stocktake. |
 | `inventory.StocktakeFreezeAcknowledgements` | C record of B acknowledgement | Confirms the branch has frozen stock-changing operations for the session scope before counting. |
+| `inventory.StocktakeLocks` | B | Durable local enforcement of active stocktake freeze by product/location scope; released only by an authorized central command after session closure/cancellation. |
 | `inventory.StocktakeAssignments` | C | Assigned counters and scoped responsibility. |
 | `inventory.StocktakeLines` | C | Blind count entries by central counters; expected stock is hidden during entry. |
 | `inventory.StocktakeRecounts` | C | Second count and any further controlled recount attempts. |
