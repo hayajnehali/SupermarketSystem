@@ -41,7 +41,8 @@ Sequential Guid generation follows the approved TD-12 approach using the EF Core
 | `org.BranchAccessSnapshots` | Publication/version metadata may be recorded centrally | Active local snapshot header | Separate records; no cross-database FK. |
 | `org.BranchAccessSnapshotEmployees` | No | Local snapshot entries | Contains only the approved employee data needed for local authorization. |
 | `org.BranchAccessSnapshotPermissions` | No | Local snapshot permissions | Effective permission codes for the corresponding local snapshot employee. |
-| `org.BranchRuntimePolicies` | Source policy is centrally governed | Approved local policy snapshot | This table name denotes the branch-side copy; Central source policy may be part of configuration management. |
+| `org.RuntimePolicies` | Authoritative | No | Centrally governed Offline/runtime policy definitions and version history. |
+| `org.BranchRuntimePolicies` | No | Approved local projection | Branch applies centrally published runtime policy versions; it cannot edit or extend them. |
 
 A branch database does not contain the full Central employee directory. It contains only the minimum approved employee/role/permission/device state required for branch operation during the valid Offline period.
 
