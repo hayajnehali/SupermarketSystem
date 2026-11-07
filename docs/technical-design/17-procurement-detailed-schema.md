@@ -133,7 +133,7 @@ For Branch-originated records, the same request/invoice/return GUID is preserved
 **Constraints and indexes**
 - Unique SupplierId + ProductId + EffectiveFromUtc for terms/prices as applicable.
 - Unit price must be non-negative; currency code is validated.
-- Supplier product identifiers are unique within the supplier for each non-null code/barcode.
+- At least one of SupplierProductCode or SupplierBarcode is required. Supplier product identifiers are unique within the supplier for each non-null code/barcode.
 - A product may have multiple suppliers; each supplier may provide multiple products.
 - Supplier price is a supplier quote, not actual inventory cost. Actual received batch cost is captured in Branch InventoryBatches and never averaged.
 
@@ -160,7 +160,7 @@ For Branch-originated records, the same request/invoice/return GUID is preserved
 **Constraints and indexes**
 - Unique SupplierId + Version.
 - Check Version > 0 and ReturnWindowDays is null or non-negative.
-- Missing terms do not block a return request. Central must verify terms and decide before approval.
+- Validate AcceptedReasons as structured JSON. Missing terms do not block a return request. Central must verify terms and decide before approval.
 - Preserve prior term versions so a later supplier agreement does not rewrite an existing return.
 
 ## 4. Branch purchase needs and Central decisions
@@ -303,7 +303,7 @@ The Branch creates the request-origin copy; Central receives the same GUID and o
 | ExcessQuantity | decimal(18,3) | No | Quantity above order quantity, pending or decided separately |
 | UnitCost | decimal(18,3) | No | Actual cost for this received batch |
 | ExpiryDate | date | Yes | Required only when Product.RequiresExpiryTracking |
-| InventoryBatchId | uniqueidentifier | Yes | Branch InventoryBatch GUID created for accepted quantity |
+| InventoryBatchId | uniqueidentifier | Yes | Branch InventoryBatch GUID created for accepted quantity; local FK to the Branch batch where present |
 | RowVersion | rowversion | No | Concurrency token |
 
 **Constraints and indexes**
@@ -391,7 +391,7 @@ Branch registers the invoice; Central owns the match review and approval.
 | SupplierInvoiceMatchLineId | uniqueidentifier | No | PK; sequential Guid |
 | SupplierInvoiceLineId | uniqueidentifier | No | FK → Central SupplierInvoiceLines |
 | PurchaseOrderLineId | uniqueidentifier | No | FK → PurchaseOrderLines |
-| PurchaseReceiptLineId | uniqueidentifier | No | Central receipt line GUID; no cross-db FK |
+| PurchaseReceiptLineId | uniqueidentifier | No | FK to the Central synchronized PurchaseReceiptLines projection; the original Branch row is correlated by the same GUID |
 | MatchedQuantity | decimal(18,3) | No | Portion matched to this receipt/PO line |
 | MatchedUnitPrice | decimal(18,3) | No | Matched price basis |
 | MatchStatus | tinyint | No | Matched / QuantityMismatch / PriceMismatch / OtherMismatch |
@@ -448,9 +448,9 @@ Branch registers the invoice; Central owns the match review and approval.
 - Invoice line → match lines is 1:N; one invoice line may be reconciled against multiple partial receipts.
 - Each match line references one approved PO line and one actual receipt line. Three-way match is Invoice ↔ PO ↔ Receipt.
 - Any mismatch blocks invoice approval until Central records a decision.
-- Due-date rows drive central reminders before due date, at due date and after overdue.
+- Due-date rows drive central reminders before due date, at due date and after overdue. The approved due schedule must be reconciled to the approved invoice total before finalizing the invoice.
 - SupplierPayments are created, approved and executed by Central only. No Branch payment authority.
-- Cumulative successful supplier payments must not exceed the approved invoice amount; enforce transactionally.
+- Cumulative successful supplier payments must not exceed the approved invoice amount; partial payments are supported and enforced transactionally.
 - These records track supplier obligations and settlement only; they do not create a general ledger or accounts-payable subledger.
 
 ## 8. Supplier returns and compensation
@@ -482,7 +482,7 @@ Central owns approval and supplier communication; Branch prepares and physically
 | SupplierReturnLineId | uniqueidentifier | No | PK; stable across Branch/Central copy |
 | SupplierReturnId | uniqueidentifier | No | FK to local return |
 | PurchaseReceiptLineId | uniqueidentifier | No | Original receipt line GUID |
-| InventoryBatchId | uniqueidentifier | No | Branch batch GUID; local FK only where batch exists locally |
+| InventoryBatchId | uniqueidentifier | No | Branch batch GUID; local FK to the Branch batch and to a Central inventory projection only where that projection exists |
 | ProductId | uniqueidentifier | No | Product GUID |
 | ProductUnitId | uniqueidentifier | No | Unit GUID |
 | ReturnQuantity | decimal(18,3) | No | Positive quantity |
