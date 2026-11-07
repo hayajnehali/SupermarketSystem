@@ -254,12 +254,15 @@ Points are credited only after completed sale and confirmed payment. Return-rela
 | `maintenance.MaintenanceRequests` | `maintenance.MaintenanceAssignments` | 1:N | Central assignment history. |
 | `maintenance.MaintenanceRequests` | `maintenance.MaintenanceWorkLogs` | 1:N | Technician report/cost and Branch operational confirmation. |
 | `maintenance.MaintenanceRequests` | `maintenance.MaintenanceDocuments` | 1:N | Photo/video/report metadata and protected storage reference. |
+| `maintenance.MaintenanceRequests` | `maintenance.MaintenanceRequestEvents` | 1:N | Central chronological status, assignment, confirmation and closure history. |
 | `alerts.AlertDefinitions` | `alerts.AlertEvents` | 1:N | Central configured alert types and event instances. |
 | `alerts.AlertEvents` | `alerts.AlertRecipients` | 1:N | Recipients/responsible roles for each event. |
 | `alerts.AlertEvents` | `alerts.AlertDeliveries` | 1:N | In-app, email and mobile push delivery results for central alerts. |
 | `alerts.AlertRecipients` | `alerts.AlertAcknowledgements` | 1:N | Acknowledgement/action notes; does not delete the alert. |
+| `alerts.AlertAcknowledgements` | `alerts.AlertActions` | 1:N | Recipient action/note history after acknowledgement. |
 | `audit.AuditEntries` | `audit.AuditChangeDetails` | 1:N | Local database boundary; before/after details only where safe and required. |
 | `audit.SecurityEvents` | `alerts.AlertEvents` | 0..N | Suspicious security events may raise central alerts; preserve event and alert as distinct records. |
+| `audit.SecurityEvents` | `audit.SecurityEventReviews` | 1:N | Central review/decision history; security event is preserved and not auto-deleted. |
 | `reporting.ReportRunRecords` | Reporting read models | Derived | Read models are projections, not authoritative operational entities. |
 
 ## 11. Synchronization relationships — no cross-database FKs
