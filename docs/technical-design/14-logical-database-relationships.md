@@ -108,6 +108,7 @@ ASP.NET Core Identity framework tables (such as user-role joins) are implementat
 | `inventory.StockReservations` | `inventory.InventoryBatches` | N:1 or N:M via reservation allocation | If a reservation is allocated to exact batches, use a separate allocation child table; do not assume one reservation consumes one batch. |
 | `inventory.StockReservations` | `inventory.StockReservationAllocations` | 1:N | Optional exact batch allocations when required; each allocation references one local batch. |
 | `inventory.ReorderPolicies` | `inventory.StockIncreaseRequests` | 1:N logical branch/product relationship | Central proactively monitors thresholds; branch requests are an additional input, not a prerequisite for replenishment. |
+| `inventory.ExpiryAlertPolicies` | `inventory.InventoryBatches` | 1:N logical policy application | Central defines thresholds; Branch applies approved policy to expiry-tracked batches and emits alert events. |
 | `inventory.StockIncreaseRequests` | `inventory.StockIncreaseRequestDecisions` | 1:N | Branch-originated request with Central decision history. |
 | `inventory.Stocktakes` | `inventory.StocktakeScopeLines` | 1:N | Central session and explicit full/partial scope. |
 | `inventory.Stocktakes` | `inventory.StocktakeAssignments` | 1:N | Central employees assigned to session/scope. |
