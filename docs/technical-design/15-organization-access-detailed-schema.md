@@ -237,7 +237,7 @@ A branch database does not contain the full Central employee directory. It conta
 **Constraints and indexes**
 - Index `EmployeeId, RevokedAtUtc, ExpiresAtUtc`.
 - Index `IdentityUserId`.
-- FK Employee, `auth.Users`, Branch and optional Device; `EmployeeId` and `IdentityUserId` must resolve to the same employee profile/account; no cascade delete.
+- FK Employee, `auth.Users`, Branch and optional Device; enforce the EmployeeId/IdentityUserId pair with a composite FK to a unique `(EmployeeId, UserId)` key on `org.Employees`, so the session cannot point to a different Identity account; no cascade delete.
 - Multiple concurrent sessions per employee are allowed; each session has one active branch context.
 - Branch changes update ActiveBranchId and emit an audit event containing previous branch, new branch, employee and time.
 - Do not store bearer/refresh token plaintext in this table. Exact session/token persistence is part of TD-06.
