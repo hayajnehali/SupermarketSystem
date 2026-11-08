@@ -3,7 +3,7 @@
 **Version:** 0.1  
 **Status:** Proposed for owner review  
 **Date:** 2026-11-07  
-**Scope:** Cash/electronic payment methods, payment provider configuration, POS and online payment transactions, attempts, trusted provider events, partial/full refunds, refund-method exceptions and provider reconciliation.  
+**Scope:** Cash and electronic payment methods, online payment provider configuration, POS transactions using an independent bank POS terminal with cashier-recorded outcomes, online payment transactions, provider attempts/events, customer cash-only refunds and Central approval for cash refunds against electronically paid transactions.  
 **Depends on:** Approved BRS Unit 07, PMT-01–PMT-16, P11–P20, approved online checkout/payment rules, TD-03, TD-04, TD-05, TD-09, TD-12, TD-13 and TD-14.
 
 > This is a logical/physical schema proposal, not executable DDL, EF Core code or a migration. Provider selection and exact provider API are not invented. Tax/e-invoicing remain placeholders only.
@@ -16,7 +16,7 @@
 4. An invoice/order cannot be marked paid or completed while any required payment remains pending, failed or unconfirmed.
 5. One invoice may have multiple payment allocations. Confirmed allocations must cover the entire invoice amount; no credit balance or unpaid remainder is created.
 6. Full and partial refunds are allowed. Cumulative successful refunds cannot exceed the amount successfully paid on the original payment transaction.
-7. Refunds use the original payment method whenever possible. Any exception requires Central approval and a recorded reason before the alternate method is used.
+7. All customer refunds are paid in cash from the Branch cash drawer, regardless of the original tender method. If the original payment included an electronic tender, the cash refund requires prior Central approval and a recorded reason. The original payment transactions remain linked for refund-limit enforcement and audit.
 8. Payment, invoice/order, return and refund statuses are independent. A partial/pending/failed refund is not reported as completed.
 9. Payment and refund operations are idempotent. Duplicate callbacks, retries or repeated user requests cannot create duplicate financial effects.
 10. No PAN, CVV, full card number, provider secret or reusable credential is stored in application database rows. Use provider tokens and protected secret references.
@@ -30,9 +30,9 @@
 | PaymentTransactions | Authoritative for online orders; consolidated history for POS | Authoritative POS transaction record |
 | PaymentAttempts | Authoritative provider attempt history | Local attempt reference where POS terminal integration requires it |
 | PaymentProviderEvents | Authoritative webhook/callback inbox | No |
-| Refunds | Authoritative online/electronic refund workflow; synchronized history | Authoritative local cash refund record |
+| Refunds | Authoritative Central approval/history for customer cash refunds; synchronized history | Authoritative local cash payout record and CashDrawerTransactions |
 | RefundLines | Same authority as Refunds | Same |
-| RefundAttempts | Central provider refund attempts | No provider refund execution authority |
+| RefundAttempts | Not used for customer cash refunds under the approved policy | Not used |
 | RefundMethodExceptionRequests | Central review copy | Branch request origin where initiated at POS |
 | RefundMethodExceptionDecisions | Authoritative | No |
 | PaymentReconciliations, PaymentReconciliationLines | Authoritative | No |
@@ -191,7 +191,7 @@ POS and online transaction records preserve their source GUIDs when synchronized
 | RefundAmount | decimal(18,3) | No | Positive amount |
 | CurrencyCode | char(3) | No | Original payment currency |
 | OriginalPaymentMethodId | uniqueidentifier | No | Original tender method |
-| RefundPaymentMethodId | uniqueidentifier | No | Original method unless Central-approved exception |
+| RefundPaymentMethodId | uniqueidentifier | No | Cash only; Branch cash drawer |
 | RefundStatus | tinyint | No | Requested / PendingApproval / Processing / PartiallyRefunded / Completed / Failed / Cancelled |
 | ExceptionDecisionId | uniqueidentifier | Yes | Central exception decision GUID when method differs |
 | RequestedByUserId | uniqueidentifier | No | Actor |
@@ -204,10 +204,13 @@ POS and online transaction records preserve their source GUIDs when synchronized
 **Constraints and indexes**
 - Unique IdempotencyKey per refund authority.
 - FK to local PaymentTransaction where the original payment is in the same database; cross-database original payment is a GUID correlation only.
-- OriginalPaymentMethodId and RefundPaymentMethodId must match unless ExceptionDecisionId references a valid Central approval.
+- RefundPaymentMethodId must identify the approved Cash method. A refund against an invoice originally paid wholly or partly by an electronic method requires a valid Central approval decision and recorded reason before cash is paid.
+- Refunds remain linked to their original successful payment transaction(s) for cumulative refund-limit enforcement. Cash is the payout method; it does not change the original tender history.
+- A refund is not paid until the required Central approval has been received and validated by the Branch.
 - Cumulative successful refunds per original payment transaction cannot exceed the successfully paid amount; enforce with transaction-safe locking/conditional update.
 - Partial refunds are represented as separate refund records and/or partial status transitions; never increase successful refunded total beyond the original paid amount.
-- Cash refund is recorded in Branch CashDrawerTransactions; electronic refund is processed through the provider workflow.
+- Every POS/customer refund is paid in cash and recorded in Branch CashDrawerTransactions. No POS refund is paid back to a bank card or another electronic instrument.
+- Online order refunds are also fulfilled as cash at the responsible Branch only after the applicable Central approval and branch authorization workflow; the exact customer handover workflow must be defined in the fulfillment procedure.
 
 ### 5.2 `payments.RefundLines` — Same authority as Refunds
 
@@ -225,7 +228,9 @@ POS and online transaction records preserve their source GUIDs when synchronized
 - Sum of line refund amounts must equal RefundAmount; if a refund is not line-based, use a single explicit adjustment line with reason.
 - Returned product quantities and eligible refund amounts must be validated against the original invoice/order/return.
 
-### 5.3 `payments.RefundAttempts` — Central provider workflow
+### 5.3 `payments.RefundAttempts` — Not used for customer cash refunds
+
+The customer refund policy is cash-only. This table is not part of the approved customer refund execution workflow and must not be used to send customer refunds through an online payment provider. Retain it as a reserved schema proposal only if a separate provider-initiated financial reversal use case is approved later; no such use case is currently in scope.
 
 | Column | SQL Server type | Null | Rule |
 |---|---|---:|---|
@@ -246,14 +251,14 @@ POS and online transaction records preserve their source GUIDs when synchronized
 
 ### 5.4 `payments.RefundMethodExceptionRequests` and `RefundMethodExceptionDecisions`
 
-**`RefundMethodExceptionRequests`** — Branch origin or Central online workflow copy
+**`RefundMethodExceptionRequests`** — Branch-origin request for Central approval to pay a customer refund in cash when the original payment included an electronic tender
 
 | Column | SQL Server type | Null | Rule |
 |---|---|---:|---|
 | RefundMethodExceptionRequestId | uniqueidentifier | No | PK; stable GUID across copies |
 | RefundId | uniqueidentifier | No | Refund GUID |
 | OriginalPaymentMethodId | uniqueidentifier | No | Original method |
-| RequestedRefundMethodId | uniqueidentifier | No | Proposed alternate method |
+| RequestedRefundMethodId | uniqueidentifier | No | Cash; customer payout method is fixed by policy |
 | Reason | nvarchar(1000) | No | Required reason |
 | RequestedByUserId | uniqueidentifier | No | Actor |
 | RequestedAtUtc | datetime2(3) | No | UTC |
@@ -273,9 +278,9 @@ POS and online transaction records preserve their source GUIDs when synchronized
 | DecidedAtUtc | datetime2(3) | No | UTC |
 
 **Constraints**
-- Refund method cannot change before Central approval.
-- The approved method must be active and valid for the refund channel.
-- A Branch applies the decision only through a valid authenticated command; no local self-approval.
+- The request is required when the original payment included an electronic tender; the requested payout method is Cash.
+- Central must approve or reject the cash payout before the Branch releases money from the drawer.
+- The approved decision is synchronized to the originating Branch and applied only through a valid authenticated command; no local self-approval.
 
 ## 6. Provider reconciliation
 
@@ -328,8 +333,8 @@ POS and online transaction records preserve their source GUIDs when synchronized
 | POS electronic payment | Branch transaction record plus trusted provider confirmation workflow | PaymentTransaction GUID + attempts/provider events + allocation; sale completes only after confirmation |
 | Online checkout | Central DB | Order + PaymentTransaction + reservation state; Branch stock reservation is a separate local transaction |
 | Provider callback | Central DB | ProviderEvent deduplication + transaction state transition + Outbox/event publication |
-| POS cash refund | Branch DB | Refund + RefundLines + CashDrawerTransaction + Outbox |
-| Electronic/online refund | Central provider workflow | Refund + RefundLines + RefundAttempts + provider event + Outbox |
+| POS/customer cash refund | Branch DB | Refund + RefundLines + original-payment linkage + CashDrawerTransaction + Outbox; Central approval required when original tender includes electronic payment |
+| Online order refund | Central approval/workflow plus Branch cash payout | Refund + RefundLines + original-payment linkage + Central decision + Branch CashDrawerTransaction + Outbox; no provider refund execution |
 | Refund-method exception | Central approval boundary | Request + Central decision + authorized refund command |
 | Provider reconciliation | Central DB | Reconciliation header + lines + reviewed resolution |
 
@@ -353,8 +358,8 @@ No distributed transaction is used. Each local transaction is atomic and cross-s
 
 1. Confirm the provider integration topology for POS electronic payments: whether Branch calls provider directly or Central API mediates it. This schema keeps provider secrets and webhook authority in Central and correlates Branch transaction GUIDs.
 2. Define the provider-specific idempotency key and external-reference uniqueness rules before integration.
-3. Define how the original payment method is resolved when one invoice used split tender and the return amount spans multiple tender allocations; each refund must be bounded by its own original payment.
-4. Define exact cash refund permission and whether a manager approval is required beyond the approved original-method exception rule.
+3. Define the accounting allocation of a refund amount across multiple original payment transactions for split-tender invoices. The customer payout remains cash-only; the allocation is needed solely to link the refund to original successful transactions and enforce each transaction's remaining refundable balance.
+4. Define the detailed customer cash handover/collection workflow for online-order refunds at the Branch, including identity/receipt evidence and audit requirements.
 5. Define the provider event retention and sanitized payload policy; do not retain sensitive cardholder data.
 6. Define partial refund retry/reconciliation behavior when provider confirmation is delayed or ambiguous.
 7. Define how a Central refund exception decision reaches a disconnected Branch and prevents alternate-method payment before approval.
