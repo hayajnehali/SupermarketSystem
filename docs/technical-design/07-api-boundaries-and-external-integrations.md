@@ -29,7 +29,8 @@ This document defines API boundaries between the Angular applications, Branch AP
 | supermarket-admin | Central.Api and explicitly authorized Branch.Api capabilities | Central governance, reports, approvals and branch administration |
 | Branch.Worker | Central synchronization API | Durable branch-to-central and central-to-branch synchronization |
 | Central.Worker | Internal services and provider adapters | Publication, webhooks, reconciliation and notifications |
-| Payment provider | Central payment adapter | Payment status, refunds and verified callbacks |
+| Online payment provider | Central payment adapter | Website payment status, online refunds and verified callbacks |
+| POS bank payment terminal | No system integration | Independent bank device operated manually by cashier; no API, SDK, network or device connection to Branch.Api or Central.Api |
 | OTP/notification provider | Central notification adapter | OTP and approved notifications |
 
 Admin may call branch-scoped capabilities only through authenticated APIs. It must never connect directly to a branch database.
@@ -61,6 +62,7 @@ Central.Api owns centrally governed operations:
 - Published catalogue, product information, base prices and promotions.
 - Online cart, checkout, order lifecycle and stock reservation coordination.
 - Online payment initiation, status, refund orchestration and verified provider callbacks.
+- Central approval of cash refunds when the original POS or online payment included an electronic tender.
 - Employee, role, permission, branch and POS-device governance.
 - Central approvals, loyalty policy, complaints and customer-service capabilities.
 - Authorized central reporting and audit access.
@@ -171,9 +173,10 @@ Duplicate checkout/payment requests must not create duplicate orders, charges or
 ### 6.3 Returns and refunds
 
 - Branch return inspection and permitted local actions use Branch.Api.
-- Central payment refund orchestration uses Central.Api and the provider adapter.
-- Refunds reference the original invoice/order and payment transaction.
-- Refund the original payment method where possible; COD follows the approved cash refund rule.
+- Central.Api owns the approval workflow for customer cash refunds when the original payment included an electronic tender.
+- All customer refunds are paid in cash from the responsible Branch cash drawer, including refunds for card-paid invoices/orders. No refund is paid back to a bank card or through the online payment provider.
+- If the original payment included an electronic tender, the Branch must receive Central approval and record the approved reason before paying cash. Refunds remain linked to original successful payment transaction(s) for refund-limit enforcement and audit.
+- For POS bank-card payments, the cashier operates the independent bank terminal for the original sale and records the observed payment outcome; refunds are paid in cash, not through the terminal.
 - Refund requests have stable OperationIds and explicit pending, succeeded, failed or reconciliation states.
 - A provider timeout is not proof of success or failure. Reconcile provider state before issuing another financial operation.
 
@@ -201,7 +204,8 @@ External providers are wrapped behind backend interfaces/adapters so provider-sp
 
 | Integration | Owning side | Required behavior |
 |---|---|---|
-| Electronic payment provider | Central | Hosted/tokenized payment, verified webhooks, idempotency and reconciliation |
+| Online electronic payment provider | Central | Hosted/tokenized website payment, verified webhooks and payment reconciliation; customer refunds are handled as approved Branch cash payouts, not provider refunds |
+| POS bank payment terminal | External to the application | Operated manually by the cashier for POS card payments; no technical integration or automated result verification |
 | OTP/SMS provider | Central | OTP generated and verified internally; provider only delivers message |
 | Email/notification provider | Central | Template-based notification, delivery status and controlled retry |
 | Tax/e-invoicing authority | Central, future placeholder | No active implementation until legal scope is approved |
@@ -281,7 +285,7 @@ The detailed API specification and implementation must demonstrate that:
 
 1. Exact endpoint routes, HTTP verbs, DTO fields and examples.
 2. OpenAPI publication and client generation strategy.
-3. Payment provider and hosted/tokenized integration method.
+3. Online payment provider and hosted/tokenized integration method.
 4. OTP/SMS and email provider selection.
 5. Authentication/session/token protocol and browser storage strategy.
 6. Payment callback signature scheme and provider reconciliation schedule.
