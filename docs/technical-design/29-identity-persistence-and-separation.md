@@ -1,11 +1,11 @@
 # TD-29 — Unified Identity Account Model
 
 **Version:** 0.2  
-**Status:** Revised for owner review  
+**Status:** Approved by owner (2026-11-08)  
 **Date:** 2026-11-08  
 **Depends on:** Approved TD-06, TD-15, TD-22, TD-27 and TD-28; .NET 10 / ASP.NET Core Identity baseline in TD-02.
 
-## 1. Decision requested
+## 1. Approved decision
 
 Use one ASP.NET Core Identity user store with Guid keys for both employees and customers. An account must be exactly one account type: Employee or Customer. The same account cannot represent both.
 
@@ -150,4 +150,4 @@ These must be resolved before implementation; do not guess during project scaffo
 
 ## 10. Approval boundary
 
-This revision records the proposed unified account model and the owner's requirement that one account cannot be both an employee and a customer. It does not authorize generating Identity tables, EF Core entities, DDL or migrations. The logical inventory and ERD must first be updated and approved, then implementation can be built and tested.
+This approved decision establishes one unified Identity account store and separate Employee/Customer business profiles, with strict mutual exclusion. It does not by itself authorize generating Identity tables, EF Core entities, DDL or migrations. The logical inventory and ERDs must first be reconciled with this decision and approved; implementation can then be built and tested.
