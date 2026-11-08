@@ -868,7 +868,7 @@ Delivery confirmation is manual. No OTP or electronic signature is required.
 ## 14. Technical risks for review
 
 1. Define the exact customer identity table mapping under TD-06. Customer credentials must remain separate from employee credentials.
-2. Define OTP provider, delivery limits, expiry/attempt limits and secure hash parameters in the security design; do not hardcode them in the schema.
+2. OTP policy values (expiry duration, maximum verification attempts, resend waiting period and resend limits) are fixed in application code, not centrally configurable. Exact numeric values and provider/security implementation details remain to be defined in the security design.
 3. Define the exact central/branch order projection fields and privacy minimization; Branch must not have customer search access.
 4. Define whether an order may contain both delivery and pickup lines (this proposal assumes one FulfillmentType per order).
 5. Define free-delivery rule evaluation and precedence against other promotions; no duplicate discount may be applied.
