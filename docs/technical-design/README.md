@@ -36,7 +36,7 @@
 | [TD-26 — SQL Server Physical Schema Standards](26-sql-server-physical-schema-standards.md) | SQL Server 2025 data types, Guid keys, constraints, indexes, concurrency, EF Core 10 mappings and migration standards | Proposed for owner review |
 | [TD-27 — Clean Architecture and Pragmatic DDD](27-clean-architecture-and-pragmatic-ddd.md) | Dependency direction, Domain/Application/Infrastructure/hosts, pragmatic DDD, project boundaries and testing rules | Proposed for owner approval |
 | [TD-28 — Solution and Project Structure Blueprint](28-solution-project-structure-blueprint.md) | Exact .NET solution layout, Central/Branch project responsibilities, module folders, dependency rules, EF Core and test boundaries | Proposed for owner approval |
-| [TD-29 — Unified Identity Account Model](29-identity-persistence-and-separation.md) | One ASP.NET Core Identity user store; exclusive Employee/Customer account type; separate business profiles; role and Offline boundaries | Revised for owner review |
+| [TD-29 — Unified Identity Account Model](29-identity-persistence-and-separation.md) | One ASP.NET Core Identity user store; exclusive Employee/Customer account type; separate business profiles; role and Offline boundaries | Approved by owner (2026-11-08) |
 
 ## Reviews
 
