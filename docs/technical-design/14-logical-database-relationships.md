@@ -1,7 +1,7 @@
 # TD-14 — Logical Database Relationships and Cardinalities
 
-**Version:** 0.1  
-**Status:** Proposed for owner review  
+**Version:** 0.2  
+**Status:** Revised for owner review after TD-29  
 **Date:** 2026-11-07  
 **Depends on:** Approved BRS, TD-03, TD-04, TD-05, TD-09, TD-12 and TD-13.  
 **Purpose:** Define the first logical relationship map for the TD-13 table inventory before columns, EF Core configurations or migrations are designed.
@@ -22,11 +22,12 @@
 
 | Parent | Child / relationship | Cardinality | Boundary and notes |
 |---|---|---|---|
+| `auth.Users` | `org.Employees` | 1:0..1 | Central one-to-one profile link through unique required `org.Employees.UserId`; required when `AccountType = Employee`. |
+| `auth.Users` | `crm.Customers` | 1:0..1 | Central one-to-one profile link through unique required `crm.Customers.UserId`; required when `AccountType = Customer`. |
 | `org.Branches` | `org.EmployeeBranchAssignments` | 1:N | Central FK. |
 | `org.Employees` | `org.EmployeeBranchAssignments` | 1:N | Central FK; effective dates preserve assignment history. |
 | `org.Roles` | `org.RolePermissions` | 1:N | Central FK. |
 | `org.Permissions` | `org.RolePermissions` | 1:N | Central FK; Roles and Permissions are M:N through RolePermissions. |
-| Identity user | `org.Employees` | 1:0..1 or 1:1 | Exact direction and Identity key mapping deferred to TD-06 implementation design; do not duplicate credentials. |
 | `org.Employees` | `org.EmployeePermissionGrants` | 1:N | Central FK. |
 | `org.BranchAccessSnapshots` | `org.BranchAccessSnapshotEmployees` | 1:N | Branch-local FK within the same active snapshot. |
 | `org.BranchAccessSnapshotEmployees` | `org.BranchAccessSnapshotPermissions` | 1:N | Branch-local FK; effective permission snapshot for one employee. |
@@ -34,7 +35,7 @@
 | Central employee/role/permission records | `org.BranchAccessSnapshots` | 1:N per branch snapshot | Projection built from approved central state; local snapshot rows relate only within the Branch DB. |
 | `org.RuntimePolicies` | `org.BranchRuntimePolicies` | 1:N logical publication | Centrally owned versioned policy; branch applies the authenticated local projection with no cross-database FK. |
 
-ASP.NET Core Identity framework tables (such as user-role joins) are implementation-owned and must be mapped in the identity design rather than recreated as parallel custom tables.
+`auth.Users` is the unified ASP.NET Core Identity store defined by TD-29. The Employee and Customer profile links are mutually exclusive: `AccountType = Employee` requires exactly one `org.Employees` row and no `crm.Customers` row; `AccountType = Customer` requires exactly one `crm.Customers` row and no `org.Employees` row. Each profile's `UserId` is unique and references `auth.Users.UserId`. `auth.UserRoles` links Employee users to the existing `org.Roles` catalogue only. Identity claim/login/token relationship tables are conditional implementation tables, not a second user store. The final database-enforced XOR mechanism is still a physical-design gate; application-only validation is insufficient.
 
 ## 3. Product catalog
 
