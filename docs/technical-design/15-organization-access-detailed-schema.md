@@ -96,6 +96,7 @@ A branch database does not contain the full Central employee directory. It conta
 - PK clustered on `EmployeeId`.
 - Unique index on `EmployeeNumber`.
 - Unique index on `UserId` to enforce one Employee profile per Identity account.
+- Unique alternate key on `(EmployeeId, UserId)` for the composite FK used by `org.EmployeeSessions`.
 - Optional filtered unique indexes for normalized Phone/Email only if the approved employee identity policy requires uniqueness; do not assume employee phone is globally unique from the BRS.
 - Check constraint: `EndDate IS NULL OR HireDate IS NULL OR EndDate >= HireDate`.
 - Suspend/end employee rather than deleting; session revocation and new sign-in denial are enforced by the identity/session subsystem.
