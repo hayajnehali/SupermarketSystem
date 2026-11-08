@@ -29,7 +29,8 @@ This document defines API boundaries between the Angular applications, Branch AP
 | supermarket-admin | Central.Api and explicitly authorized Branch.Api capabilities | Central governance, reports, approvals and branch administration |
 | Branch.Worker | Central synchronization API | Durable branch-to-central and central-to-branch synchronization |
 | Central.Worker | Internal services and provider adapters | Publication, webhooks, reconciliation and notifications |
-| Payment provider | Central payment adapter | Payment status, refunds and verified callbacks |
+| Online payment provider | Central payment adapter | Online payment status, refunds and verified callbacks |
+| POS bank payment terminal | No system integration | Independent bank device operated manually by the cashier; no API, SDK, network or device connection to Branch.Api or Central.Api |
 | OTP/notification provider | Central notification adapter | OTP and approved notifications |
 
 Admin may call branch-scoped capabilities only through authenticated APIs. It must never connect directly to a branch database.
@@ -44,7 +45,7 @@ Branch.Api owns branch-local operations:
 - POS device and cashier/shift context.
 - Reads of locally approved product, unit, price and promotion snapshots.
 - Sale validation, completion and invoice retrieval.
-- Local tender recording for supported payment methods.
+- Local tender recording for supported payment methods, including cashier-recorded confirmation of an independently operated bank POS terminal.
 - Return inspection and authorized branch return actions.
 - Stock availability, receiving, movement, stocktake and adjustment workflows.
 - Fulfillment tasks assigned to the branch for online orders.
@@ -60,7 +61,7 @@ Central.Api owns centrally governed operations:
 - Customer registration, OTP verification, sign-in and account recovery.
 - Published catalogue, product information, base prices and promotions.
 - Online cart, checkout, order lifecycle and stock reservation coordination.
-- Online payment initiation, status, refund orchestration and verified provider callbacks.
+- Online payment initiation, status, refund orchestration and verified provider callbacks. POS bank-terminal payments are not initiated or verified by Central.
 - Employee, role, permission, branch and POS-device governance.
 - Central approvals, loyalty policy, complaints and customer-service capabilities.
 - Authorized central reporting and audit access.
@@ -146,8 +147,8 @@ These are logical groups, not separate deployable microservices. The solution re
 
 1. POS reads locally approved product, price and stock data from Branch.Api.
 2. POS submits a sale command with cashier, shift, device, lines, quantities, tender details and stable OperationId.
-3. Branch.Api validates authorization, active shift, local price validity, stock, reservations and sale rules.
-4. Branch.Api commits invoice, stock movements, tender records, audit records and Outbox messages within the required local transaction boundaries.
+3. Branch.Api validates authorization, active shift, local price validity, stock, reservations and sale rules. For a bank-card tender, the cashier first operates the independent bank terminal outside the system, then records the displayed outcome and optional bank receipt/reference in POS.
+4. Branch.Api records the cashier-confirmed tender outcome and commits invoice, stock movements, tender records, audit records and Outbox messages within the required local transaction boundaries. The application records the cashier's confirmation; it does not independently verify the bank transaction.
 5. The API returns the durable local invoice result and invoice number.
 6. Central synchronization happens asynchronously through TD-05.
 
@@ -159,7 +160,7 @@ Retrying with the same OperationId returns the original outcome and must not cre
 2. Central creates the order/reservation workflow and the approved 15-minute payment reservation window.
 3. Central initiates payment through a backend payment adapter.
 4. The customer uses the provider-approved hosted or tokenized payment experience.
-5. Provider callbacks are verified server-side; a browser return URL is not proof of payment.
+5. Online provider callbacks are verified server-side; a browser return URL is not proof of payment. POS bank-terminal outcomes are entered by the cashier after checking the independent terminal.
 6. Central records verified payment status and confirms or releases the reservation according to the BRS.
 7. The selected branch receives a fulfillment instruction.
 8. Branch fulfillment facts are reported to Central through synchronization.
@@ -171,7 +172,8 @@ Duplicate checkout/payment requests must not create duplicate orders, charges or
 ### 6.3 Returns and refunds
 
 - Branch return inspection and permitted local actions use Branch.Api.
-- Central payment refund orchestration uses Central.Api and the provider adapter.
+- Online electronic refund orchestration uses Central.Api and the provider adapter.
+- For a POS bank-card refund, the cashier performs the refund separately using the bank terminal/bank procedure, then records its outcome and optional bank reference in Branch.Api. No automated bank-terminal refund call is made.
 - Refunds reference the original invoice/order and payment transaction.
 - Refund the original payment method where possible; COD follows the approved cash refund rule.
 - Refund requests have stable OperationIds and explicit pending, succeeded, failed or reconciliation states.
@@ -201,7 +203,8 @@ External providers are wrapped behind backend interfaces/adapters so provider-sp
 
 | Integration | Owning side | Required behavior |
 |---|---|---|
-| Electronic payment provider | Central | Hosted/tokenized payment, verified webhooks, idempotency and reconciliation |
+| Online electronic payment provider | Central | Hosted/tokenized website payment, verified webhooks, idempotency and reconciliation |
+| POS bank payment terminal | External to the application | Operated manually by the cashier; no technical integration or automated result verification |
 | OTP/SMS provider | Central | OTP generated and verified internally; provider only delivers message |
 | Email/notification provider | Central | Template-based notification, delivery status and controlled retry |
 | Tax/e-invoicing authority | Central, future placeholder | No active implementation until legal scope is approved |
@@ -228,7 +231,7 @@ TD-06 applies to every API. Additionally:
 - Synchronization endpoints accept only registered branch service identities and authorized message types.
 - Customer endpoints enforce resource ownership and prevent IDOR.
 - Admin endpoints require explicit central permissions and audit high-impact actions.
-- Payment webhook endpoints use provider verification independent of employee/customer bearer tokens.
+- Online payment webhook endpoints use provider verification independent of employee/customer bearer tokens.
 - Apply rate limits to login, OTP, cart/checkout, payment initiation and public catalogue endpoints.
 - Validate request size, content type, schema version and allowed fields.
 - Use allowlisted CORS origins for known Angular applications.
@@ -276,12 +279,13 @@ The detailed API specification and implementation must demonstrate that:
 12. Provider timeout does not silently duplicate financial operations.
 13. Secrets and sensitive personal/payment data are absent from logs and client bundles.
 14. High-impact API commands are attributable and auditable.
+15. POS bank-terminal payments are recorded only after cashier confirmation; the system does not claim automated bank verification.
 
 ## 13. Decisions deferred to detailed API specification
 
 1. Exact endpoint routes, HTTP verbs, DTO fields and examples.
 2. OpenAPI publication and client generation strategy.
-3. Payment provider and hosted/tokenized integration method.
+3. Online payment provider and hosted/tokenized integration method.
 4. OTP/SMS and email provider selection.
 5. Authentication/session/token protocol and browser storage strategy.
 6. Payment callback signature scheme and provider reconciliation schedule.
