@@ -3,7 +3,7 @@
 **Version:** 0.1  
 **Status:** Proposed for owner review  
 **Date:** 2026-11-07  
-**Scope:** Cash/electronic payment methods, payment provider configuration, POS and online payment transactions, attempts, trusted provider events, partial/full refunds, refund-method exceptions and provider reconciliation.  
+**Scope:** Cash and electronic payment methods, online payment provider configuration, POS transactions using an independent bank POS terminal with cashier-recorded outcomes, online payment transactions, provider attempts/events, partial/full refunds, refund-method exceptions and online provider reconciliation.  
 **Depends on:** Approved BRS Unit 07, PMT-01–PMT-16, P11–P20, approved online checkout/payment rules, TD-03, TD-04, TD-05, TD-09, TD-12, TD-13 and TD-14.
 
 > This is a logical/physical schema proposal, not executable DDL, EF Core code or a migration. Provider selection and exact provider API are not invented. Tax/e-invoicing remain placeholders only.
@@ -12,7 +12,7 @@
 
 1. Every PK is sequential application-generated `Guid` / SQL Server `uniqueidentifier`; no integer identity PK.
 2. Monetary values use `decimal(18,3)` for JOD storage and internal calculations. Final JOD invoice amounts use the approved two-decimal rounding; the technical half-rounding tie-breaker remains open until implementation.
-3. An electronic payment is successful only after trusted server-side provider verification/callback. Client-side UI response is never sufficient.
+3. An online electronic payment is successful only after trusted server-side provider verification/callback. A POS bank-terminal payment is not integrated: the cashier operates the bank terminal independently and records its successful result in POS. The system records the cashier's confirmation, not a bank-verified callback.
 4. An invoice/order cannot be marked paid or completed while any required payment remains pending, failed or unconfirmed.
 5. One invoice may have multiple payment allocations. Confirmed allocations must cover the entire invoice amount; no credit balance or unpaid remainder is created.
 6. Full and partial refunds are allowed. Cumulative successful refunds cannot exceed the amount successfully paid on the original payment transaction.
@@ -25,12 +25,13 @@
 
 | Table | Central DB | Each Branch DB |
 |---|---|---|
-| PaymentProviders, PaymentProviderConfigurations | Authoritative | No provider secrets/configuration authority |
+| PaymentProviders, PaymentProviderConfigurations | Authoritative for online payments | No provider secrets/configuration authority |
+| Independent POS bank terminal | No integration/configuration | No integration/configuration; operated manually outside the application |
 | PaymentMethods | Authoritative | Approved read-only method projection |
 | PaymentTransactions | Authoritative for online orders; consolidated history for POS | Authoritative POS transaction record |
-| PaymentAttempts | Authoritative provider attempt history | Local attempt reference where POS terminal integration requires it |
-| PaymentProviderEvents | Authoritative webhook/callback inbox | No |
-| Refunds | Authoritative online/electronic refund workflow; synchronized history | Authoritative local cash refund record |
+| PaymentAttempts | Authoritative online provider attempt history | Not used for independent POS bank-terminal transactions |
+| PaymentProviderEvents | Authoritative online webhook/callback inbox | No |
+| Refunds | Authoritative online electronic refund workflow; synchronized history | Authoritative POS cash and manually recorded bank-terminal refund history |
 | RefundLines | Same authority as Refunds | Same |
 | RefundAttempts | Central provider refund attempts | No provider refund execution authority |
 | RefundMethodExceptionRequests | Central review copy | Branch request origin where initiated at POS |
@@ -90,7 +91,8 @@ POS and online transaction records preserve their source GUIDs when synchronized
 | PaymentMethodCode | nvarchar(40) | No | Unique stable code |
 | Name | nvarchar(120) | No | Display name |
 | MethodType | tinyint | No | Cash / Electronic |
-| PaymentProviderId | uniqueidentifier | Yes | FK → PaymentProviders for electronic methods |
+| PaymentProviderId | uniqueidentifier | Yes | FK → PaymentProviders for online provider-integrated electronic methods; null for cash and independent POS bank-terminal methods |
+| IntegrationMode | tinyint | No | CashierRecorded / CentralProvider; identifies whether the tender is manually confirmed at POS or integrated with a Central online provider |
 | IsAllowedOffline | bit | No | Centrally approved Offline capability |
 | IsActive | bit | No | Deactivation only |
 | CreatedAtUtc | datetime2(3) | No | UTC |
@@ -98,7 +100,10 @@ POS and online transaction records preserve their source GUIDs when synchronized
 
 **Constraints**
 - Unique PaymentMethodCode.
-- Cash does not require a provider; electronic method requires an active provider.
+- Cash does not require a provider and uses CashierRecorded confirmation.
+- POS bank-card methods use CashierRecorded integration mode and do not reference a PaymentProvider.
+- Online electronic methods use CentralProvider integration mode and require an active PaymentProvider.
+- Branch cannot convert an independently operated POS bank terminal into a provider-integrated method by local configuration.
 - Offline use is controlled centrally; no Branch can enable an otherwise disallowed method.
 
 ## 4. Payment transactions and attempts
@@ -109,17 +114,19 @@ POS and online transaction records preserve their source GUIDs when synchronized
 |---|---|---:|---|
 | PaymentTransactionId | uniqueidentifier | No | PK; sequential Guid |
 | PaymentMethodId | uniqueidentifier | No | Approved method GUID |
-| PaymentProviderId | uniqueidentifier | Yes | Provider GUID for electronic method |
+| PaymentProviderId | uniqueidentifier | Yes | Provider GUID for online provider-integrated electronic method; null for independent POS bank-terminal method |
 | SourceType | tinyint | No | POSInvoice / OnlineOrder |
 | SourceTransactionId | uniqueidentifier | No | Invoice or Order GUID |
 | BranchId | uniqueidentifier | Yes | Branch origin for POS; central reference for online fulfillment branch |
 | Amount | decimal(18,3) | No | Positive requested amount |
 | CurrencyCode | char(3) | No | JOD or configured currency |
 | TransactionStatus | tinyint | No | Initiated / Pending / Confirmed / Failed / Cancelled |
-| ExternalReference | nvarchar(150) | Yes | Provider transaction reference |
+| ExternalReference | nvarchar(150) | Yes | Online provider transaction reference or manually entered bank-terminal receipt/reference for POS card payment |
 | IdempotencyKey | uniqueidentifier | No | Stable operation identity |
 | InitiatedAtUtc | datetime2(3) | No | UTC |
-| ConfirmedAtUtc | datetime2(3) | Yes | UTC trusted confirmation |
+| ConfirmedAtUtc | datetime2(3) | Yes | UTC when confirmation was recorded; for POS bank-terminal tender this is the cashier-recorded confirmation time, not a provider callback time |
+| ConfirmationSource | tinyint | No | CashierRecorded / CentralProviderVerified |
+| ConfirmedByEmployeeId | uniqueidentifier | Yes | Required for Branch POS cashier-recorded confirmation; null for Central provider verification |
 | FailureCode | nvarchar(80) | Yes | Provider/internal failure code |
 | FailureDescription | nvarchar(500) | Yes | Sanitized failure description |
 | RowVersion | rowversion | No | Concurrency token |
@@ -129,10 +136,12 @@ POS and online transaction records preserve their source GUIDs when synchronized
 - Unique filtered ProviderId + ExternalReference when ExternalReference is non-null.
 - Amount > 0; currency must be enabled.
 - POS source links to Branch invoice; online source links to Central order. Cross-database copies use GUID correlation only.
-- A transaction reaches Confirmed only through trusted backend provider verification, verified callback or an approved cash confirmation.
+- Online provider-integrated transactions reach Confirmed only through trusted backend provider verification/callback.
+- POS cash and independent bank-terminal transactions reach Confirmed only after the cashier records the observed successful outcome; ConfirmedByEmployeeId and confirmation time are mandatory for POS.
+- A cashier-recorded POS bank-terminal result is an operational attestation and is not represented as automated bank verification.
 - Refund status is not stored as a terminal PaymentTransaction status; refunds are separate records.
 
-### 4.2 `payments.PaymentAttempts` — Transaction authority
+### 4.2 `payments.PaymentAttempts` — Online provider transaction authority
 
 | Column | SQL Server type | Null | Rule |
 |---|---|---:|---|
@@ -153,7 +162,8 @@ POS and online transaction records preserve their source GUIDs when synchronized
 - Unique PaymentTransactionId + AttemptNumber.
 - Unique IdempotencyKey.
 - Do not store sensitive cardholder data or raw authentication secrets.
-- Retries create new attempt rows under the same PaymentTransactionId; they do not create a second financial transaction.
+- Online provider retries create new attempt rows under the same PaymentTransactionId; they do not create a second financial transaction.
+- Independent POS bank-terminal operations do not create PaymentAttempts because the terminal is outside the application.
 
 ### 4.3 `payments.PaymentProviderEvents` — Central
 
@@ -180,7 +190,7 @@ POS and online transaction records preserve their source GUIDs when synchronized
 
 ## 5. Refunds and refund-method exceptions
 
-### 5.1 `payments.Refunds` — Central for electronic/online; Branch for permitted cash refund
+### 5.1 `payments.Refunds` — Central for online electronic; Branch for POS cash and manually recorded bank-terminal refunds
 
 | Column | SQL Server type | Null | Rule |
 |---|---|---:|---|
@@ -197,6 +207,8 @@ POS and online transaction records preserve their source GUIDs when synchronized
 | RequestedByUserId | uniqueidentifier | No | Actor |
 | RequestedAtUtc | datetime2(3) | No | UTC |
 | CompletedAtUtc | datetime2(3) | Yes | UTC |
+| ExternalReference | nvarchar(150) | Yes | Online provider refund reference or manually entered bank-terminal refund receipt/reference |
+| CompletedByEmployeeId | uniqueidentifier | Yes | Required for manually recorded Branch POS refund completion; null for Central provider completion |
 | Reason | nvarchar(1000) | No | Refund reason |
 | IdempotencyKey | uniqueidentifier | No | Stable refund operation identity |
 | RowVersion | rowversion | No | Concurrency token |
@@ -207,7 +219,9 @@ POS and online transaction records preserve their source GUIDs when synchronized
 - OriginalPaymentMethodId and RefundPaymentMethodId must match unless ExceptionDecisionId references a valid Central approval.
 - Cumulative successful refunds per original payment transaction cannot exceed the successfully paid amount; enforce with transaction-safe locking/conditional update.
 - Partial refunds are represented as separate refund records and/or partial status transitions; never increase successful refunded total beyond the original paid amount.
-- Cash refund is recorded in Branch CashDrawerTransactions; electronic refund is processed through the provider workflow.
+- POS cash refund is recorded in Branch CashDrawerTransactions.
+- POS bank-card refund is performed separately through the independent bank terminal/bank procedure; the cashier records the observed outcome and optional bank reference in Branch. No automated bank-terminal refund integration is used.
+- Online electronic refund is processed through the Central provider workflow.
 
 ### 5.2 `payments.RefundLines` — Same authority as Refunds
 
@@ -225,7 +239,7 @@ POS and online transaction records preserve their source GUIDs when synchronized
 - Sum of line refund amounts must equal RefundAmount; if a refund is not line-based, use a single explicit adjustment line with reason.
 - Returned product quantities and eligible refund amounts must be validated against the original invoice/order/return.
 
-### 5.3 `payments.RefundAttempts` — Central provider workflow
+### 5.3 `payments.RefundAttempts` — Central online provider workflow
 
 | Column | SQL Server type | Null | Rule |
 |---|---|---:|---|
@@ -325,11 +339,12 @@ POS and online transaction records preserve their source GUIDs when synchronized
 | Workflow | Owning transaction boundary | Related records |
 |---|---|---|
 | POS cash payment | Branch DB | PaymentTransaction + PaymentAttempt/confirmation + SalePaymentAllocation + CashDrawerTransaction |
-| POS electronic payment | Branch transaction record plus trusted provider confirmation workflow | PaymentTransaction GUID + attempts/provider events + allocation; sale completes only after confirmation |
+| POS electronic payment (bank terminal) | Branch transaction record with cashier-recorded confirmation | PaymentTransaction GUID + cashier confirmation + optional bank receipt/reference + allocation; sale completes only after the cashier records a successful terminal outcome. No provider API, SDK, webhook, PaymentAttempt or automated terminal verification is involved |
+| POS bank-card refund | Branch DB | Refund + cashier-recorded outcome + optional bank-terminal receipt/reference; no provider API integration |
 | Online checkout | Central DB | Order + PaymentTransaction + reservation state; Branch stock reservation is a separate local transaction |
 | Provider callback | Central DB | ProviderEvent deduplication + transaction state transition + Outbox/event publication |
 | POS cash refund | Branch DB | Refund + RefundLines + CashDrawerTransaction + Outbox |
-| Electronic/online refund | Central provider workflow | Refund + RefundLines + RefundAttempts + provider event + Outbox |
+| Online electronic refund | Central provider workflow | Refund + RefundLines + RefundAttempts + provider event + Outbox |
 | Refund-method exception | Central approval boundary | Request + Central decision + authorized refund command |
 | Provider reconciliation | Central DB | Reconciliation header + lines + reviewed resolution |
 
@@ -351,8 +366,8 @@ No distributed transaction is used. Each local transaction is atomic and cross-s
 
 ## 9. Technical risks for review
 
-1. Confirm the provider integration topology for POS electronic payments: whether Branch calls provider directly or Central API mediates it. This schema keeps provider secrets and webhook authority in Central and correlates Branch transaction GUIDs.
-2. Define the provider-specific idempotency key and external-reference uniqueness rules before integration.
+1. POS bank-terminal topology is resolved: the bank terminal is independent and has no application integration; cashier records the successful result and optional bank reference. Online provider integration remains Central-owned.
+2. Define the online provider-specific idempotency key and external-reference uniqueness rules before integration.
 3. Define how the original payment method is resolved when one invoice used split tender and the return amount spans multiple tender allocations; each refund must be bounded by its own original payment.
 4. Define exact cash refund permission and whether a manager approval is required beyond the approved original-method exception rule.
 5. Define the provider event retention and sanitized payload policy; do not retain sensitive cardholder data.
