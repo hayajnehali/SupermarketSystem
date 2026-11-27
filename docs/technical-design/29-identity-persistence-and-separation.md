@@ -59,7 +59,8 @@ SQL Server CHECK constraints cannot directly validate rows in another table, so 
 - Keep org.Roles, org.Permissions, org.RolePermissions and org.EmployeePermissionGrants as the employee operational RBAC catalogue already defined by the organization/access design.
 - Employee role membership is available only to accounts whose AccountType is Employee.
 - Customer access is determined by AccountType = Customer and customer-specific authorization policies; customers do not receive employee operational roles.
-- If Identity role membership is mapped to org.Roles, use a custom IdentityRole<Guid> entity and explicit EF Core mapping. Do not create a duplicate employee role catalogue.
+- Map the Identity role store to the existing `org.Roles` catalogue; do not create a duplicate employee role catalogue.
+- Persist employee role membership in `auth.UserRoles`, using a custom Identity user-role entity with a Guid surrogate PK, Guid FKs to `auth.Users` and `org.Roles`, and a unique `(UserId, RoleId)` constraint. Customer accounts cannot receive employee role membership.
 - Authorization rejects attempts to grant an employee role to a Customer account in both the application layer and persistence workflow.
 - A role assignment cannot change AccountType; account classification and role membership are separate concepts.
 
