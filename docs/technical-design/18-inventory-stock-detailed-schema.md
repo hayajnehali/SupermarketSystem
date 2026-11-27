@@ -1,7 +1,7 @@
 # TD-18 — Detailed Logical Schema: Inventory and Stock
 
 **Version:** 0.1  
-**Status:** Proposed for owner review  
+**Status:** Approved by owner (2026-11-28)  
 **Date:** 2026-11-07  
 **Scope:** Branch-owned physical inventory, warehouse locations, batches/cost, movement ledger and balances, website reservations, stocktaking, inter-branch transfers, quarantine/disposal, reorder thresholds and expiry alerts.  
 **Depends on:** Approved BRS Unit 04, approved inventory/transfer/stocktake decisions INV-01–INV-22, TD-03, TD-04, TD-05, TD-09, TD-12, TD-13 and TD-14.
