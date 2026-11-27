@@ -33,7 +33,7 @@
 | PaymentProviderEvents | Authoritative online webhook/callback inbox | No |
 | Refunds | Central approval and consolidated refund history | Authoritative Branch cash payout record for POS and online-order refunds |
 | RefundLines | Same authority as Refunds | Same |
-| RefundAttempts | Central provider refund attempts | No provider refund execution authority |
+| RefundAttempts | Reserved schema proposal only; not used for customer cash refunds | No customer refund provider execution |
 | RefundMethodExceptionRequests | Central review copy | Branch request origin where initiated at POS |
 | RefundMethodExceptionDecisions | Authoritative | No |
 | PaymentReconciliations, PaymentReconciliationLines | Authoritative | No |
@@ -356,7 +356,7 @@ No distributed transaction is used. Each local transaction is atomic and cross-s
 |---|---|
 | PMT-01 | PaymentMethods supports cash and electronic methods |
 | PMT-02, PMT-03 | PaymentTransactions, Attempts and trusted ProviderEvents |
-| PMT-04, PMT-12, PMT-13, PMT-16 | Refunds, RefundLines, RefundAttempts and idempotency constraints |
+| PMT-04, PMT-12, PMT-13, PMT-16 | Refunds, RefundLines and idempotency constraints; RefundAttempts remains reserved and outside the approved customer cash-refund workflow |
 | PMT-05 | RefundMethodExceptionRequests/Decisions; original method retained by default |
 | PMT-06–PMT-11, PMT-14 | Linked return and exchange schema in TD-20; Refunds links to source return/order/invoice |
 | PMT-15, P11 | SalePaymentAllocations and PaymentTransactions; full confirmed total required |
