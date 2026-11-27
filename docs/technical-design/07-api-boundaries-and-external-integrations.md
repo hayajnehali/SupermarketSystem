@@ -65,7 +65,6 @@ Central.Api owns centrally governed operations:
 - Employee, role, permission, branch and POS-device governance.
 - Central approvals, loyalty policy, complaints and customer-service capabilities.
 - Authorized central reporting and audit access.
-- Authorized central reporting and audit access.
 - Synchronization endpoints for registered Branch Worker identities.
 
 Central coordinates cross-boundary workflows through durable messages and explicit state transitions, not distributed SQL transactions.
@@ -149,7 +148,7 @@ These are logical groups, not separate deployable microservices. The solution re
 1. POS reads locally approved product, price and stock data from Branch.Api.
 2. POS submits a sale command with cashier, shift, device, lines, quantities, tender details and stable OperationId.
 3. Branch.Api validates authorization, active shift, local price validity, stock, reservations and sale rules. For a bank-card tender, the cashier first operates the independent bank terminal outside the system, then records the displayed outcome and optional bank receipt/reference in POS.
-4. Branch.Api records the cashier-confirmed tender outcome and commits invoice, stock movements, tender records, audit records and Outbox messages within the required local transaction boundaries. The application records the cashier's confirmation; it does not independently verify the bank transaction.
+4. Branch.Api records the cashier-confirmed successful tender outcome and commits invoice, stock movements, tender records, audit records and Outbox messages within the required local transaction boundaries. A failed or cancelled terminal outcome must not be recorded as a successful tender. The application records the cashier's confirmation; it does not independently verify the bank transaction.
 5. The API returns the durable local invoice result and invoice number.
 6. Central synchronization happens asynchronously through TD-05.
 
