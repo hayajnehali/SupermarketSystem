@@ -1,7 +1,7 @@
 # TD-24 — Comprehensive Database Schema Consistency Review and ERD Baseline
 
-**Version:** 0.1  
-**Status:** Proposed for owner review  
+**Version:** 0.2  
+**Status:** Revised for owner review after TD-29  
 **Date:** 2026-11-07  
 **Scope:** Cross-document verification of TD-13 through TD-23 against TD-12 and the approved BRS/decision baseline.  
 **Purpose:** Confirm table inventory coverage, primary-key convention, ownership, relationships and implementation boundaries before producing the final module ERDs and physical schema package.
@@ -159,7 +159,7 @@ The following mismatches were corrected in the documentation branch for this rev
 
 These items require technical resolution before implementation, but they do not reopen approved business decisions:
 
-1. **Identity mapping:** Final mapping of employee/customer identities to ASP.NET Core Identity Guid-key tables, including token/session persistence and Offline credential validation.
+1. **Identity physical enforcement:** TD-29 now defines the unified `auth.Users` store, exclusive Employee/Customer `AccountType`, separate one-to-one business profiles, and employee role mapping. The remaining gate is the SQL Server-enforced cross-profile XOR mechanism plus selected token/session persistence and Offline credential-verifier design.
 2. **POS electronic provider topology:** Decide whether Branch terminal integration calls the provider directly or is mediated by Central API; provider secrets/webhook authority remain Central-protected.
 3. **Payment-provider idempotency:** Define provider-specific keys, callback event ordering and ambiguous timeout recovery.
 4. **Promotion limits while Offline:** A disconnected Branch cannot know another Branch's new redemptions. A technically exact cross-branch global limit requires a centrally allocated quota/reservation mechanism; do not silently claim global exactness.
@@ -177,14 +177,14 @@ These items require technical resolution before implementation, but they do not 
 
 | Gate | State |
 |---|---|
-| Complete candidate table inventory | Prepared |
+| Complete candidate table inventory | Revised for TD-29; owner review pending |
 | Central/Branch ownership map | Prepared |
 | Logical relationships/cardinalities | Prepared |
 | Guid PK and local FK convention | Verified in documents |
 | Module-level ERD baseline | Prepared |
 | Detailed domain table schemas TD-15–TD-23 | Prepared for owner review |
 | Payroll detailed schema | Intentionally deferred |
-| Final module ERDs and relationship validation | Next |
+| Final module ERDs and relationship validation | Revised for TD-29; owner review pending |
 | SQL physical deployment design and index/concurrency proof | Not started |
 | EF Core entities/configurations | Not started |
 | SQL migrations and integration tests | Not started |
