@@ -1,7 +1,7 @@
 # TD-15 — Detailed Logical Schema: Organization and Access
 
 **Version:** 0.2  
-**Status:** Revised for owner review after TD-29  
+**Status:** Approved by owner (2026-11-28)  
 **Date:** 2026-11-07  
 **Scope:** Central organization and employee administration, branch assignment, RBAC catalogue, device registry and branch authorization snapshots.  
 **Depends on:** Approved BRS Unit 01, TD-03, TD-04, TD-06, TD-13 and TD-14.
