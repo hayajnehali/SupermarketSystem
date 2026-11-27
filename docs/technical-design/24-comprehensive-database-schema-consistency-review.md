@@ -1,7 +1,7 @@
 # TD-24 — Comprehensive Database Schema Consistency Review and ERD Baseline
 
 **Version:** 0.2  
-**Status:** Revised for owner review after TD-29  
+**Status:** Approved by owner (2026-11-28) — logical baseline; physical schemas remain pending  
 **Date:** 2026-11-07  
 **Scope:** Cross-document verification of TD-13 through TD-23 against TD-12 and the approved BRS/decision baseline.  
 **Purpose:** Confirm table inventory coverage, primary-key convention, ownership, relationships and implementation boundaries before producing the final module ERDs and physical schema package.
