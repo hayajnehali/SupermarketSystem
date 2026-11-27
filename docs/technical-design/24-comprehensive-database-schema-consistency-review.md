@@ -133,7 +133,7 @@ flowchart LR
 
 ### 5.1 Transaction ownership
 
-- POS sale completion is atomic within the Branch database for invoice, stock issue, payment allocation and Outbox record; provider confirmation is a trusted external result correlated by GUID.
+- POS sale completion is atomic within the Branch database for invoice, stock issue, payment allocation and Outbox record. Online provider payments are verified centrally; an independent POS bank-terminal result is recorded by the cashier and is not represented as automated provider verification.
 - Online order confirmation is Central-owned; Branch stock reservation is a separate local atomic operation and must be acknowledged before the order proceeds.
 - Stocktake freeze/adjustment, transfer, excess receiving, disposal, cancellation and refund-method exception use Central decisions followed by authenticated Branch commands where physical Branch state must change.
 - No distributed SQL transaction is assumed. Outbox/Inbox, OperationId idempotency and durable acknowledgements provide cross-site recovery.
@@ -160,7 +160,7 @@ The following mismatches were corrected in the documentation branch for this rev
 These items require technical resolution before implementation, but they do not reopen approved business decisions:
 
 1. **Identity physical enforcement:** TD-29 now defines the unified `auth.Users` store, exclusive Employee/Customer `AccountType`, separate one-to-one business profiles, and employee role mapping. The remaining gate is the SQL Server-enforced cross-profile XOR mechanism plus selected token/session persistence and Offline credential-verifier design.
-2. **POS electronic provider topology:** Decide whether Branch terminal integration calls the provider directly or is mediated by Central API; provider secrets/webhook authority remain Central-protected.
+2. **POS bank-terminal workflow:** Resolved. The bank terminal is operated independently outside the application; the cashier records the observed successful outcome and optional receipt/reference. No API, SDK, network integration, provider event or automated terminal verification is used. Online provider integration remains Central-owned.
 3. **Payment-provider idempotency:** Define provider-specific keys, callback event ordering and ambiguous timeout recovery.
 4. **Promotion limits while Offline:** A disconnected Branch cannot know another Branch's new redemptions. A technically exact cross-branch global limit requires a centrally allocated quota/reservation mechanism; do not silently claim global exactness.
 5. **Offline loyalty redemption:** Define local balance/quota handling and Central reconciliation of concurrent offline redemptions while preserving the approved loyalty policy.
