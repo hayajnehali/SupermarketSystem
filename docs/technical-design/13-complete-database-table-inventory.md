@@ -1,7 +1,7 @@
 # TD-13 — Complete Database Table Inventory and Ownership Blueprint
 
-**Version:** 0.1  
-**Status:** Proposed for owner review  
+**Version:** 0.2  
+**Status:** Revised for owner review after TD-29  
 **Date:** 2026-11-07  
 **Depends on:** Approved BRS decisions, TD-01, TD-03, TD-04, TD-05, TD-09, TD-11 and approved physical messaging design TD-12.  
 **Purpose:** Establish a complete first-pass inventory of the relational data areas and candidate tables before detailed entity/column design.  
@@ -37,12 +37,14 @@ A projection is a locally stored representation of centrally owned data or synch
 
 The following is the complete first-pass inventory derived from the BRS units 01–12 and the approved TD-03 module map. It deliberately separates authoritative records from branch projections. A table marked C+B projection must be modeled separately in each database and synchronized through the approved boundary.
 
-### 3.1 Organization and access
+### 3.1 Identity, organization and access
 
 | Candidate table | Placement | Purpose / notes |
 |---|---|---|
+| `auth.Users` | C | Single ASP.NET Core Identity user store for Employee and Customer accounts; stores shared credentials/security fields and required `AccountType` (Employee or Customer). Each account has exactly one matching business profile. |
+| `auth.UserRoles` | C | Employee role-membership join for the Identity role store; custom Guid PK, unique UserId/RoleId pair, and maps to the existing `org.Roles` catalogue. Employee accounts only. |
 | `org.Branches` | C | Branch master, branch code, activation/suspension and configuration identity. |
-| `org.Employees` | C | Employee profile and employment status; identity credentials remain in the identity subsystem. |
+| `org.Employees` | C | Employee business profile with a unique required UserId FK to auth.Users; no credentials are stored here. |
 | `org.EmployeeBranchAssignments` | C | Effective-dated employee-to-branch assignments and history. |
 | `org.Roles` | C | Centrally managed roles. |
 | `org.Permissions` | C | Permission catalogue. |
@@ -56,7 +58,7 @@ The following is the complete first-pass inventory derived from the BRS units 01
 | `org.RuntimePolicies` | C | Centrally governed runtime/Offline policy definitions and version history. |
 | `org.BranchRuntimePolicies` | B projection of C | Last centrally approved Offline/runtime policy and version. |
 
-**Identity implementation note:** ASP.NET Core Identity persistence tables are framework-owned implementation tables. Their exact schema and relationship to `org.Employees` will be specified in the identity design; do not create a second custom password/credential store. Local Offline authentication material must follow TD-06 security constraints.
+**Identity implementation note:** `auth.Users` is the sole Central Identity user store for Employee and Customer accounts. `org.Employees` and `crm.Customers` remain separate business-profile tables, each with a unique required `UserId` FK to `auth.Users`; the `AccountType` values are mutually exclusive, so one user cannot have both profiles. `auth.UserRoles` maps employee role membership to the existing `org.Roles` catalogue. Other Identity relationship tables are included only when required, use Guid PKs, and must be explicitly inventoried. The final SQL Server mechanism enforcing cross-table profile exclusivity remains a physical-design gate. Local Offline authentication material must follow TD-06 and TD-29 security constraints.
 
 ### 3.2 Product catalog
 
@@ -267,7 +269,7 @@ The 15-minute window, late-payment handling, central cancellation approval befor
 
 | Candidate table | Placement | Purpose / notes |
 |---|---|---|
-| `crm.Customers` | C authoritative; B restricted local projection | Customer identity/profile; unique verified phone policy. |
+| `crm.Customers` | C authoritative; B restricted local projection | Customer business profile with a unique required UserId FK to auth.Users; unique verified phone policy; no credentials stored here. |
 | `crm.CustomerPhoneVerifications` | C | OTP verification attempts/results; never store plaintext OTP values. |
 | `crm.CustomerDuplicateResolutions` | C | Central resolution of pre-existing duplicate customer accounts while preserving transaction history. |
 | `crm.LoyaltyProgramRules` | C | Centrally managed earning, redemption, expiry and eligibility rules. |
