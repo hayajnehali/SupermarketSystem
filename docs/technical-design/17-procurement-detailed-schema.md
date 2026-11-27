@@ -1,7 +1,7 @@
 # TD-17 — Detailed Logical Schema: Suppliers and Procurement
 
 **Version:** 0.1  
-**Status:** Proposed for owner review  
+**Status:** Approved by owner (2026-11-28)  
 **Date:** 2026-11-07  
 **Scope:** Central supplier master and purchasing governance; branch-originated needs requests and receiving evidence; purchase orders; supplier invoices and three-way matching; supplier returns and compensation.  
 **Depends on:** Approved BRS Unit 03, approved PUR-01–PUR-11 decisions, TD-03, TD-04, TD-13 and TD-14.
