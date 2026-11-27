@@ -36,7 +36,7 @@
 | [TD-26 — SQL Server Physical Schema Standards](26-sql-server-physical-schema-standards.md) | SQL Server 2025 data types, Guid keys, constraints, indexes, concurrency, EF Core 10 mappings and migration standards | Proposed for owner review |
 | [TD-27 — Clean Architecture and Pragmatic DDD](27-clean-architecture-and-pragmatic-ddd.md) | Dependency direction, Domain/Application/Infrastructure/hosts, pragmatic DDD, project boundaries and testing rules | Proposed for owner approval |
 | [TD-28 — Solution and Project Structure Blueprint](28-solution-project-structure-blueprint.md) | Exact .NET solution layout, Central/Branch project responsibilities, module folders, dependency rules, EF Core and test boundaries | Proposed for owner approval |
-| [TD-29 — Unified Identity Account Model](29-identity-persistence-and-separation.md) | One ASP.NET Core Identity user store; exclusive Employee/Customer account type; separate business profiles; role and Offline boundaries | Approved by owner (2026-11-08) |
+| [TD-29 — Unified Identity Account Model](29-identity-persistence-and-separation.md) | One ASP.NET Core Identity user store; exclusive Employee/Customer account type; separate business profiles; role and Offline boundaries | Approved by owner (2026-11-08) |\n| [TD-30 — Final Technical Decisions](30-final-technical-decisions.md) | Eight owner-approved decisions covering Offline Identity, stock/refund concurrency, Offline promotions, supplier payments, rounding, promotion stacking and data retention | Approved by owner (2026-11-28) |
 
 ## Reviews
 
@@ -45,7 +45,7 @@
 ## Next design sequence
 
 1. Review and approve the complete logical schema package TD-13–TD-25, including the inventory, ownership map, relationships and module ERDs.
-2. Resolve the implementation-impacting technical gates recorded in TD-24 (identity mapping, provider topology, Offline usage limits, rounding, concurrency and retention).
+2. Apply TD-30 as the decision record for the eight closed technical gates; complete the remaining detailed implementation specifications identified there (such as cryptographic design, SQL concurrency algorithms, rounding tie-breaker, promotion precedence and retention periods).
 3. Review/approve the physical SQL Server and EF Core standards in TD-26.
 4. Finalize physical mappings module by module, starting with Organization/Access, then Catalog/Pricing, Procurement/Inventory, POS/Payments, Online/CRM/Fulfillment and Operations.
 5. Produce Central/Branch EF Core configurations and separate migration plans.
