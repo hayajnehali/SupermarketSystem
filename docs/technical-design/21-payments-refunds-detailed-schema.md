@@ -31,7 +31,7 @@
 | PaymentTransactions | Authoritative for online orders; consolidated history for POS | Authoritative POS transaction record |
 | PaymentAttempts | Authoritative online provider attempt history | Not used for independent POS bank-terminal transactions |
 | PaymentProviderEvents | Authoritative online webhook/callback inbox | No |
-| Refunds | Authoritative online electronic refund workflow; synchronized history | Authoritative POS cash and manually recorded bank-terminal refund history |
+| Refunds | Central approval and consolidated refund history | Authoritative Branch cash payout record for POS and online-order refunds |
 | RefundLines | Same authority as Refunds | Same |
 | RefundAttempts | Central provider refund attempts | No provider refund execution authority |
 | RefundMethodExceptionRequests | Central review copy | Branch request origin where initiated at POS |
@@ -190,7 +190,7 @@ POS and online transaction records preserve their source GUIDs when synchronized
 
 ## 5. Refunds and refund-method exceptions
 
-### 5.1 `payments.Refunds` — Central for online electronic; Branch for POS cash and manually recorded bank-terminal refunds
+### 5.1 `payments.Refunds` — Central approval/history; Branch cash payout
 
 | Column | SQL Server type | Null | Rule |
 |---|---|---:|---|
@@ -207,8 +207,6 @@ POS and online transaction records preserve their source GUIDs when synchronized
 | RequestedByUserId | uniqueidentifier | No | Actor |
 | RequestedAtUtc | datetime2(3) | No | UTC |
 | CompletedAtUtc | datetime2(3) | Yes | UTC |
-| ExternalReference | nvarchar(150) | Yes | Online provider refund reference or manually entered bank-terminal refund receipt/reference |
-| CompletedByEmployeeId | uniqueidentifier | Yes | Required for manually recorded Branch POS refund completion; null for Central provider completion |
 | Reason | nvarchar(1000) | No | Refund reason |
 | IdempotencyKey | uniqueidentifier | No | Stable refund operation identity |
 | RowVersion | rowversion | No | Concurrency token |
@@ -341,13 +339,12 @@ The customer refund policy is cash-only. This table is not part of the approved 
 
 | Workflow | Owning transaction boundary | Related records |
 |---|---|---|
-| POS cash payment | Branch DB | PaymentTransaction + PaymentAttempt/confirmation + SalePaymentAllocation + CashDrawerTransaction |
-| POS electronic payment (bank terminal) | Branch transaction record with cashier-recorded confirmation | PaymentTransaction GUID + cashier confirmation + optional bank receipt/reference + allocation; sale completes only after the cashier records a successful terminal outcome. No provider API, SDK, webhook, PaymentAttempt or automated terminal verification is involved |
-| POS bank-card refund | Branch DB | Refund + cashier-recorded outcome + optional bank-terminal receipt/reference; no provider API integration |
+| POS cash payment | Branch DB | PaymentTransaction + cashier confirmation + SalePaymentAllocation + CashDrawerTransaction |
+| POS electronic payment (independent bank terminal) | Branch transaction record with cashier-recorded confirmation | PaymentTransaction GUID + cashier confirmation + optional bank receipt/reference + allocation; sale completes only after the cashier records a successful terminal outcome. No provider API, SDK, webhook, PaymentAttempt or automated terminal verification is involved |
 | Online checkout | Central DB | Order + PaymentTransaction + reservation state; Branch stock reservation is a separate local transaction |
 | Provider callback | Central DB | ProviderEvent deduplication + transaction state transition + Outbox/event publication |
 | POS cash refund | Branch DB | Refund + RefundLines + CashDrawerTransaction + Outbox |
-| Online electronic refund | Central provider workflow | Refund + RefundLines + RefundAttempts + provider event + Outbox |
+| Online order cash refund | Central approval plus Branch payout | Refund + RefundLines + Central decision + Branch CashDrawerTransaction + Outbox; no provider refund execution |
 | Refund-method exception | Central approval boundary | Request + Central decision + authorized refund command |
 | Provider reconciliation | Central DB | Reconciliation header + lines + reviewed resolution |
 
@@ -372,7 +369,7 @@ No distributed transaction is used. Each local transaction is atomic and cross-s
 1. POS bank-terminal topology is resolved: the bank terminal is independent and has no application integration; cashier records the successful result and optional bank reference. Online provider integration remains Central-owned.
 2. Define the online provider-specific idempotency key and external-reference uniqueness rules before integration.
 3. Define how the original payment method is resolved when one invoice used split tender and the return amount spans multiple tender allocations; each refund must be bounded by its own original payment.
-4. Define exact cash refund permission and whether a manager approval is required beyond the approved original-method exception rule.
+4. The approved customer refund rule is cash-only; confirm the detailed handover workflow for online-order cash refunds at the responsible Branch.
 5. Define the provider event retention and sanitized payload policy; do not retain sensitive cardholder data.
 6. Define partial refund retry/reconciliation behavior when provider confirmation is delayed or ambiguous.
 7. Define how a Central refund exception decision reaches a disconnected Branch and prevents alternate-method payment before approval.
