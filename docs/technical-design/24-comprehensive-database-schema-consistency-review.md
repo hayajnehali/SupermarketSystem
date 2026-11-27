@@ -161,7 +161,7 @@ This is the single current list of unresolved technical decisions after applying
 
 ### 7.1 Resolved decisions — carry forward as constraints
 
-1. **Unified Identity:** One Central `auth.Users` ASP.NET Core Identity store with Guid keys and required `AccountType` (Employee or Customer); separate one-to-one `org.Employees` / `crm.Customers` profiles; one account cannot own both profiles. Employee roles map to `org.Roles`. The exact SQL Server cross-profile XOR enforcement mechanism remains open (see below).
+1. **Unified Identity:** One Central `auth.Users` ASP.NET Core Identity store with Guid keys and required `AccountType` (Employee or Customer); separate one-to-one `org.Employees` / `crm.Customers` profiles; one account cannot own both profiles. Employee roles map to `org.Roles`. Application Layer validation and transactional profile creation enforce this separation; no database-level cross-table XOR constraint is required. Ordinary per-table PK/FK/unique constraints remain applicable.
 2. **Independent POS bank terminal:** The bank terminal is operated independently outside the application. Cashier records the observed successful result and optional receipt/reference. No terminal API, SDK, network integration, provider event or automated bank verification.
 3. **Customer refunds:** All customer refunds are paid in cash from the responsible Branch cash drawer, regardless of original tender. If the original payment included electronic tender, prior Central approval and a recorded reason are mandatory. Refunds remain linked to original successful payment transaction(s); cumulative successful refunds cannot exceed the paid amount. No provider-based customer refund execution.
 4. **OTP policy:** Expiry, maximum verification attempts, resend cooldown and resend limits are fixed application-code constants, not centrally configurable. Exact numeric values and provider/security implementation details remain a security implementation specification, not a schema setting.
@@ -175,7 +175,6 @@ This is the single current list of unresolved technical decisions after applying
 
 ### 7.2 Open technical decisions — review one at a time
 
-1. **Identity XOR enforcement (High):** Select the SQL Server-enforced design that guarantees an Employee account has exactly one `org.Employees` profile and no `crm.Customers` profile, and vice versa. The user explicitly deferred this choice; no mechanism is selected here.
 2. **Identity/session persistence (High):** Confirm which Identity relationship tables are actually required (user roles, claims, logins, tokens, role claims), token/session persistence and revocation model, while preserving the unified store and employee/customer authorization separation.
 3. **Offline credential verifier (High):** Approve the threat model, cryptographic construction, key protection, revocation and lifecycle for Branch-local employee Offline authentication. Branch DB must not copy Central password hashes, security stamps or reusable Central tokens.
 4. **Payment-provider idempotency (High):** Define provider-specific idempotency keys, callback ordering, duplicate/out-of-order event handling and ambiguous timeout recovery for Central online payments.
@@ -196,7 +195,6 @@ This is the single current list of unresolved technical decisions after applying
 
 - **Payroll detailed fields/tables:** remain undefined until a separate approved tracking scope exists.
 - **Tax/e-invoicing engine:** placeholders only; no tax engine or provider integration.
-- **Identity XOR mechanism:** remains an explicit owner decision; do not infer or implement a preferred mechanism before approval.
 
 ## 8. Readiness gate
 
