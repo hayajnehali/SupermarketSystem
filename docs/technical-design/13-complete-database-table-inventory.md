@@ -1,7 +1,7 @@
 # TD-13 — Complete Database Table Inventory and Ownership Blueprint
 
 **Version:** 0.2  
-**Status:** Revised for owner review after TD-29  
+**Status:** Approved by owner (2026-11-28)  
 **Date:** 2026-11-07  
 **Depends on:** Approved BRS decisions, TD-01, TD-03, TD-04, TD-05, TD-09, TD-11 and approved physical messaging design TD-12.  
 **Purpose:** Establish a complete first-pass inventory of the relational data areas and candidate tables before detailed entity/column design.  
