@@ -1,7 +1,7 @@
 # TD-15 — Detailed Logical Schema: Organization and Access
 
-**Version:** 0.1  
-**Status:** Proposed for owner review  
+**Version:** 0.2  
+**Status:** Revised for owner review after TD-29  
 **Date:** 2026-11-07  
 **Scope:** Central organization and employee administration, branch assignment, RBAC catalogue, device registry and branch authorization snapshots.  
 **Depends on:** Approved BRS Unit 01, TD-03, TD-04, TD-06, TD-13 and TD-14.
@@ -78,6 +78,7 @@ A branch database does not contain the full Central employee directory. It conta
 | Column | SQL Server type | Null | Rule |
 |---|---|---:|---|
 | EmployeeId | uniqueidentifier | No | PK; sequential Guid |
+| UserId | uniqueidentifier | No | Unique FK → `auth.Users.UserId`; linked user must have `AccountType = Employee` |
 | EmployeeNumber | nvarchar(30) | No | Unique employee/business identifier |
 | FullName | nvarchar(200) | No | Employee display/legal name as maintained by Central |
 | Phone | nvarchar(32) | Yes | Contact number |
@@ -94,6 +95,8 @@ A branch database does not contain the full Central employee directory. It conta
 **Constraints and indexes**
 - PK clustered on `EmployeeId`.
 - Unique index on `EmployeeNumber`.
+- Unique index on `UserId` to enforce one Employee profile per Identity account.
+- Unique alternate key on `(EmployeeId, UserId)` for the composite FK used by `org.EmployeeSessions`.
 - Optional filtered unique indexes for normalized Phone/Email only if the approved employee identity policy requires uniqueness; do not assume employee phone is globally unique from the BRS.
 - Check constraint: `EndDate IS NULL OR HireDate IS NULL OR EndDate >= HireDate`.
 - Suspend/end employee rather than deleting; session revocation and new sign-in denial are enforced by the identity/session subsystem.
@@ -221,7 +224,7 @@ A branch database does not contain the full Central employee directory. It conta
 |---|---|---:|---|
 | EmployeeSessionId | uniqueidentifier | No | PK; sequential Guid |
 | EmployeeId | uniqueidentifier | No | FK → `org.Employees.EmployeeId` |
-| IdentityUserId | uniqueidentifier | No | Identity user GUID reference; FK added only if identity user table is in this same database |
+| IdentityUserId | uniqueidentifier | No | FK → `auth.Users.UserId`; must identify the same Employee account linked by EmployeeId |
 | DeviceId | uniqueidentifier | Yes | FK → `org.RegisteredDevices.DeviceId` when session is device-bound |
 | ActiveBranchId | uniqueidentifier | No | FK → `org.Branches.BranchId`; exactly one active branch context |
 | IssuedAtUtc | datetime2(3) | No | UTC |
@@ -235,7 +238,7 @@ A branch database does not contain the full Central employee directory. It conta
 **Constraints and indexes**
 - Index `EmployeeId, RevokedAtUtc, ExpiresAtUtc`.
 - Index `IdentityUserId`.
-- FK Employee, Branch and optional Device; no cascade delete.
+- FK Employee, `auth.Users`, Branch and optional Device; enforce the EmployeeId/IdentityUserId pair with a composite FK to a unique `(EmployeeId, UserId)` key on `org.Employees`, so the session cannot point to a different Identity account; no cascade delete.
 - Multiple concurrent sessions per employee are allowed; each session has one active branch context.
 - Branch changes update ActiveBranchId and emit an audit event containing previous branch, new branch, employee and time.
 - Do not store bearer/refresh token plaintext in this table. Exact session/token persistence is part of TD-06.
@@ -331,16 +334,40 @@ A branch database does not contain the full Central employee directory. It conta
 
 ## 4. Identity integration boundary
 
-The BRS requires employee accounts and customer accounts; TD-06 keeps employee, customer, device and service identities logically distinct. The detailed identity provider, password/token/session protocol and Offline credential-verifier remain deferred.
+TD-29 selects one ASP.NET Core Identity user store for Employee and Customer accounts. The account category is stored as a required `AccountType` discriminator; roles do not determine or change the account category.
 
-For implementation, if ASP.NET Core Identity is selected:
-- Configure `Guid` keys for every Identity entity, including user, role, user-role join, claims, logins and tokens. The default integer/composite Identity key shapes must not violate the project-wide Guid-PK rule.
-- Map the employee role store to the same `org.Roles` identity catalogue; do not maintain a duplicate set of role IDs in a second role table.
-- Keep customer credentials logically separate from employee credentials and employee authorization roles.
-- Every Identity persistence table that is introduced must be listed in the final database inventory and have a Guid PK; do not silently accept framework-default integer primary keys.
-- Keep Branch authorization snapshots free of password hashes and plaintext or reusable authentication tokens. Offline credential validation requires a separately reviewed secure design.
+### 4.1 `auth.Users` — Central unified Identity store
 
-No final authentication provider, token format, credential storage, MFA method or Offline verifier is selected by this document.
+- One custom `IdentityUser<Guid>`-based record per account, mapped to `auth.Users` with a Guid primary key.
+- Required `AccountType` value: Employee or Customer.
+- Shared credential/security fields are stored once in this table (normalized login identifiers, password hash, security stamp, lockout and only the configured Identity features).
+- Employee and Customer profile data is not duplicated into this table.
+- Every active Employee account has exactly one `org.Employees` profile; every active Customer account has exactly one `crm.Customers` profile. The opposite profile must not exist.
+- `org.Employees.UserId` and `crm.Customers.UserId` are unique, required FKs to `auth.Users.UserId`.
+- Account creation and its matching profile creation are one atomic application operation.
+- Account-type conversion is not a profile edit; the default is to create a separate account. Any exceptional conversion requires a dedicated audited lifecycle operation.
+
+### 4.2 Identity roles and relationship tables
+
+- Keep `org.Roles`, `org.Permissions`, `org.RolePermissions` and `org.EmployeePermissionGrants` as the employee operational RBAC catalogue.
+- Map the Identity role store to the same `org.Roles` records; do not create a duplicate role catalogue.
+- Persist Employee role membership through a custom Identity user-role join with a Guid surrogate PK and unique `(UserId, RoleId)`; Customer accounts cannot receive employee role membership.
+- Add claim/login/token relationship tables only when the selected Identity features require them. Every introduced Identity table must be explicitly mapped, inventoried and use Guid PKs.
+
+### 4.3 Authentication and Branch boundary
+
+- Employee and Customer authentication use the same Central credential store but separate account-type authorization boundaries and token audiences/schemes as defined by TD-29.
+- Employee sessions reference both the Employee profile and its `auth.Users` account; customer session/revocation persistence is separate if required by the selected token strategy.
+- Branch databases never store Central password hashes, Identity security stamps, refresh-token secrets or reusable Central credentials.
+- Branch Offline employee authentication uses a separately designed, protected and time-bounded verifier artifact; its cryptographic construction remains deferred to a focused threat review.
+
+### 4.4 Database enforcement gate
+
+- SQL Server CHECK constraints cannot inspect another table. Unique FKs on each profile prevent duplicate profiles of the same type but do not alone prevent one user from having both profile types.
+- Before physical schema approval, select and test a database-enforced cross-profile XOR mechanism (for example a shared account-subtype registry or an equivalent transactionally enforced constraint strategy). Application validation alone is not sufficient.
+- The exact physical Identity columns and optional relationship tables must be reconciled with TD-13, TD-14, TD-22 and TD-29 before implementation.
+
+No Identity entities, DDL or migrations are created by this document.
 
 ## 5. Requirement traceability
 

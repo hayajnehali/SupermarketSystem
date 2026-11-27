@@ -1,7 +1,7 @@
 # TD-25 — Module-Level Entity Relationship Diagrams
 
-**Version:** 0.1  
-**Status:** Proposed for owner review  
+**Version:** 0.2  
+**Status:** Revised for owner review after TD-29  
 **Date:** 2026-11-07  
 **Depends on:** TD-12 through TD-24.
 
@@ -19,11 +19,15 @@ This document converts the approved candidate inventory and logical relationship
 
 ```mermaid
 erDiagram
+    USERS ||--o| EMPLOYEES : employee_account
+    USERS ||--o| CUSTOMERS : customer_account
     BRANCHES ||--o{ EMPLOYEE_BRANCH_ASSIGNMENTS : has
     EMPLOYEES ||--o{ EMPLOYEE_BRANCH_ASSIGNMENTS : assigned
     ROLES ||--o{ ROLE_PERMISSIONS : grants
     PERMISSIONS ||--o{ ROLE_PERMISSIONS : included_in
     EMPLOYEES ||--o{ EMPLOYEE_PERMISSION_GRANTS : receives
+    USERS ||--o{ USER_ROLES : has_employee_roles
+    ROLES ||--o{ USER_ROLES : assigned_to
     EMPLOYEES ||--o{ EMPLOYEE_SESSIONS : authenticates
     REGISTERED_DEVICES ||--o{ EMPLOYEE_SESSIONS : validates
     BRANCH_ACCESS_SNAPSHOTS ||--o{ BRANCH_ACCESS_SNAPSHOT_EMPLOYEES : contains
@@ -33,7 +37,7 @@ erDiagram
     RUNTIME_POLICIES ||--o{ BRANCH_RUNTIME_POLICIES : publishes
 ```
 
-**Authority:** Branches, employees, roles, permissions, devices and runtime policy are centrally governed. Branch access snapshots and runtime policy copies are local projections.
+**Authority:** `auth.Users` is the single Central Identity store. Each account has exactly one type: Employee or Customer. `org.Employees` and `crm.Customers` are separate one-to-one business profiles, mutually exclusive by `AccountType`; the final SQL Server XOR enforcement mechanism remains a physical-design gate. Employee roles map to the existing `org.Roles` catalogue through `auth.UserRoles`; Customer accounts receive no employee operational roles. Branch access snapshots and runtime policy copies are local projections.
 
 ## 3. Product catalog ERD
 
@@ -203,6 +207,7 @@ erDiagram
 
 ```mermaid
 erDiagram
+    USERS ||--o| CUSTOMERS : customer_account
     CUSTOMERS ||--o{ CUSTOMER_PHONE_VERIFICATIONS : verifies
     CUSTOMERS ||--o{ CUSTOMER_DUPLICATE_RESOLUTIONS : canonical_customer
     CUSTOMERS ||--o| CUSTOMER_DUPLICATE_RESOLUTIONS : duplicate_customer
@@ -252,7 +257,7 @@ erDiagram
     PICKUP_NON_COLLECTION_CASES ||--o{ PICKUP_NON_COLLECTION_DECISIONS : decided
 ```
 
-**Authority:** Central owns customer profiles, online order state, loyalty ledger/rules, complaints, assignments, disputes and pickup retention decisions. Branch stores assigned-order execution data only. Delivery attempt uniqueness is one per OrderId.
+**Authority:** Central owns the unified Identity account store and customer business profiles. A Customer profile has exactly one `auth.Users` account with `AccountType = Customer`; the same user cannot also have an Employee profile. Central also owns online order state, loyalty ledger/rules, complaints, assignments, disputes and pickup retention decisions. Branch stores assigned-order execution data only. Delivery attempt uniqueness is one per OrderId.
 
 ## 10. Operations, maintenance, alerts, audit and reporting ERD
 
