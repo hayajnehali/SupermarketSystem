@@ -1,7 +1,7 @@
 # TD-22 — Detailed Logical Schema: Online Orders, Customer, Loyalty and Fulfillment
 
 **Version:** 0.2  
-**Status:** Revised for owner review after TD-29  
+**Status:** Approved by owner (2026-11-28)  
 **Date:** 2026-11-07  
 **Scope:** Customer profiles/verification/duplicate resolution, carts, online orders and reservations, delivery areas/fees, cancellation, customer notifications, loyalty points, complaints, picking, delivery/pickup, failed-delivery returns, disputes and uncollected pickup orders.  
 **Depends on:** Approved BRS Units 08–09 and 11, WEB-001–WEB-026, DLV-001–DLV-019, CRM-CUS/LOY/CMP requirements, P31–P40, ADR/ORD/DLV decisions, TD-03, TD-04, TD-05, TD-09, TD-13, TD-14, TD-19, TD-20 and TD-21.

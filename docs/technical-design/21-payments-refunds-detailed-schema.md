@@ -1,7 +1,7 @@
 # TD-21 — Detailed Logical Schema: Payments, Refunds and Reconciliation
 
 **Version:** 0.1  
-**Status:** Proposed for owner review  
+**Status:** Approved by owner (2026-11-28)  
 **Date:** 2026-11-07  
 **Scope:** Cash and electronic payment methods, online payment provider configuration, POS transactions using an independent bank POS terminal with cashier-recorded outcomes, online payment transactions, provider attempts/events, customer cash-only refunds and Central approval for cash refunds against electronically paid transactions.  
 **Depends on:** Approved BRS Unit 07, PMT-01–PMT-16, P11–P20, approved online checkout/payment rules, TD-03, TD-04, TD-05, TD-09, TD-12, TD-13 and TD-14.

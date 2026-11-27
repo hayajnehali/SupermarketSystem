@@ -1,7 +1,7 @@
 # TD-26 — SQL Server Physical Schema and EF Core Mapping Standards
 
 **Version:** 0.1  
-**Status:** Proposed for owner review  
+**Status:** Approved by owner (2026-11-28)  
 **Date:** 2026-11-07  
 **Depends on:** Approved TD-01–TD-12 and the logical database package TD-13–TD-25.  
 **Technology baseline:** .NET 10 / ASP.NET Core 10, EF Core 10, SQL Server 2025.

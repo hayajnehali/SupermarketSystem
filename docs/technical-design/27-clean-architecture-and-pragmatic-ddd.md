@@ -1,7 +1,7 @@
 # TD-27 — Backend Code Architecture: Clean Architecture and Pragmatic DDD
 
 **Version:** 0.1  
-**Status:** Proposed for owner approval  
+**Status:** Approved by owner (2026-11-28)  
 **Date:** 2026-11-07  
 **Depends on:** Approved TD-01, TD-02, TD-03, TD-04, TD-05, TD-06, TD-09, and logical database package TD-13–TD-26.
 

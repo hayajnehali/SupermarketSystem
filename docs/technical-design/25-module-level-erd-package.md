@@ -1,7 +1,7 @@
 # TD-25 — Module-Level Entity Relationship Diagrams
 
 **Version:** 0.2  
-**Status:** Revised for owner review after TD-29  
+**Status:** Approved by owner (2026-11-28)  
 **Date:** 2026-11-07  
 **Depends on:** TD-12 through TD-24.
 

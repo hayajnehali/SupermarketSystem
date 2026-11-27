@@ -1,7 +1,7 @@
 # TD-17 — Detailed Logical Schema: Suppliers and Procurement
 
 **Version:** 0.1  
-**Status:** Proposed for owner review  
+**Status:** Approved by owner (2026-11-28)  
 **Date:** 2026-11-07  
 **Scope:** Central supplier master and purchasing governance; branch-originated needs requests and receiving evidence; purchase orders; supplier invoices and three-way matching; supplier returns and compensation.  
 **Depends on:** Approved BRS Unit 03, approved PUR-01–PUR-11 decisions, TD-03, TD-04, TD-13 and TD-14.
@@ -554,3 +554,10 @@ Central owns approval and supplier communication; Branch prepares and physically
 TD-17 specifies Supplier & Procurement only. It does not create SQL tables, EF Core entities, DDL or migrations. The next detailed group is Inventory & Stock, including balances, movements, batch issue, reservations, stocktake freeze/close, transfers, quarantine, disposal and inventory reconciliation.
 
 **No SQL table, EF Core entity, DDL or migration is created by this document.**
+
+
+## Owner-approved allocation amendment (TD-31, 2026-11-28)
+
+The supplier payment model must support one Central-owned payment settling multiple supplier invoices. The logical schema is amended to use a payment header (SupplierPayments) and child allocation rows (SupplierPaymentAllocations), or equivalent names consistent with the final naming review. Each allocation references one supplier invoice. The sum of allocations cannot exceed the payment amount, and allocations cannot exceed each invoice's outstanding payable amount. Posting allocations and updating payment settlement state occur in one Central transaction.
+
+This amendment supersedes any earlier one-payment-to-one-invoice assumption in this document. Central remains the only authority for supplier payment recording and settlement. Branches may submit receiving facts and invoice evidence but cannot confirm supplier payment. The physical columns, constraints and indexes are part of the separate Central schema design; no DDL or migration is authorized here.
