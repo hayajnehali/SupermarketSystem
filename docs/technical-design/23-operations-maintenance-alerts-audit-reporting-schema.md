@@ -491,4 +491,29 @@ Before columns or supporting tables are designed, the project owner must approve
 
 TD-23 specifies Operations, Maintenance, Alerts, Audit and Reporting. It does not create SQL tables, EF Core entities, DDL or migrations. The next step is a cross-document schema consistency review: compare TD-13 inventory against TD-14 relationships and TD-15–TD-23 detailed specifications, reconcile all missing/duplicate entities, then produce the final ERD and implementation-ready schema package.
 
+
+
+## 13. Owner-approved decisions — 2026-11-28
+
+The project owner reviewed and approved the following TD-23 decisions. These decisions refine the proposed schema and implementation boundaries; they do not authorize DDL, EF Core entities or migrations.
+
+1. **Expenses:** Central approval is mandatory before a Branch executes an expense. After execution, the Branch records the actual amount and supporting final documents; Central reviews the execution before the expense is considered reviewed/complete.
+2. **Payroll:** Keep payroll tracking as a Central-only placeholder. Detailed payroll fields, calculations and supporting workflows remain deferred; no payroll engine, attendance/leave system or statutory payroll integration is implied.
+3. **Cash deposits:** A single Central cash deposit may include multiple cashier shifts from the same Branch. Each shift/reconciliation remains separately represented by a deposit line and cannot be included more than once.
+4. **Cash receipt:** Only an authorized Central employee can confirm physical receipt, record the received amount and difference, and perform Central review/closure. Branch users cannot confirm Central receipt or close the deposit.
+5. **Maintenance:** A Branch may submit a maintenance request for equipment that is not yet registered in the asset catalogue. The request must capture a device/equipment description and exact location; the asset link remains optional.
+6. **Alert evaluation:** Evaluate event-driven alerts immediately when their source event occurs; evaluate threshold/time-window alerts periodically through Workers, according to each alert definition.
+7. **Alert delivery retry:** Failed alert deliveries are retried automatically under a defined retry policy. Attempt history and final failure remain recorded; delivery failure does not change or delete the source business event.
+8. **Audit retention:** Ordinary application users cannot update or delete audit history. Retention is handled through controlled periodic archival/partition management under a centrally governed retention policy; archival must preserve audit integrity and traceability.
+9. **Reporting:** Use Central relational read models/projections initially; no separate data warehouse is introduced. Each report must have an explicit calculation definition and source-data lineage, including sales, profit, returns, discounts, costs and inventory valuation as applicable.
+
+### Remaining implementation details (not owner-decision blockers)
+
+- Payroll field-level scope remains deferred as stated above.
+- Attachment size, allowed file types, storage lifecycle and retention require a shared security/storage policy.
+- Exact alert retry counts, backoff intervals and terminal delivery status are Worker configuration details to be specified during implementation design.
+- Exact audit retention duration and archival schedule require a centrally approved policy; the approved rule is that ordinary users cannot delete or alter audit history.
+- Detailed report formulas and validation examples must be specified per report before implementing each report. This includes treatment of returns, discounts and cost lineage; no formula is invented by this approval.
+- Cash handover logistics are outside this schema approval; Central receipt confirmation and shift-level deposit traceability are approved.
+
 **No SQL table, EF Core entity, DDL or migration is created by this document.**
