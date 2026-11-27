@@ -172,7 +172,11 @@
 - Order lines preserve product/unit/name/price/discount snapshots.
 - After confirmation, customer cannot change order contents or selected Branch.
 - Order status is independent of PaymentTransaction and Refund status.
-- Branch projection contains only assigned order data and minimum customer delivery information required for fulfillment.
+- Branch receives only orders assigned to that Branch.
+- The assigned-order projection includes the order number and status, product details, quantities and approved price snapshots, plus the customer's name and phone number.
+- For delivery orders, the projection also includes the delivery address and delivery instructions. Pickup orders receive only the customer contact details needed for handover.
+- Branch employees cannot search or browse customer profiles, view unassigned orders, or access the customer's other orders or additional profile data.
+- The projection contains only the minimum information needed to prepare, hand over or deliver the assigned order.
 
 ### 3.3 `online.OrderStatusHistory` — Central
 
@@ -869,16 +873,16 @@ Delivery confirmation is manual. No OTP or electronic signature is required.
 
 1. Define the exact customer identity table mapping under TD-06. Customer credentials must remain separate from employee credentials.
 2. OTP expiry duration, maximum verification attempts, resend cooldown and resend/rate limits are fixed in application code. The OTP delivery provider and secure hash parameters are defined separately in the security design.
-3. Define the exact central/branch order projection fields and privacy minimization; Branch must not have customer search access.
-4. Define whether an order may contain both delivery and pickup lines (this proposal assumes one FulfillmentType per order).
-5. Define free-delivery rule evaluation and precedence against other promotions; no duplicate discount may be applied.
-6. Define late payment refund timing and Central notification workflow; late payment must never restore the cancelled order.
-7. Define the exact order-level outcome codes for fulfillment exceptions and cancellation decisions; no substitute product is permitted.
-8. Define how one delivery attempt is enforced atomically under concurrent/retried Branch operations.
-9. Define customer dispute evidence retention and access control; no fixed dispute deadline exists.
-10. Define point-lot consumption order, expiry processing schedule and the approved treatment of previously redeemed points on partial return.
-11. Define reconciliation when a duplicate customer account has existing orders, loyalty points, complaints and identity credentials; preserve all source transaction references.
-12. Define paid pickup retention duration values in the Central policy; this document does not invent a number.
+3. Branch receives only its assigned orders with order number/status, products, quantities, price snapshots and necessary customer contact details; delivery orders also include their delivery address/instructions. Branch cannot search customer profiles or access other orders. This projection and access boundary are approved.
+4. **One fulfillment type per order:** an order must use exactly one fulfillment method: Delivery or BranchPickup. A single order cannot mix delivery and pickup lines. The FulfillmentType on the order is authoritative for its fulfillment workflow.
+5. **Free-delivery precedence:** a valid free-delivery rule reduces the delivery fee to zero only. Product/order promotions are evaluated independently and remain applicable under their own rules. The delivery fee benefit cannot be applied more than once to the same order, and no duplicate delivery discount is recorded.
+6. **Late payment after cancellation:** a late payment is recorded against the original cancelled order and never restores the order or its stock reservation. The system initiates the refund workflow for the received amount and notifies Central for follow-up. No fixed refund completion time is introduced by this decision.
+7. **Fulfillment outcomes:** order-level outcomes use explicit stable result codes for successful preparation, preparation failure, delivery completion, delivery failure, pickup completion, pickup non-collection and cancellation. The detailed code catalogue and transition validation belong to the application/domain design. Product substitution is not allowed.
+8. **Single delivery attempt under concurrency:** the Branch database must enforce at most one delivery-attempt record per OrderId with a unique constraint/index. Attempt creation is transactional and idempotent; a retried operation reuses the same OperationId and returns the recorded result instead of creating another attempt. AttemptNumber remains 1.
+9. **Dispute evidence:** dispute evidence and attachments are retained under a centrally governed retention policy. Access is restricted to authorized users, and evidence access/actions are audited. No fixed customer dispute submission deadline is introduced.
+10. **Loyalty point lots and partial returns:** redemption consumes eligible point lots by earliest expiry first (FEFO). A partial return reverses/returns only the proportional points attributable to the returned items under the approved return calculation. Restored points retain the original lot's expiry date; expired points are not made valid again. All changes are appended to the immutable loyalty ledger.
+11. **Duplicate customer merge:** preserve historical orders, payments, complaints, loyalty transactions, credentials/audit references and their original transaction identifiers. Link the duplicate identity to the canonical customer through an audited, transaction-safe merge process. Reconcile balances without duplicating or losing loyalty points; do not rewrite or delete historical transaction records.
+12. **Paid pickup non-collection:** the retention duration is configured and approved centrally using the existing PickupRetentionPolicies. When the configured period expires, the case moves to Central decision; the system does not invent a fixed duration or automatically dispose of the goods. Stock is released/returned only through the approved decision and required physical inspection.
 
 ## 15. Approval boundary and next step
 
