@@ -1,7 +1,7 @@
 # TD-14 — Logical Database Relationships and Cardinalities
 
 **Version:** 0.2  
-**Status:** Revised for owner review after TD-29  
+**Status:** Approved by owner (2026-11-28)  
 **Date:** 2026-11-07  
 **Depends on:** Approved BRS, TD-03, TD-04, TD-05, TD-09, TD-12 and TD-13.  
 **Purpose:** Define the first logical relationship map for the TD-13 table inventory before columns, EF Core configurations or migrations are designed.
