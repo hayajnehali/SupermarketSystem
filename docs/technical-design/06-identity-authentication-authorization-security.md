@@ -1,7 +1,7 @@
 # Technical Design — Identity, Authentication, Authorization, and Security
 
 **Document:** TD-06  
-**Version:** 0.1  
+**Version:** 0.2  
 **Status:** Approved by project owner — baseline accepted for detailed design  
 **Depends on:** Merged BRS, approved owner decisions, TD-01 through TD-05.
 
@@ -31,6 +31,8 @@ Keep the following identity categories logically distinct:
 | POS device identity | Identifies a registered terminal and its assigned branch | Central registration; branch validates approved device snapshot |
 | Branch service identity | Authenticates Branch Worker/API when communicating with Central | Centrally registered service identity, scoped to one branch |
 | Central service identity | Authenticates central background services and approved internal processes | Central |
+
+The logical separation above does not require separate Employee and Customer credential tables. As approved by TD-29, Employee and Customer human accounts use one Central ASP.NET Core Identity store (`auth.Users`) with a required, mutually exclusive `AccountType` value. Their business profiles remain separate in `org.Employees` and `crm.Customers`, and their endpoint authorization, token audience/scheme and resource access remain separated. Device and service identities are separate identity categories and are not Employee/Customer user profiles.
 
 Do not reuse a cashier's human credentials as a service-to-service credential. Do not allow a device identity to act as an employee identity.
 
