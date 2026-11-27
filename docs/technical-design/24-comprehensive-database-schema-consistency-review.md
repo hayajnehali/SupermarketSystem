@@ -175,21 +175,21 @@ This is the single current list of unresolved technical decisions after applying
 
 ### 7.2 Open technical decisions — review one at a time
 
-2. **Identity/session persistence (High):** Confirm which Identity relationship tables are actually required (user roles, claims, logins, tokens, role claims), token/session persistence and revocation model, while preserving the unified store and employee/customer authorization separation.
-3. **Offline credential verifier (High):** Approve the threat model, cryptographic construction, key protection, revocation and lifecycle for Branch-local employee Offline authentication. Branch DB must not copy Central password hashes, security stamps or reusable Central tokens.
-4. **Payment-provider idempotency (High):** Define provider-specific idempotency keys, callback ordering, duplicate/out-of-order event handling and ambiguous timeout recovery for Central online payments.
-5. **Split-tender refund allocation (High):** Define how a refund amount is allocated back against the original successful payment transactions when an invoice used multiple tenders; enforce the cumulative cap per original transaction.
-6. **Online-order cash refund handover (High):** Define the customer verification, responsible Branch handover, receipt/evidence and authorization steps for cash refunds of online orders after required Central approval.
-7. **Offline promotion/coupon limits (High):** Define a safe quota/reservation/reconciliation strategy for cross-Branch usage while disconnected. Do not claim globally exact limits without an approved mechanism.
-8. **Offline loyalty redemption (Medium):** Define local balance/quota behavior and Central reconciliation of concurrent Offline redemptions without changing the approved loyalty policy.
-9. **Supplier payment allocation (Medium):** Decide whether one supplier payment/bank transfer may settle multiple supplier invoices. Current TD-17 models one payment against one invoice; if multi-invoice settlement is required, add a payment header and allocation rows before implementation.
-10. **JOD rounding (Medium):** Approve the exact half-rounding tie-breaker and rounding points. Preserve internal precision and the approved two-decimal final invoice display/amount policy.
-11. **Promotion rule catalogue (Medium):** Finalize allowlisted condition types/operators and reward types as versioned application contracts; no arbitrary expressions from the database.
-12. **Receiving/stocktake recovery (Medium):** Define command payloads, durable acknowledgements and Branch restart recovery while scoped stock locks are active.
-13. **Concurrency contracts (High):** Specify and test atomic SQL algorithms for stock reservation/issue, batch allocation, invoice sequence allocation, refund caps, shift/drawer posting and idempotent Outbox completion.
-14. **Retention/privacy (Medium):** Define retention, archival, redaction and access policies for customer, financial, audit, security and attachment data.
-15. **POS operational details (Medium):** Finalize invoice-number gap behavior after failed completion, return allocation across depleted/transferred batches, mixed inspection quantities, paid-cancellation compensation, decision recovery while Offline, print-document retention/versioning, and whether one cashier may hold simultaneous shifts on multiple POS devices.
-16. **Reporting calculations (Medium):** Define calculation contracts and data lineage for sales, profit, inventory and Branch comparisons using actual batch costs.
+1. **Identity/session persistence (High):** Confirm which Identity relationship tables are actually required (user roles, claims, logins, tokens, role claims), token/session persistence and revocation model, while preserving the unified store and employee/customer authorization separation.
+2. **Offline credential verifier (High):** Approve the threat model, cryptographic construction, key protection, revocation and lifecycle for Branch-local employee Offline authentication. Branch DB must not copy Central password hashes, security stamps or reusable Central tokens.
+3. **Payment-provider idempotency (High):** Define provider-specific idempotency keys, callback ordering, duplicate/out-of-order event handling and ambiguous timeout recovery for Central online payments.
+4. **Split-tender refund allocation (High):** Define how a refund amount is allocated back against the original successful payment transactions when an invoice used multiple tenders; enforce the cumulative cap per original transaction.
+5. **Online-order cash refund handover (High):** Define the customer verification, responsible Branch handover, receipt/evidence and authorization steps for cash refunds of online orders after required Central approval.
+6. **Offline promotion/coupon limits (High):** Define a safe quota/reservation/reconciliation strategy for cross-Branch usage while disconnected. Do not claim globally exact limits without an approved mechanism.
+7. **Offline loyalty redemption (Medium):** Define local balance/quota behavior and Central reconciliation of concurrent Offline redemptions without changing the approved loyalty policy.
+8. **Supplier payment allocation (Medium):** Decide whether one supplier payment/bank transfer may settle multiple supplier invoices. Current TD-17 models one payment against one invoice; if multi-invoice settlement is required, add a payment header and allocation rows before implementation.
+9. **JOD rounding (Medium):** Approve the exact half-rounding tie-breaker and rounding points. Preserve internal precision and the approved two-decimal final invoice display/amount policy.
+10. **Promotion rule catalogue (Medium):** Finalize allowlisted condition types/operators and reward types as versioned application contracts; no arbitrary expressions from the database.
+11. **Receiving/stocktake recovery (Medium):** Define command payloads, durable acknowledgements and Branch restart recovery while scoped stock locks are active.
+12. **Concurrency contracts (High):** Specify and test atomic SQL algorithms for stock reservation/issue, batch allocation, invoice sequence allocation, refund caps, shift/drawer posting and idempotent Outbox completion.
+13. **Retention/privacy (Medium):** Define retention, archival, redaction and access policies for customer, financial, audit, security and attachment data.
+14. **POS operational details (Medium):** Finalize invoice-number gap behavior after failed completion, return allocation across depleted/transferred batches, mixed inspection quantities, paid-cancellation compensation, decision recovery while Offline, print-document retention/versioning, and whether one cashier may hold simultaneous shifts on multiple POS devices.
+15. **Reporting calculations (Medium):** Define calculation contracts and data lineage for sales, profit, inventory and Branch comparisons using actual batch costs.
 
 ### 7.3 Deliberately deferred — not a blocker for the first schema slice
 
