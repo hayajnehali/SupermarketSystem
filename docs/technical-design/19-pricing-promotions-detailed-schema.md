@@ -1,7 +1,7 @@
 # TD-19 — Detailed Logical Schema: Pricing, Promotions and Coupons
 
 **Version:** 0.1  
-**Status:** Proposed for owner review  
+**Status:** Approved by owner (2026-11-28)  
 **Date:** 2026-11-07  
 **Scope:** Central base prices by product/selling unit, branch-specific approved exceptions, version publication, product/basket promotions, promotion conditions/rewards, coupon definitions and redemption history.  
 **Depends on:** Approved BRS Unit 05, PRC-01–PRC-12, PRM-01–PRM-03, CUP-01–CUP-03, GAP-13/GAP-14, TD-03, TD-04, TD-05, TD-13 and TD-14.
