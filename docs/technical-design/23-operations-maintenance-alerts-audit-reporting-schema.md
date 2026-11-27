@@ -1,7 +1,7 @@
 # TD-23 — Detailed Logical Schema: Operations, Maintenance, Alerts, Audit and Reporting
 
 **Version:** 0.1  
-**Status:** Proposed for owner review  
+**Status:** Approved by owner (2026-11-28)  
 **Date:** 2026-11-07  
 **Scope:** Branch expense requests and Central approval, central payroll-tracking placeholder, centrally managed branch cash deposits, maintenance requests/assignments/completion, centralized alerts, audit/security history and Central management reports.  
 **Depends on:** Approved BRS Unit 12, FIN-01–FIN-07, FIN-08–FIN-10, FIN-03/FIN-04, OPS-01–OPS-04, MNT-01, NTF-01–NTF-03, SEC-01–SEC-03, OPS-RPT-001–004, TD-03, TD-04, TD-06, TD-12, TD-13 and TD-14.
