@@ -16,7 +16,7 @@ The account type is an explicit AccountType discriminator on the unified Identit
 - One IdentityUser<Guid>-based record in the unified auth.Users table.
 - An Employee account has exactly one linked org.Employees profile and no crm.Customers profile.
 - A Customer account has exactly one linked crm.Customers profile and no org.Employees profile.
-- The application and database enforce these mutually exclusive relationships.
+- The Application Layer enforces the mutually exclusive account/profile rules. No database constraint, trigger or cross-table XOR mechanism is required for this rule.
 
 Changing an account from Employee to Customer (or vice versa) is not an ordinary profile edit. It requires a dedicated, audited lifecycle operation that handles existing relationships, sessions and permissions. The default policy is to create a separate account rather than convert an existing one.
 
@@ -26,7 +26,7 @@ A unified Identity user store is appropriate because both account types share cr
 
 The business profiles remain separate because employees and customers have different attributes and workflows. This is not a reason to duplicate authentication users.
 
-A shared user table does not by itself make the system insecure. Security is enforced through account type, authentication schemes/audiences, authorization policies, resource ownership and database constraints.
+A shared user table does not by itself make the system insecure. Security is enforced through account type, authentication schemes/audiences, authorization policies and resource ownership. The Employee/Customer cross-profile exclusivity rule is enforced by application workflows, not by a database-level XOR constraint.
 
 ## 3. Logical entity and table mapping
 
@@ -49,10 +49,10 @@ The final physical column names and schema mapping must be reconciled with TD-13
 - Every active Identity account must have exactly one matching profile according to AccountType.
 - An Employee account must not have a row in crm.Customers.
 - A Customer account must not have a row in org.Employees.
-- Enforce one-to-one uniqueness on each profile's UserId, and enforce cross-table exclusivity using a database-supported design (for example a shared account-subtype registry with a unique UserId, or an equivalent transactionally enforced constraint strategy). Do not rely only on UI validation.
-- Account creation is atomic: create the Identity user and its one matching profile in one application transaction.
-
-SQL Server CHECK constraints cannot directly validate rows in another table, so the final physical design must choose and test an enforceable cross-table invariant. A simple CHECK constraint is not sufficient.
+- Keep the ordinary one-to-one relationship for each profile: each profile has a required FK to `auth.Users` and a unique `UserId` within its own table.
+- Enforce account-type compatibility and cross-profile exclusivity in the Application Layer. Before creating or linking a profile, the application validates `AccountType` and checks that the opposite profile does not exist.
+- Create the Identity user and its matching profile in one database transaction. Profile creation, linking and account-type lifecycle operations must go through the approved application use cases; do not expose direct persistence paths that bypass these checks.
+- No database-level cross-table XOR constraint, trigger or shared subtype registry is required. This means direct writes that bypass the application can create an inconsistent cross-profile state; that limitation is accepted by this decision.
 
 ### 3.3 Roles and permissions
 
@@ -112,7 +112,7 @@ Create only the Identity features actually required. Do not add unused external-
 Before generating entities or migrations, update the logical inventory and ERDs to include:
 - one unified auth.Users Identity table with AccountType;
 - one-to-one employee and customer profile relationships;
-- the enforceable database design for cross-profile exclusivity;
+- application-layer validation and transactional profile creation for cross-profile exclusivity (no database-level XOR enforcement);
 - employee role membership mapped to the existing org.Roles catalogue;
 - only the required custom Identity relationship tables with Guid PKs;
 - session/revocation persistence only where required by the selected token strategy;
@@ -125,7 +125,7 @@ Every physical table must be inventoried, owned, reviewed and migrated explicitl
 - An account can be created as Employee or Customer, never both.
 - An Employee account has exactly one org.Employees profile and no crm.Customers profile.
 - A Customer account has exactly one crm.Customers profile and no org.Employees profile.
-- Concurrent or direct persistence attempts cannot attach both profiles to one user.
+- Application use cases reject attempts to attach both profiles to one user and perform the validation plus profile write within a transaction. Direct database writes that bypass the application are outside this enforcement boundary.
 - Customer accounts cannot receive employee role membership.
 - Employee token is rejected by customer-only endpoints; customer token is rejected by employee/branch endpoints.
 - Employee user can have only employee-compatible roles; account type cannot be changed by role assignment.
@@ -145,10 +145,10 @@ This document does not select:
 - SMS/OTP delivery provider;
 - external social login;
 - detailed customer session retention;
-- final SQL Server enforcement mechanism for cross-table profile exclusivity (to be selected and tested during physical schema reconciliation).
+- database-level cross-table XOR enforcement for Employee/Customer profiles (explicitly not required; application-layer enforcement is approved).
 
 These must be resolved before implementation; do not guess during project scaffolding.
 
 ## 10. Approval boundary
 
-This approved decision establishes one unified Identity account store and separate Employee/Customer business profiles, with strict mutual exclusion. It does not by itself authorize generating Identity tables, EF Core entities, DDL or migrations. The logical inventory and ERDs must first be reconciled with this decision and approved; implementation can then be built and tested.
+This approved decision establishes one unified Identity account store and separate Employee/Customer business profiles, with application-enforced mutual exclusion between Employee and Customer profiles. It does not by itself authorize generating Identity tables, EF Core entities, DDL or migrations. The logical inventory and ERDs must first be reconciled with this decision and approved; implementation can then be built and tested.
