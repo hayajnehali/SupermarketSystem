@@ -67,7 +67,7 @@
 **Constraints and indexes**
 - Index PhoneNumber + VerificationStatus + ExpiresAtUtc.
 - OTP hash only; no plaintext OTP or reusable secret.
-- Verification attempt/rate limits are enforced by the security policy and are not invented by this schema.
+- OTP expiry duration, maximum verification attempts, resend cooldown and resend/rate limits are fixed in application code as constants; they are not editable through Central settings and are not stored as configurable database policy values.
 - Customer account becomes Active only after successful verification of the same normalized phone number.
 
 ### 2.3 `crm.CustomerDuplicateResolutions` — Central
@@ -868,7 +868,7 @@ Delivery confirmation is manual. No OTP or electronic signature is required.
 ## 14. Technical risks for review
 
 1. Define the exact customer identity table mapping under TD-06. Customer credentials must remain separate from employee credentials.
-2. Define OTP provider, delivery limits, expiry/attempt limits and secure hash parameters in the security design; do not hardcode them in the schema.
+2. OTP expiry duration, maximum verification attempts, resend cooldown and resend/rate limits are fixed in application code. The OTP delivery provider and secure hash parameters are defined separately in the security design.
 3. Define the exact central/branch order projection fields and privacy minimization; Branch must not have customer search access.
 4. Define whether an order may contain both delivery and pickup lines (this proposal assumes one FulfillmentType per order).
 5. Define free-delivery rule evaluation and precedence against other promotions; no duplicate discount may be applied.
