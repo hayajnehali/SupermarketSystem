@@ -155,41 +155,65 @@ The following mismatches were corrected in the documentation branch for this rev
 11. Made the one-reservation-per-order relationship explicit and clarified that accepted Branch reservations are not released by a Branch-local timer; Central sends the release command.
 12. Corrected the explicit fulfillment decision-line heading and confirmed the stocktake event table has its own Guid PK.
 
-## 7. Remaining technical design decisions — not business-policy reopening
+## 7. Consolidated implementation-impacting decisions
 
-These items require technical resolution before implementation, but they do not reopen approved business decisions:
+This is the single current list of unresolved technical decisions after applying the owner-approved business decisions and merged design decisions through TD-29 and the latest POS/payment reconciliation. Items marked **Open** require owner review or a technical proposal before physical schema implementation. Items marked **Resolved** must not be reopened as business-policy questions.
 
-1. **Identity physical enforcement:** TD-29 now defines the unified `auth.Users` store, exclusive Employee/Customer `AccountType`, separate one-to-one business profiles, and employee role mapping. The remaining gate is the SQL Server-enforced cross-profile XOR mechanism plus selected token/session persistence and Offline credential-verifier design.
-2. **POS bank-terminal workflow:** Resolved. The bank terminal is operated independently outside the application; the cashier records the observed successful outcome and optional receipt/reference. No API, SDK, network integration, provider event or automated terminal verification is used. Online provider integration remains Central-owned.
-3. **Payment-provider idempotency:** Define provider-specific keys, callback event ordering and ambiguous timeout recovery.
-4. **Promotion limits while Offline:** A disconnected Branch cannot know another Branch's new redemptions. A technically exact cross-branch global limit requires a centrally allocated quota/reservation mechanism; do not silently claim global exactness.
-5. **Offline loyalty redemption:** Define local balance/quota handling and Central reconciliation of concurrent offline redemptions while preserving the approved loyalty policy.
-6. **Supplier payments:** TD-17 currently links one payment to one supplier invoice. If one bank transfer may settle multiple invoices, introduce a payment header/allocation model before implementation.
-7. **Rounding:** Define the exact JOD half-rounding tie-breaker and where rounding occurs. Final invoice amount remains two decimals; internal calculations retain precision.
-8. **Promotion rule catalogue:** Final allowlisted condition operators and reward types must be versioned application contracts.
-9. **Exceptional receiving and stocktake recovery:** Define exact command payloads, durable acknowledgement and Branch restart recovery while scoped stock locks remain active.
-10. **Concurrency:** Finalize atomic SQL claim/stock reservation/stock issue/batch allocation/invoice sequence/refund cap algorithms and integration tests.
-11. **Retention and privacy:** Define retention, archival, redaction and access rules for customer, financial, audit, security and attachment data.
-12. **Payroll:** Only the owner-approved FIN-03 boundary is recorded. Exact tracking fields and whether any supporting tables are needed remain intentionally undefined.
-13. **Reporting calculations:** Define report calculation contracts and data lineage for sales, profit, inventory and branch comparisons using actual batch costs.
+### 7.1 Resolved decisions — carry forward as constraints
+
+1. **Unified Identity:** One Central `auth.Users` ASP.NET Core Identity store with Guid keys and required `AccountType` (Employee or Customer); separate one-to-one `org.Employees` / `crm.Customers` profiles; one account cannot own both profiles. Employee roles map to `org.Roles`. Application Layer validation and transactional profile creation enforce this separation; no database-level cross-table XOR constraint is required. Ordinary per-table PK/FK/unique constraints remain applicable.
+2. **Independent POS bank terminal:** The bank terminal is operated independently outside the application. Cashier records the observed successful result and optional receipt/reference. No terminal API, SDK, network integration, provider event or automated bank verification.
+3. **Customer refunds:** All customer refunds are paid in cash from the responsible Branch cash drawer, regardless of original tender. If the original payment included electronic tender, prior Central approval and a recorded reason are mandatory. Refunds remain linked to original successful payment transaction(s); cumulative successful refunds cannot exceed the paid amount. No provider-based customer refund execution.
+4. **OTP policy:** Expiry, maximum verification attempts, resend cooldown and resend limits are fixed application-code constants, not centrally configurable. Exact numeric values and provider/security implementation details remain a security implementation specification, not a schema setting.
+5. **Payroll boundary:** Central payroll tracking only; no payroll engine, attendance, leave or salary-calculation system is in scope. Detailed tracking fields remain intentionally deferred.
+6. **Branch order/customer access:** Branch receives only assigned orders and the minimum approved customer/order fields needed to fulfill them; no customer-profile search/browse and no access to unassigned orders.
+7. **Expense workflow:** Central approval is required before a Branch expense is executed; Branch records actual amount and supporting evidence afterward.
+8. **Central cash deposits:** One Central deposit may cover multiple Branch shifts, with separately traceable shift details and duplicate prevention. Only an authorized Central employee confirms receipt and closes the deposit.
+9. **Maintenance requests:** A request may be created for an unregistered device; device description and location are required.
+10. **Alerts and audit:** Immediate event alerts and scheduled threshold/periodic alerts are supported; retry/failure history is retained without changing the source event. Ordinary users cannot edit/delete audit records; Central controls protected archival.
+11. **Reporting:** Central relational read models are the initial reporting approach; no Data Warehouse is introduced in this scope.
+
+### 7.2 Open technical decisions — review one at a time
+
+1. **Identity/session persistence (High):** Confirm which Identity relationship tables are actually required (user roles, claims, logins, tokens, role claims), token/session persistence and revocation model, while preserving the unified store and employee/customer authorization separation.
+2. **Offline credential verifier (High):** Approve the threat model, cryptographic construction, key protection, revocation and lifecycle for Branch-local employee Offline authentication. Branch DB must not copy Central password hashes, security stamps or reusable Central tokens.
+3. **Payment-provider idempotency (High):** Define provider-specific idempotency keys, callback ordering, duplicate/out-of-order event handling and ambiguous timeout recovery for Central online payments.
+4. **Split-tender refund allocation (High):** Define how a refund amount is allocated back against the original successful payment transactions when an invoice used multiple tenders; enforce the cumulative cap per original transaction.
+5. **Online-order cash refund handover (High):** Define the customer verification, responsible Branch handover, receipt/evidence and authorization steps for cash refunds of online orders after required Central approval.
+6. **Offline promotion/coupon limits (High):** Define a safe quota/reservation/reconciliation strategy for cross-Branch usage while disconnected. Do not claim globally exact limits without an approved mechanism.
+7. **Offline loyalty redemption (Medium):** Define local balance/quota behavior and Central reconciliation of concurrent Offline redemptions without changing the approved loyalty policy.
+8. **Supplier payment allocation (Medium):** Decide whether one supplier payment/bank transfer may settle multiple supplier invoices. Current TD-17 models one payment against one invoice; if multi-invoice settlement is required, add a payment header and allocation rows before implementation.
+9. **JOD rounding (Medium):** Approve the exact half-rounding tie-breaker and rounding points. Preserve internal precision and the approved two-decimal final invoice display/amount policy.
+10. **Promotion rule catalogue (Medium):** Finalize allowlisted condition types/operators and reward types as versioned application contracts; no arbitrary expressions from the database.
+11. **Receiving/stocktake recovery (Medium):** Define command payloads, durable acknowledgements and Branch restart recovery while scoped stock locks are active.
+12. **Concurrency contracts (High):** Specify and test atomic SQL algorithms for stock reservation/issue, batch allocation, invoice sequence allocation, refund caps, shift/drawer posting and idempotent Outbox completion.
+13. **Retention/privacy (Medium):** Define retention, archival, redaction and access policies for customer, financial, audit, security and attachment data.
+14. **POS operational details (Medium):** Finalize invoice-number gap behavior after failed completion, return allocation across depleted/transferred batches, mixed inspection quantities, paid-cancellation compensation, decision recovery while Offline, print-document retention/versioning, and whether one cashier may hold simultaneous shifts on multiple POS devices.
+15. **Reporting calculations (Medium):** Define calculation contracts and data lineage for sales, profit, inventory and Branch comparisons using actual batch costs.
+
+### 7.3 Deliberately deferred — not a blocker for the first schema slice
+
+- **Payroll detailed fields/tables:** remain undefined until a separate approved tracking scope exists.
+- **Tax/e-invoicing engine:** placeholders only; no tax engine or provider integration.
 
 ## 8. Readiness gate
 
 | Gate | State |
 |---|---|
-| Complete candidate table inventory | Revised for TD-29; owner review pending |
+| Candidate table inventory and table count | Prepared; owner review pending |
 | Central/Branch ownership map | Prepared |
-| Logical relationships/cardinalities | Prepared |
-| Guid PK and local FK convention | Verified in documents |
-| Module-level ERD baseline | Prepared |
-| Detailed domain table schemas TD-15–TD-23 | Prepared for owner review |
-| Payroll detailed schema | Intentionally deferred |
-| Final module ERDs and relationship validation | Revised for TD-29; owner review pending |
-| SQL physical deployment design and index/concurrency proof | Not started |
+| Logical relationships/cardinalities | Prepared; owner review pending |
+| Guid PK and local FK convention | Verified in design documents |
+| Module-level ERD baseline | Prepared; must be reconciled to final owner-approved logical schema |
+| Detailed domain schemas TD-15–TD-23 | Prepared; owner review pending |
+| Cross-document POS refund policy (TD-20/TD-21) | Reconciled in this revision |
+| Approved business decisions through TD-29 and later decision records | Carried into this consolidated list |
+| Remaining implementation-impacting decisions | Listed in §7.2; require staged review |
+| SQL physical deployment design, indexes and concurrency proof | Not started |
 | EF Core entities/configurations | Not started |
 | SQL migrations and integration tests | Not started |
 
-**Do not generate EF Core entities or migrations yet.** First approve the logical schema package, resolve the listed technical gates that affect column/relationship design, and produce the final per-module ERDs. Only then move to implementation-ready SQL/EF Core design.
+**Implementation remains blocked.** Do not generate EF Core entities, DDL or migrations until the logical schema and the implementation-impacting decisions required for the relevant module are approved, TD-26 physical standards are approved, and final module ERDs are reconciled.
 
 ## 9. Approval boundary
 
