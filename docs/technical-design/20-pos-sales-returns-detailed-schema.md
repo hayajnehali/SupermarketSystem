@@ -1,7 +1,7 @@
 # TD-20 — Detailed Logical Schema: POS, Sales, Invoices, Returns and Exchanges
 
 **Version:** 0.1  
-**Status:** Proposed for owner review  
+**Status:** Approved by owner (2026-11-28)  
 **Date:** 2026-11-07  
 **Scope:** Cashier shifts and drawers, suspended carts, POS invoices and snapshots, invoice numbering/printing, cancellation approvals, returns/inspection/disposition and exchanges.  
 **Depends on:** Approved BRS Units 06–07, POS-01–POS-20, PMT-01–PMT-16, RET-02–RET-07, P11–P20, GAP-01–GAP-08, TD-03, TD-04, TD-13 and TD-14.
