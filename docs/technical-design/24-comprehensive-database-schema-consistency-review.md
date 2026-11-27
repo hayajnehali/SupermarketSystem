@@ -218,3 +218,44 @@ This is the single current list of unresolved technical decisions after applying
 ## 9. Approval boundary
 
 TD-24 is a consistency review, not owner approval of TD-13–TD-23. It confirms document alignment and records remaining technical decisions. No business rule is changed, and no SQL table, EF Core entity, DDL or migration is created by this document.
+
+
+## 10. Owner approval and implementation decision closure — 2026-11-28
+
+The owner approved the logical database design package TD-13 through TD-25 as the baseline for the next physical-design stage, together with the SQL/EF Core standards in TD-26 and architecture/project blueprints in TD-27 and TD-28.
+
+The following implementation contracts are now recorded in TD-31 and supersede the corresponding open-choice questions in §7.2:
+- Provider callback idempotency, duplicate/out-of-order handling and ambiguous-timeout reconciliation.
+- Proportional split-tender refund allocation, preserving cash-only payout.
+- Central-approved online refund with Branch cash handover and durable acknowledgement.
+- Offline limited promotion/coupon redemption only with a centrally issued Branch quota; otherwise reject while Offline.
+- Offline loyalty earning may be pending; redemption is Online-only.
+- One Central supplier payment may allocate across multiple supplier invoices; TD-17 is amended accordingly.
+- JOD midpoint rounding uses AwayFromZero at the final invoice boundary.
+- Promotion stacking is opt-in, with deterministic precedence and versioned allowlisted rules.
+- Durable receiving/stocktake command recovery and idempotent acknowledgement.
+- Atomic stock/refund/invoice-sequence/drawer/Outbox concurrency contracts.
+- POS return lineage, per-quantity inspection, compensating paid cancellation, retained reprint snapshot and one active cashier shift per Branch.
+- Reporting profit uses actual historical batch cost and identifies synchronization freshness.
+
+TD-30 remains authoritative for the eight decisions it records. TD-31 adds the accepted implementation contracts. The exact Offline credential-verifier cryptographic construction, provider-specific adapter details, legally validated retention schedule, and detailed promotion catalogue remain implementation specifications to complete before their affected features are built.
+
+### 10.1 Updated readiness gate
+
+| Gate | State |
+|---|---|
+| TD-13–TD-25 logical inventory, ownership, relationships, detailed module schemas and ERDs | Owner-approved baseline; physical reconciliation still required |
+| Guid PK and local-FK convention | Verified and approved |
+| TD-26 SQL Server / EF Core standards | Owner-approved |
+| TD-27 Clean Architecture / Pragmatic DDD | Owner-approved |
+| TD-28 solution/project structure | Owner-approved |
+| TD-29 unified Identity model | Owner-approved |
+| TD-30 final technical decisions | Owner-approved |
+| TD-31 implementation contracts | Owner-approved |
+| Central physical schema | Not yet produced; separate design and owner approval required |
+| Branch physical schema | Not yet produced; separate design and owner approval required |
+| EF Core entities/configurations and migrations | Not started; remain blocked pending physical schema approval |
+| Offline credential cryptographic implementation | Security specification and testing required before Offline login feature |
+| Retention schedule/legal validation | Required before production rollout |
+
+**Implementation boundary:** Logical design and architecture approval do not authorize immediate DDL, EF Core entities or migrations. The next design deliverable is the complete Central and Branch physical schema package, reviewed independently and then cross-checked for synchronization boundaries. No production database code is created by this approval record.
