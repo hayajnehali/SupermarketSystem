@@ -172,7 +172,11 @@
 - Order lines preserve product/unit/name/price/discount snapshots.
 - After confirmation, customer cannot change order contents or selected Branch.
 - Order status is independent of PaymentTransaction and Refund status.
-- Branch projection contains only assigned order data and minimum customer delivery information required for fulfillment.
+- Branch receives only orders assigned to that Branch.
+- The assigned-order projection includes the order number and status, product details, quantities and approved price snapshots, plus the customer's name and phone number.
+- For delivery orders, the projection also includes the delivery address and delivery instructions. Pickup orders receive only the customer contact details needed for handover.
+- Branch employees cannot search or browse customer profiles, view unassigned orders, or access the customer's other orders or additional profile data.
+- The projection contains only the minimum information needed to prepare, hand over or deliver the assigned order.
 
 ### 3.3 `online.OrderStatusHistory` — Central
 
@@ -869,7 +873,7 @@ Delivery confirmation is manual. No OTP or electronic signature is required.
 
 1. Define the exact customer identity table mapping under TD-06. Customer credentials must remain separate from employee credentials.
 2. OTP expiry duration, maximum verification attempts, resend cooldown and resend/rate limits are fixed in application code. The OTP delivery provider and secure hash parameters are defined separately in the security design.
-3. Define the exact central/branch order projection fields and privacy minimization; Branch must not have customer search access.
+3. Branch receives only its assigned orders with order number/status, products, quantities, price snapshots and necessary customer contact details; delivery orders also include their delivery address/instructions. Branch cannot search customer profiles or access other orders. This projection and access boundary are approved.
 4. Define whether an order may contain both delivery and pickup lines (this proposal assumes one FulfillmentType per order).
 5. Define free-delivery rule evaluation and precedence against other promotions; no duplicate discount may be applied.
 6. Define late payment refund timing and Central notification workflow; late payment must never restore the cancelled order.
