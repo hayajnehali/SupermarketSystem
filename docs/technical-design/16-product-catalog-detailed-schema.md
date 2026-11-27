@@ -1,7 +1,7 @@
 # TD-16 — Detailed Logical Schema: Product Catalog
 
 **Version:** 0.1  
-**Status:** Proposed for owner review  
+**Status:** Approved by owner (2026-11-28)  
 **Date:** 2026-11-07  
 **Scope:** Central product catalogue, categories, brands, origin countries, SKU, barcodes, selling units, conversions, composite definitions, product information/media, branch availability and branch product requests.  
 **Depends on:** Approved BRS Unit 02 and decisions PDI-01–PDI-04, UNT-01–UNT-03, BAR-01–BAR-03, PRD-STATUS-01/02, TD-02, TD-03, TD-04, TD-13 and TD-14.
