@@ -454,7 +454,7 @@ A return without an original invoice is an exception and must be referred to Cen
 - A return causes loyalty reversals/adjustments in CRM according to the returned portion/value and approved rules.
 - Refunds are separate Payments records linked to the original invoice/return; cumulative successful refund cannot exceed amount successfully paid.
 - A return may have no refund or one/more partial refund records. Payment/refund status never overwrites return inspection/disposition status.
-- Cash refunds are reflected in CashDrawerTransactions; electronic refunds are processed by the original payment provider where possible.
+- All customer refunds are paid in cash from the Branch cash drawer, regardless of the original payment method. If the original invoice included an electronic payment allocation, Central approval and a recorded reason are required before cash is released. The refund remains linked to the original successful payment transaction(s) for cumulative refund-limit enforcement; no customer refund is executed through the original bank terminal or online payment provider. Cash payouts are recorded in `sales.CashDrawerTransactions`.
 
 ## 9. Requirement traceability
 
