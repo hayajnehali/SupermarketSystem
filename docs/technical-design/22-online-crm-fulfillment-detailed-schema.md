@@ -1,7 +1,7 @@
 # TD-22 — Detailed Logical Schema: Online Orders, Customer, Loyalty and Fulfillment
 
-**Version:** 0.1  
-**Status:** Proposed for owner review  
+**Version:** 0.2  
+**Status:** Revised for owner review after TD-29  
 **Date:** 2026-11-07  
 **Scope:** Customer profiles/verification/duplicate resolution, carts, online orders and reservations, delivery areas/fees, cancellation, customer notifications, loyalty points, complaints, picking, delivery/pickup, failed-delivery returns, disputes and uncollected pickup orders.  
 **Depends on:** Approved BRS Units 08–09 and 11, WEB-001–WEB-026, DLV-001–DLV-019, CRM-CUS/LOY/CMP requirements, P31–P40, ADR/ORD/DLV decisions, TD-03, TD-04, TD-05, TD-09, TD-13, TD-14, TD-19, TD-20 and TD-21.
@@ -31,6 +31,7 @@
 | Column | SQL Server type | Null | Rule |
 |---|---|---:|---|
 | CustomerId | uniqueidentifier | No | PK; sequential Guid |
+| UserId | uniqueidentifier | No | Unique FK → `auth.Users.UserId`; linked user must have `AccountType = Customer` |
 | CustomerNumber | nvarchar(40) | No | Unique stable customer reference |
 | FullName | nvarchar(200) | No | Customer display name |
 | NormalizedPhone | nvarchar(32) | No | Unique normalized mobile number |
@@ -42,11 +43,12 @@
 | RowVersion | rowversion | No | Concurrency token |
 
 **Constraints and indexes**
-- Unique CustomerNumber and unique NormalizedPhone.
+- Unique CustomerNumber, unique NormalizedPhone and unique UserId.
 - CustomerStatus cannot be Active until PhoneVerifiedAtUtc is populated.
 - Customer phone is the unique customer identifier. Existing duplicates are resolved centrally; no duplicate new account is allowed.
 - No saved address columns/table are introduced. Delivery address is stored per order.
-- Do not duplicate passwords or authentication tokens in Customers; customer authentication remains in the identity subsystem.
+- Do not duplicate passwords or authentication tokens in Customers; customer authentication uses the shared `auth.Users` Identity store. `crm.Customers` is business-profile data only.
+- The linked `auth.Users.AccountType` must be Customer; one account cannot also have an `org.Employees` profile.
 
 ### 2.2 `crm.CustomerPhoneVerifications` — Central
 
@@ -871,10 +873,10 @@ Delivery confirmation is manual. No OTP or electronic signature is required.
 
 ## 14. Technical risks for review
 
-1. Define the exact customer identity table mapping under TD-06. Customer credentials must remain separate from employee credentials.
-2. OTP expiry duration, maximum verification attempts, resend cooldown and resend/rate limits are fixed in application code. The OTP delivery provider and secure hash parameters are defined separately in the security design.
-3. Branch receives only its assigned orders with order number/status, products, quantities, price snapshots and necessary customer contact details; delivery orders also include their delivery address/instructions. Branch cannot search customer profiles or access other orders. This projection and access boundary are approved.
-4. **One fulfillment type per order:** an order must use exactly one fulfillment method: Delivery or BranchPickup. A single order cannot mix delivery and pickup lines. The FulfillmentType on the order is authoritative for its fulfillment workflow.
+1. The logical customer identity mapping is now defined by TD-29: `crm.Customers.UserId` is a unique required FK to the shared `auth.Users` store, with `AccountType = Customer`. The final physical cross-profile XOR enforcement mechanism remains to be selected and tested.
+2. Define OTP provider, delivery limits, expiry/attempt limits and secure hash parameters in the security design; do not hardcode them in the schema.
+3. Define the exact central/branch order projection fields and privacy minimization; Branch must not have customer search access.
+4. Define whether an order may contain both delivery and pickup lines (this proposal assumes one FulfillmentType per order).
 5. **Free-delivery precedence:** a valid free-delivery rule reduces the delivery fee to zero only. Product/order promotions are evaluated independently and remain applicable under their own rules. The delivery fee benefit cannot be applied more than once to the same order, and no duplicate delivery discount is recorded.
 6. **Late payment after cancellation:** a late payment is recorded against the original cancelled order and never restores the order or its stock reservation. The system initiates the refund workflow for the received amount and notifies Central for follow-up. No fixed refund completion time is introduced by this decision.
 7. **Fulfillment outcomes:** order-level outcomes use explicit stable result codes for successful preparation, preparation failure, delivery completion, delivery failure, pickup completion, pickup non-collection and cancellation. The detailed code catalogue and transition validation belong to the application/domain design. Product substitution is not allowed.
