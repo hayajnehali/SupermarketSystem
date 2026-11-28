@@ -24,6 +24,7 @@ public sealed class ProductCategoryConfiguration : IEntityTypeConfiguration<Prod
         builder.Property(x => x.ParentCategoryId);
         builder.Property(x => x.CategoryCode)
             .HasMaxLength(50)
+            .UseCollation("Latin1_General_100_CI_AS")
             .IsRequired();
         builder.HasIndex(x => x.CategoryCode)
             .IsUnique()
