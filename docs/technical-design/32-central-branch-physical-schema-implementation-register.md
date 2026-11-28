@@ -39,7 +39,7 @@ The following table groups are created only in Central unless explicitly marked 
 - `org.RegisteredDevices`, `org.EmployeeSessions`, `org.RuntimePolicies`
 - Central publication/administrative metadata for Branch access snapshots only where required; Branch snapshot employee/permission rows remain Branch-owned.
 
-Identity decisions: Username and normalized username are required and unique; login is username + password only. Email/phone are optional contact methods, not login names. At least one contact method must be confirmed to activate/login. Five failed attempts cause a 15-minute lockout. Idle timeout is 30 minutes. Disabled accounts revoke active sessions. Password minimum is 12 characters and must be changed after creation/reset. MFA is not enabled in this release. Login attempts are recorded in `auth.LoginAttempts` (UserId nullable for unknown accounts; never store secrets). The exact Identity mapping, including required built-in tables, is completed in the Identity physical sub-specification before migration.
+Identity decisions: Username and normalized username are required and unique; login is username + password only. Email/phone are optional contact methods, not login names. At least one contact method must be confirmed to activate/login. Five failed attempts cause a 15-minute lockout. Idle timeout is 30 minutes. Disabled accounts revoke active sessions. Password minimum is 12 characters and must be changed after creation/reset. MFA is not enabled in this release. Login attempts are recorded in `auth.LoginAttempts` (UserId nullable for unknown accounts; never store secrets). The exact Identity mapping is completed in the Identity physical sub-specification before migration. The approved login-attempt audit table is `auth.LoginAttempts`; its nullable UserId supports unknown usernames.
 
 ### 3.2 Product catalogue
 - `catalog.ProductCategories`, `catalog.Brands`, `catalog.Countries`, `catalog.Products`
@@ -142,8 +142,7 @@ Promotion decisions: no stacking by default; explicit opt-in stacking only; prio
 
 ## 7. Known completion gates
 
-- TD-22 and TD-23 detailed schema files are not present under the expected names in the current `master` tree. The relevant table inventory exists in TD-13, but missing detailed columns and constraints must be authored before those tables are implemented.
-- The approved detailed schema documents must be reconciled against later decisions, not copied mechanically.
+- TD-22 (`22-online-crm-fulfillment-detailed-schema.md`) and TD-23 (`23-operations-maintenance-alerts-audit-reporting-schema.md`) both exist and are detailed; TD-24 confirms 205 domain tables have detailed specifications. They must be reconciled against later decisions, not copied mechanically.
 - Exact Identity EF Core table mapping and required `auth.LoginAttempts` physical definition must be finalized before Identity migration.
 - Supplier payment allocations must be represented explicitly.
 - Any Central projection of Branch facts must retain source BranchId and source record GUID and must not be treated as a second editable authority.
