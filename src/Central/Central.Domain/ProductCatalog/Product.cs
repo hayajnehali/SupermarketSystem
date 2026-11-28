@@ -1,15 +1,19 @@
+using Central.Domain.Common;
+
 namespace Central.Domain.ProductCatalog;
 
 /// <summary>
-/// Central-owned Product aggregate. Persistence mappings are kept outside the Domain project.
+/// Central-owned Product aggregate. Product units are child entities and are changed
+/// through this aggregate so its invariants remain in one consistency boundary.
 /// </summary>
-public sealed class Product
+public sealed class Product : AggregateRoot
 {
     private readonly List<ProductUnit> _units = [];
 
     private Product() { }
 
-    public Guid Id { get; private set; }
+    private Product(Guid id) : base(id) { }
+
     public string Sku { get; private set; } = string.Empty;
     public string Name { get; private set; } = string.Empty;
     public string? Description { get; private set; }
@@ -30,18 +34,14 @@ public sealed class Product
         bool requiresExpiryTracking = false,
         string? description = null)
     {
-        if (id == Guid.Empty)
-            throw new ArgumentException("Product ID cannot be empty.", nameof(id));
-
         ValidateSku(sku);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
         if (categoryId == Guid.Empty)
             throw new ArgumentException("Category ID cannot be empty.", nameof(categoryId));
 
-        return new Product
+        return new Product(id)
         {
-            Id = id,
             Sku = sku,
             Name = name.Trim(),
             Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim(),
