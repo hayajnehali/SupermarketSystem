@@ -858,7 +858,7 @@ No separate delivery-proof/evidence table, photo, document, OTP, electronic sign
 | WEB-025 | OrderNotifications and NotificationDeliveryAttempts; Website/Email only |
 | WEB-026 | Assigned-order projections and restricted minimum customer data |
 | DLV-001–DLV-007 | FulfillmentTasks, PickingSessions/Lines/Scans, FulfillmentExceptions |
-| DLV-008–DLV-013 | DeliveryShiftCoordinators, DeliveryAssignments, one DeliveryAttempt, manual proof |
+| DLV-008–DLV-013 | DeliveryShiftCoordinators, DeliveryAssignments and one DeliveryAttempt with completion outcome recorded directly on the attempt; no separate proof |
 | DLV-014–DLV-018 | FailedDeliveryReturns/Inspections, DeliveryDisputes and Central decisions |
 | DLV-019 | PickupRetentionPolicies, PickupNonCollectionCases/Decisions |
 | CRM-LOY-001–006, P32/P33/LOY-04 | Loyalty rules, accounts, immutable transactions, expiring lots and allocations |
