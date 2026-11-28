@@ -1,5 +1,4 @@
 using Central.Application.Abstractions;
-using Central.Application.ProductCatalog.Interfaces;
 using Central.Domain.ProductCatalog;
 using Microsoft.EntityFrameworkCore;
 using Supermarket.BuildingBlocks.Identity;
@@ -15,7 +14,7 @@ public sealed class CentralDbContext(
     DbContextOptions<CentralDbContext> options,
     ICurrentActor currentActor,
     IClock clock)
-    : DbContext(options), ICentralUnitOfWork, IProductRepository
+    : DbContext(options), ICentralUnitOfWork
 {
     public DbSet<Product> Products => Set<Product>();
     public DbSet<ProductUnit> ProductUnits => Set<ProductUnit>();
@@ -88,9 +87,4 @@ public sealed class CentralDbContext(
         return userId;
     }
 
-    public Task<bool> ExistsBySkuAsync(string normalizedSku, CancellationToken cancellationToken)
-        => Products.AsNoTracking().AnyAsync(x => x.Sku == normalizedSku, cancellationToken);
-
-    public Task AddAsync(Product product, CancellationToken cancellationToken)
-        => Products.AddAsync(product, cancellationToken).AsTask();
 }
