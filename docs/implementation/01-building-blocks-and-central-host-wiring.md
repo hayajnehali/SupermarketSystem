@@ -40,14 +40,16 @@ This is an explicit project-wide architecture constraint unless the owner later 
 
 ## Application and Infrastructure folder conventions
 
-Each business feature is organized by responsibility instead of placing unrelated classes in one folder.
+Use feature-first organization: each business feature owns its related application code, then separates that code by responsibility. This keeps a feature cohesive without creating large solution-wide folders containing unrelated feature files.
 
 For example, Product Catalog follows this structure:
 
 ```text
 Central.Application/
+├── Abstractions/
+│   └── ICentralUnitOfWork.cs
 └── ProductCatalog/
-    ├── Models/
+    ├── Requests/
     │   └── CreateProductRequest.cs
     ├── Interfaces/
     │   └── IProductRepository.cs
@@ -60,10 +62,10 @@ Central.Infrastructure/
         └── ProductRepository.cs
 ```
 
-- `Models`: application request/response models and DTOs.
-- `Interfaces`: contracts consumed by Application Services, including repository interfaces.
-- `Services`: use-case orchestration and application business workflows.
+- `Requests`: input DTOs for application service methods. Add `Responses` when a use case needs output DTOs; do not create empty or speculative response types.
+- `Interfaces`: contracts consumed by Application Services, including feature repository interfaces.
+- `Services`: use-case orchestration and application workflows.
 - `Repositories`: concrete persistence implementations in Infrastructure, normally using EF Core.
 - Shared application contracts such as `ICentralUnitOfWork` remain in `Application/Abstractions`; they are not duplicated inside every feature.
 
-Apply the same convention to Central and Branch modules. Do not place a concrete EF Core repository in the Application project, and do not make a DbContext double as a feature repository.
+Apply the same feature-first convention to Central and Branch modules. Do not place a concrete EF Core repository in the Application project, and do not make a DbContext double as a feature repository. This is a folder organization convention, not CQRS; application use cases remain methods on cohesive services.
