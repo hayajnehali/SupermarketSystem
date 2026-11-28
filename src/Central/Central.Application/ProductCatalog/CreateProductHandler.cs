@@ -13,6 +13,7 @@ public sealed class CreateProductHandler(
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(command.Units);
 
         var normalizedSku = command.Sku?.Trim().ToUpperInvariant();
         if (string.IsNullOrWhiteSpace(normalizedSku))
