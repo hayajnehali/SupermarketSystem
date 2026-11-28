@@ -58,7 +58,7 @@ The following is the complete first-pass inventory derived from the BRS units 01
 | `org.RuntimePolicies` | C | Centrally governed runtime/Offline policy definitions and version history. |
 | `org.BranchRuntimePolicies` | B projection of C | Last centrally approved Offline/runtime policy and version. |
 
-**Identity implementation note:** `auth.Users` is the sole Central Identity user store for Employee and Customer accounts. `org.Employees` and `crm.Customers` remain separate business-profile tables, each with a unique required `UserId` FK to `auth.Users`; the `AccountType` values are mutually exclusive, so one user cannot have both profiles. `auth.UserRoles` maps employee role membership to the existing `org.Roles` catalogue. Other Identity relationship tables are included only when required, use Guid PKs, and must be explicitly inventoried. The final SQL Server mechanism enforcing cross-table profile exclusivity remains a physical-design gate. Local Offline authentication material must follow TD-06 and TD-29 security constraints.
+**Identity implementation note:** `auth.Users` is the sole Central Identity user store for Employee and Customer accounts. `org.Employees` and `crm.Customers` remain separate business-profile tables, each with a unique required `UserId` FK to `auth.Users`; the `AccountType` values are mutually exclusive, so one user cannot have both profiles. `auth.UserRoles` maps employee role membership to the existing `org.Roles` catalogue. Other Identity relationship tables are included only when required, use Guid PKs, and must be explicitly inventoried. Per TD-29 and TD-32, AccountType plus Application Layer validation is the approved profile-exclusivity rule; no cross-table XOR CHECK, trigger or shared registry is introduced. Local Offline authentication material must follow TD-06 and TD-29 security constraints.
 
 ### 3.2 Product catalog
 
@@ -254,7 +254,6 @@ The 15-minute window, late-payment handling, central cancellation approval befor
 | `fulfillment.DeliveryShiftCoordinators` | C | Central appointment of coordinator by shift. |
 | `fulfillment.DeliveryAssignments` | C assignment authority; B assigned-task projection | Assigned delivery employee, coordinator and timestamps. |
 | `fulfillment.DeliveryAttempts` | B execution fact; C synchronized record | Exactly one permitted customer delivery attempt; preserve outcome. |
-| `fulfillment.DeliveryProofs` | B execution fact; C synchronized reference | Manual confirmation/evidence references; no OTP/e-signature requirement is introduced. |
 | `fulfillment.FailedDeliveryReturns` | B execution fact; C synchronized record | Returned failed-delivery order goods received back at the responsible branch. |
 | `fulfillment.FailedDeliveryReturnLines` | Same as parent | Item quantities returned to the branch after the single failed attempt. |
 | `fulfillment.DeliveryReturnInspections` | B execution fact; C synchronized | Inspection of failed-delivery goods before any stock disposition. |
@@ -403,3 +402,20 @@ These are technical modeling tasks, not requests to reopen approved business pol
 7. Generate SQL migrations only after the physical schema and deployment topology are approved.
 
 **No database table has been created by this document. No EF Core code, DDL, or migration is authorized by this inventory.**
+
+
+## 6. TD-32 physical reconciliation addendum (2026-11-28)
+
+This addendum updates the candidate inventory where later approved detailed physical design introduced an explicit table or clarified ownership. It does not change the business rules already approved in TD-13/TD-22/TD-23.
+
+| Table | Placement | Reconciliation |
+|---|---|---|
+| `procurement.SupplierPaymentAllocations` | C | Child allocations for the Central `SupplierPayments` header. One payment may settle multiple invoices of the same supplier; allocation totals and invoice outstanding caps are validated atomically. This supersedes any earlier one-payment/one-invoice assumption. |
+| `org.BranchAccessSnapshotDevices` | B | Branch-local device entries attached to a branch access snapshot; contains only the approved device-validation projection, not Central credentials or reusable tokens. |
+| `org.BranchEmployeeSessions` | B | Branch-local offline employee session state; no Central password hash, security stamp or reusable Central token is copied. Offline verifier cryptography/key custody remains a separate security gate. |
+| `pricing.PromotionUsageQuotas` | C authority; B finite quota projection | Central-issued finite per-Branch quota for offline promotion use where a global/cross-Branch cap exists. Branch consumption is locally atomic against its assigned quota and is synchronized idempotently. |
+| `pricing.CouponUsageQuotas` | C authority; B finite quota projection | Central-issued finite per-Branch coupon quota where a global/customer cap must be enforced offline. No unbounded local redemption is allowed. |
+
+The TD-32I/TD-32J physical mappings also clarify ownership and implementation constraints for the existing TD-13 table groups covering Online/CRM/Fulfillment and Operations/Maintenance/Alerts/Audit/Reporting. They do not silently add an address book, guest checkout, split orders, automatic substitution, delivery proof, payroll calculation, or a general ledger.
+
+**Authority rule:** where TD-32A–TD-32J gives an explicit later physical mapping, use that mapping together with the existing detailed module specification. Preserve TD-29, TD-31 and TD-12 precedence rules recorded in TD-32.

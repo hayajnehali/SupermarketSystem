@@ -35,7 +35,7 @@
 | Central employee/role/permission records | `org.BranchAccessSnapshots` | 1:N per branch snapshot | Projection built from approved central state; local snapshot rows relate only within the Branch DB. |
 | `org.RuntimePolicies` | `org.BranchRuntimePolicies` | 1:N logical publication | Centrally owned versioned policy; branch applies the authenticated local projection with no cross-database FK. |
 
-`auth.Users` is the unified ASP.NET Core Identity store defined by TD-29. The Employee and Customer profile links are mutually exclusive: `AccountType = Employee` requires exactly one `org.Employees` row and no `crm.Customers` row; `AccountType = Customer` requires exactly one `crm.Customers` row and no `org.Employees` row. Each profile's `UserId` is unique and references `auth.Users.UserId`. `auth.UserRoles` links Employee users to the existing `org.Roles` catalogue only. Identity claim/login/token relationship tables are conditional implementation tables, not a second user store. The final database-enforced XOR mechanism is still a physical-design gate; application-only validation is insufficient.
+`auth.Users` is the unified ASP.NET Core Identity store defined by TD-29. The Employee and Customer profile links are mutually exclusive: `AccountType = Employee` requires exactly one `org.Employees` row and no `crm.Customers` row; `AccountType = Customer` requires exactly one `crm.Customers` row and no `org.Employees` row. Each profile's `UserId` is unique and references `auth.Users.UserId`. `auth.UserRoles` links Employee users to the existing `org.Roles` catalogue only. Identity claim/login/token relationship tables are conditional implementation tables, not a second user store. Per TD-29 and TD-32, AccountType plus Application Layer validation is the approved profile-exclusivity rule. Do not introduce a cross-table XOR CHECK, trigger or shared registry.
 
 ## 3. Product catalog
 
@@ -87,7 +87,7 @@
 | `procurement.PurchaseReceiptLines` | `procurement.SupplierInvoiceMatchLines` | 1:N | Actual received quantity reference. Match is evaluated centrally. |
 | `procurement.SupplierInvoices` | `procurement.SupplierInvoiceDiscrepancies` | 1:N | Discrepancies block invoice approval until Central decision. |
 | `procurement.SupplierInvoices` | `procurement.SupplierInvoiceDueDates` | 1:N | One invoice may have one or more contractual due dates/installments. |
-| `procurement.SupplierInvoices` | `procurement.SupplierPayments` | 1:N | Payments are centrally approved and executed; cumulative paid amount must respect approved invoice terms. |
+| `procurement.SupplierPayments` | `procurement.SupplierPaymentAllocations` | 1:N | Central payment header to invoice allocations. A payment may allocate across multiple invoices of the same supplier; each allocation references one invoice, and totals/outstanding caps are checked transactionally. |
 | `procurement.SupplierReturns` | `procurement.SupplierReturnLines` | 1:N | Return request references original supplier, receiving and batch. |
 | `procurement.SupplierReturns` | `procurement.SupplierReturnEvents` | 1:N | Branch preparation/handover and Central workflow events are correlated by GUID. |
 | `procurement.SupplierReturns` | `procurement.SupplierReturnSettlements` | 0..N | Central records the supplier compensation outcome; this is not a general ledger. |
@@ -212,7 +212,6 @@ A completed POS sale, inventory movement, payment allocations and Outbox message
 | `fulfillment.PickingLines` | `fulfillment.PickingLineScans` | 1:N | Each scan attempt is retained with match/mismatch result. |
 | `fulfillment.FulfillmentTasks` | `fulfillment.DeliveryAssignments` | 0..N | Central assignment history; one active assignment at a time if policy requires. |
 | `fulfillment.DeliveryAssignments` | `fulfillment.DeliveryAttempts` | 1:0..1 | The approved single customer delivery attempt is enforced by a unique constraint on the order/assignment business key. Technical retries of saving/synchronizing the same attempt do not create another attempt. |
-| `fulfillment.DeliveryAttempts` | `fulfillment.DeliveryProofs` | 1:0..N | Manual confirmation/evidence references. |
 | `fulfillment.DeliveryAttempts` | `fulfillment.FailedDeliveryReturns` | 0..1:1 | A failed single delivery attempt results in goods being returned to the responsible branch. |
 | `fulfillment.FailedDeliveryReturns` | `fulfillment.FailedDeliveryReturnLines` | 1:N | Returned order items and quantities. |
 | `fulfillment.FailedDeliveryReturnLines` | `fulfillment.DeliveryReturnInspections` | 1:N | Returned goods are inspected before inventory disposition. |
@@ -317,3 +316,28 @@ TD-12 remains authoritative for the physical columns, uniqueness, indexes, lease
 6. Only after logical and physical schema approval, create EF Core entities/configurations and then migrations.
 
 **No SQL table, EF Core entity, DDL or migration is created or authorized by this relationship model.**
+
+
+## 13. TD-32 physical reconciliation addendum (2026-11-28)
+
+The following relationships are added/clarified by the later physical supplements. All are same-database FKs unless explicitly marked as a projection/correlation.
+
+| Parent | Child | Cardinality | Boundary and enforcement |
+|---|---|---|---|
+| `procurement.SupplierPayments` | `procurement.SupplierPaymentAllocations` | 1:N | Central FK. A payment allocation references one Central supplier invoice; all allocations under a payment must belong to the same supplier and currency. Allocation sum equals payment amount at execution; cumulative invoice allocations cannot exceed its payable outstanding amount. |
+| `org.BranchAccessSnapshots` | `org.BranchAccessSnapshotDevices` | 1:N | Branch-local FK. Device rows are only approved local validation metadata. |
+| `org.BranchAccessSnapshots` | `org.BranchEmployeeSessions` | 1:N logical association | Branch-local session references the active snapshot/version and employee correlation; exact FK shape follows TD-32D. It stores no Central Identity secret material. |
+| `pricing.Promotions` | `pricing.PromotionUsageQuotas` | 1:N | Central FK; quotas are finite and versioned by promotion/Branch/period as defined in TD-32F. Branch copies are local quota projections with no cross-database FK. |
+| `pricing.Coupons` | `pricing.CouponUsageQuotas` | 1:N | Central FK; finite quota allocation for Branch offline use. Branch copies are projections; central/customer/global cap reconciliation remains authoritative. |
+| `online.Orders` | `online.OrderReservations` | 1:0..1 | Central FK; unique OrderId. Branch `inventory.StockReservations` is a separate authoritative local record correlated by GUID, not an FK. |
+| `online.Orders` | `fulfillment.FulfillmentTasks` | 1:0..1 active task | Central logical relationship; unique OrderId for the first-release task model. Retries are idempotent operations, not duplicate active tasks. |
+| `crm.LoyaltyAccounts` | `crm.LoyaltyPointTransactions` | 1:N | Central FK; immutable ledger. |
+| `crm.LoyaltyAccounts` | `crm.LoyaltyPointLots` | 1:N | Central FK; earning lots are consumed deterministically. |
+| `crm.LoyaltyPointTransactions` | `crm.LoyaltyPointLotAllocations` | 1:N | Central FK; redemption allocations link one redemption transaction to consumed point lots. |
+| `crm.LoyaltyPointLots` | `crm.LoyaltyPointLotAllocations` | 1:N | Central FK; each allocation consumes a bounded amount from one lot. |
+| `alerts.AlertEvents` | `alerts.AlertRecipients` | 1:N | Central FK; recipient set is materialized at event creation. |
+| `alerts.AlertRecipients` | `alerts.AlertDeliveries` | 1:N | Central FK; delivery attempts are append-only. |
+| `alerts.AlertRecipients` | `alerts.AlertAcknowledgements` | 1:0..N | Central FK; acknowledgement is idempotent and unique per alert recipient. |
+| `audit.AuditEntries` | `audit.AuditChangeDetails` | 1:N | Central/Branch local FK within each database; secrets and sensitive credentials are excluded/redacted. |
+
+Cross-database relationships in this addendum are correlation GUIDs only. In particular, Central Orders and Branch StockReservations/Fulfillment execution rows are not connected by SQL foreign keys. TD-12 Outbox/Inbox/ProcessedOperations/BranchCommands remains the sole durable messaging model.

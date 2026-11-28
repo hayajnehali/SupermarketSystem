@@ -701,18 +701,11 @@ Cancellation before preparation requires Central approval. Cancellation after pr
 - AttemptNumber check = 1. Technical retries use the same OperationId and cannot create a second customer attempt.
 - A failed attempt triggers return-to-branch workflow; no further delivery attempt is scheduled.
 
-### 10.4 `fulfillment.DeliveryProofs` — Branch execution; Central reference
+### 10.4 Delivery completion recording — part of `fulfillment.DeliveryAttempts`
 
-| Column | SQL Server type | Null | Rule |
-|---|---|---:|---|
-| DeliveryProofId | uniqueidentifier | No | PK; sequential Guid |
-| DeliveryAttemptId | uniqueidentifier | No | FK → local DeliveryAttempts |
-| ConfirmedByEmployeeId | uniqueidentifier | No | Delivery employee |
-| ConfirmedAtUtc | datetime2(3) | No | UTC |
-| ConfirmationNotes | nvarchar(1000) | Yes | Optional manual notes |
-| EvidenceReference | nvarchar(500) | Yes | Optional protected evidence reference |
+The delivery employee records the final `AttemptStatus`, `AttemptedAtUtc`, `RecordedByEmployeeId`, and (when failed) `FailureReason` directly on the single `DeliveryAttempts` row. This is the complete operational record for the attempt.
 
-Delivery confirmation is manual. No OTP or electronic signature is required.
+No separate delivery-proof/evidence table, photo, document, OTP, electronic signature, or proof upload is required or stored. A successful delivery is recorded by the authorized employee as `AttemptStatus = Delivered`; a failed delivery records the reason and starts the failed-delivery return workflow.
 
 ## 11. Pickup handover, failed delivery returns and disputes
 
@@ -865,7 +858,7 @@ Delivery confirmation is manual. No OTP or electronic signature is required.
 | WEB-025 | OrderNotifications and NotificationDeliveryAttempts; Website/Email only |
 | WEB-026 | Assigned-order projections and restricted minimum customer data |
 | DLV-001–DLV-007 | FulfillmentTasks, PickingSessions/Lines/Scans, FulfillmentExceptions |
-| DLV-008–DLV-013 | DeliveryShiftCoordinators, DeliveryAssignments, one DeliveryAttempt, manual proof |
+| DLV-008–DLV-013 | DeliveryShiftCoordinators, DeliveryAssignments and one DeliveryAttempt with completion outcome recorded directly on the attempt; no separate proof |
 | DLV-014–DLV-018 | FailedDeliveryReturns/Inspections, DeliveryDisputes and Central decisions |
 | DLV-019 | PickupRetentionPolicies, PickupNonCollectionCases/Decisions |
 | CRM-LOY-001–006, P32/P33/LOY-04 | Loyalty rules, accounts, immutable transactions, expiring lots and allocations |
@@ -873,7 +866,7 @@ Delivery confirmation is manual. No OTP or electronic signature is required.
 
 ## 14. Technical risks for review
 
-1. The logical customer identity mapping is now defined by TD-29: `crm.Customers.UserId` is a unique required FK to the shared `auth.Users` store, with `AccountType = Customer`. The final physical cross-profile XOR enforcement mechanism remains to be selected and tested.
+1. The customer identity mapping is governed by TD-29 and TD-32A: `crm.Customers.UserId` is a unique required FK to the shared `auth.Users` store, with `AccountType = Customer`. Profile exclusivity is enforced by `AccountType` and Central Application Layer validation. Do not add a cross-table XOR CHECK, trigger, or shared registry. This supersedes the earlier open question in this section.
 2. Define OTP provider, delivery limits, expiry/attempt limits and secure hash parameters in the security design; do not hardcode them in the schema.
 3. Define the exact central/branch order projection fields and privacy minimization; Branch must not have customer search access.
 4. Define whether an order may contain both delivery and pickup lines (this proposal assumes one FulfillmentType per order).

@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Central.Domain/Central.Domain.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Supermarket.BuildingBlocks/Supermarket.BuildingBlocks.csproj" />
+    <ProjectReference Include="../../Contracts/Supermarket.Contracts/Supermarket.Contracts.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,25 @@
+# Build
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+*.suo
+*.cache
+
+# IDE
+.idea/
+.vscode/
+
+# Local configuration and secrets
+appsettings.Local.json
+appsettings.*.Local.json
+.env
+.env.*
+
+# Test and coverage
+TestResults/
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db
