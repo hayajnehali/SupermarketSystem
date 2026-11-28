@@ -4,7 +4,7 @@
 
 - `IClock` provides UTC time. Production uses the singleton `SystemClock`; tests can inject a fixed clock.
 - `ICurrentActor` describes the authenticated user, employee, branch, and device.
-- `IOperationContext` provides operation and correlation identifiers, plus the authenticated device identifier.
+- `IOperationContext` provides operation and correlation identifiers, plus the authenticated device identifier when available. The device ID comes from a trusted authenticated claim, never directly from an arbitrary request header.
 
 The BuildingBlocks project contains cross-cutting contracts and small shared primitives. It does not contain Product, Order, Inventory, or other module domain models.
 
@@ -23,5 +23,5 @@ Product writes require an authenticated actor with a valid user ID. A background
 ## Hosting
 
 - `Central.Api` registers the Central Application and Infrastructure services.
-- `Central.Worker` registers the same application and infrastructure services for background processing.
+- `Central.Worker` registers the same application and infrastructure services for background processing. Its HTTP actor adapter has no authenticated principal in a normal background execution; system writes must use an explicit service-actor policy rather than impersonating a cashier.
 - The Worker is a separate executable. It is not Hangfire itself; a background-job server can be hosted inside it when the durable job-processing slice is implemented.
