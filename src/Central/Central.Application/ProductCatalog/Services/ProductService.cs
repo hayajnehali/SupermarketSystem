@@ -21,19 +21,12 @@ public sealed class ProductService(
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Units);
 
-        var normalizedSku = request.Sku?.Trim().ToUpperInvariant();
-        if (string.IsNullOrWhiteSpace(normalizedSku))
-            throw new ArgumentException("SKU is required.", nameof(request));
-
         if (!await categories.IsActiveByIdAsync(request.CategoryId, cancellationToken))
             throw new InvalidOperationException($"Active category '{request.CategoryId}' does not exist.");
 
-        if (await products.ExistsBySkuAsync(normalizedSku, cancellationToken))
-            throw new InvalidOperationException($"SKU '{normalizedSku}' is already in use.");
-
         var product = Product.Create(
             request.ProductId,
-            normalizedSku,
+            request.Sku,
             request.Name,
             request.CategoryId,
             request.BrandId,
@@ -57,6 +50,9 @@ public sealed class ProductService(
 
         if (request.Activate)
             product.Activate();
+
+        if (await products.ExistsBySkuAsync(product.Sku, cancellationToken))
+            throw new InvalidOperationException($"SKU '{product.Sku}' is already in use.");
 
         await products.AddAsync(product, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
