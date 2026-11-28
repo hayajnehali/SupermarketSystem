@@ -25,3 +25,15 @@ Product writes require an authenticated actor with a valid user ID. A background
 - `Central.Api` registers the Central Application and Infrastructure services.
 - `Central.Worker` registers the same application and infrastructure services for background processing. Its HTTP actor adapter has no authenticated principal in a normal background execution; system writes must use an explicit service-actor policy rather than impersonating a cashier.
 - The Worker is a separate executable. It is not Hangfire itself; a background-job server can be hosted inside it when the durable job-processing slice is implemented.
+
+## Application architecture decision
+
+The solution uses a conventional Application Service Layer, not CQRS.
+
+- Use cohesive services such as `ProductService`, `InventoryService`, and `SalesService`.
+- Expose business use cases as service methods such as `CreateAsync`, `UpdateAsync`, and `DeactivateAsync`.
+- Use request/DTO models as method inputs and response/DTO models as outputs where appropriate.
+- Do not introduce CQRS Commands/Queries, separate Handlers, MediatR, or command/query buses.
+- Keep business invariants in Domain entities and aggregates; keep orchestration in Application Services; keep EF Core and external integrations in Infrastructure.
+
+This is an explicit project-wide architecture constraint unless the owner later changes it.
