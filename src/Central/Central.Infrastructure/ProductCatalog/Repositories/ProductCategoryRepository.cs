@@ -12,10 +12,10 @@ public sealed class ProductCategoryRepository(CentralDbContext dbContext) : IPro
             .AsNoTracking()
             .AnyAsync(x => x.CategoryCode == normalizedCode, cancellationToken);
 
-    public Task<bool> ExistsByIdAsync(Guid categoryId, CancellationToken cancellationToken)
+    public Task<bool> IsActiveByIdAsync(Guid categoryId, CancellationToken cancellationToken)
         => dbContext.ProductCategories
             .AsNoTracking()
-            .AnyAsync(x => x.Id == categoryId, cancellationToken);
+            .AnyAsync(x => x.Id == categoryId && x.IsActive, cancellationToken);
 
     public async Task AddAsync(ProductCategory category, CancellationToken cancellationToken)
         => await dbContext.ProductCategories.AddAsync(category, cancellationToken);
