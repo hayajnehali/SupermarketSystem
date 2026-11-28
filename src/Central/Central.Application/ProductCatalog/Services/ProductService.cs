@@ -11,6 +11,7 @@ namespace Central.Application.ProductCatalog.Services;
 /// </summary>
 public sealed class ProductService(
     IProductRepository products,
+    IProductCategoryRepository categories,
     ICentralUnitOfWork unitOfWork)
 {
     public async Task<Guid> CreateAsync(
@@ -23,6 +24,9 @@ public sealed class ProductService(
         var normalizedSku = request.Sku?.Trim().ToUpperInvariant();
         if (string.IsNullOrWhiteSpace(normalizedSku))
             throw new ArgumentException("SKU is required.", nameof(request));
+
+        if (!await categories.IsActiveByIdAsync(request.CategoryId, cancellationToken))
+            throw new InvalidOperationException($"Active category '{request.CategoryId}' does not exist.");
 
         if (await products.ExistsBySkuAsync(normalizedSku, cancellationToken))
             throw new InvalidOperationException($"SKU '{normalizedSku}' is already in use.");
