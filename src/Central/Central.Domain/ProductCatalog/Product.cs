@@ -28,7 +28,8 @@ public sealed class Product
         string? description = null,
         Guid? brandId = null,
         Guid? countryOfOriginId = null,
-        bool requiresExpiryTracking = false)
+        bool requiresExpiryTracking = false,
+        string? description = null)
     {
         if (id == Guid.Empty)
             throw new ArgumentException("Product ID cannot be empty.", nameof(id));
