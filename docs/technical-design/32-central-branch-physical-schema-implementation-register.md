@@ -1,7 +1,7 @@
 # TD-32 — Central and Branch Physical Schema Implementation Register
 
 **Version:** 0.1  
-**Status:** In progress — ownership baseline reconciled; detailed physical mappings are being completed in implementation order.  
+**Status:** In progress — ownership baseline and all major module physical mappings documented; final inventory/relationship reconciliation remains.  
 **Date:** 2026-11-28  
 **Depends on:** TD-12 through TD-31.  
 **Purpose:** Establish the authoritative physical table boundary for the Central database and each Branch database before DbContext configuration and migrations are generated.
@@ -131,9 +131,9 @@ Promotion decisions: no stacking by default; explicit opt-in stacking only; prio
 - TD-32E: Branch inventory balances, batches, ledger, exact reservation allocations, stocktake freeze, quarantine and disposal.
 - TD-32F: Central pricing/promotions, deterministic rules, atomic Branch publication and offline quota allocation. Adds Central `pricing.PromotionUsageQuotas` and `pricing.CouponUsageQuotas` with Branch-local projections.
 - TD-32G: Branch POS, sales, invoice sequencing, cash shifts/drawer, returns, inspection, exchanges and cancellation compensation.
-- TD-32H: Central online provider payments, Branch POS tender evidence, cash-only customer refunds and concurrency-safe refund caps.
+- TD-32H: Central online provider payments, Branch POS tender evidence, cash-only customer refunds and concurrency-safe refund caps.\n- TD-32I: Central online commerce, customer, loyalty, complaints and fulfillment physical mapping aligned to TD-22; defines restricted Branch assigned-order projection and execution boundary.\n- TD-32J: Operations, expenses, maintenance, alerts, audit, reporting and Branch execution physical mapping aligned to TD-23; payroll remains a tracking placeholder.
 
-These supplements refine or supersede earlier logical wording where explicitly stated. They must be reconciled back into TD-13/TD-14 and module specifications before migrations.
+These supplements refine or supersede earlier logical wording where explicitly stated. TD-32I and TD-32J translate existing TD-22/TD-23 definitions into physical ownership, constraints, idempotency and transaction boundaries; they do not replace their detailed column inventories. They must be reconciled back into TD-13/TD-14 and module specifications before migrations.
 
 ## 6. EF Core implementation boundary
 
