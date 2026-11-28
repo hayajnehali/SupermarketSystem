@@ -21,19 +21,21 @@ public sealed class ProductService(
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Units);
 
-        var normalizedSku = request.Sku?.Trim().ToUpperInvariant();
-        if (string.IsNullOrWhiteSpace(normalizedSku))
-            throw new ArgumentException("SKU is required.", nameof(request));
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.Sku);
+        if (request.Sku.Any(char.IsWhiteSpace))
+            throw new ArgumentException("SKU cannot contain whitespace.", nameof(request));
+        if (request.Sku.Length > 60)
+            throw new ArgumentOutOfRangeException(nameof(request), "SKU cannot exceed 60 characters.");
 
         if (!await categories.IsActiveByIdAsync(request.CategoryId, cancellationToken))
             throw new InvalidOperationException($"Active category '{request.CategoryId}' does not exist.");
 
-        if (await products.ExistsBySkuAsync(normalizedSku, cancellationToken))
-            throw new InvalidOperationException($"SKU '{normalizedSku}' is already in use.");
+        if (await products.ExistsBySkuAsync(request.Sku, cancellationToken))
+            throw new InvalidOperationException($"SKU '{request.Sku}' is already in use.");
 
         var product = Product.Create(
             request.ProductId,
-            normalizedSku,
+            request.Sku,
             request.Name,
             request.CategoryId,
             request.BrandId,
