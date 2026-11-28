@@ -50,11 +50,14 @@ Central.Application/
 │   └── ICentralUnitOfWork.cs
 └── ProductCatalog/
     ├── Requests/
-    │   └── CreateProductRequest.cs
+    │   ├── CreateProductRequest.cs
+    │   └── CreateProductCategoryRequest.cs
     ├── Interfaces/
-    │   └── IProductRepository.cs
+    │   ├── IProductRepository.cs
+    │   └── IProductCategoryRepository.cs
     └── Services/
-        └── ProductService.cs
+        ├── ProductService.cs
+        └── ProductCategoryService.cs
 
 Central.Infrastructure/
 └── ProductCatalog/
