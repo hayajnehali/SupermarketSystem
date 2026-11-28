@@ -24,9 +24,9 @@ public sealed class ProductCategoryService(
             throw new InvalidOperationException($"Category code '{normalizedCode}' is already in use.");
 
         if (request.ParentCategoryId is { } parentId
-            && !await categories.ExistsByIdAsync(parentId, cancellationToken))
+            && !await categories.IsActiveByIdAsync(parentId, cancellationToken))
         {
-            throw new InvalidOperationException($"Parent category '{parentId}' does not exist.");
+            throw new InvalidOperationException($"Parent category '{parentId}' does not exist or is inactive.");
         }
 
         var category = ProductCategory.Create(
