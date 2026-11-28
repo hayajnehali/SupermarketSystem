@@ -254,7 +254,6 @@ The 15-minute window, late-payment handling, central cancellation approval befor
 | `fulfillment.DeliveryShiftCoordinators` | C | Central appointment of coordinator by shift. |
 | `fulfillment.DeliveryAssignments` | C assignment authority; B assigned-task projection | Assigned delivery employee, coordinator and timestamps. |
 | `fulfillment.DeliveryAttempts` | B execution fact; C synchronized record | Exactly one permitted customer delivery attempt; preserve outcome. |
-| `fulfillment.DeliveryProofs` | B execution fact; C synchronized reference | Manual confirmation/evidence references; no OTP/e-signature requirement is introduced. |
 | `fulfillment.FailedDeliveryReturns` | B execution fact; C synchronized record | Returned failed-delivery order goods received back at the responsible branch. |
 | `fulfillment.FailedDeliveryReturnLines` | Same as parent | Item quantities returned to the branch after the single failed attempt. |
 | `fulfillment.DeliveryReturnInspections` | B execution fact; C synchronized | Inspection of failed-delivery goods before any stock disposition. |
