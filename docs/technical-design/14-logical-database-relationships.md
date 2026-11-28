@@ -35,7 +35,7 @@
 | Central employee/role/permission records | `org.BranchAccessSnapshots` | 1:N per branch snapshot | Projection built from approved central state; local snapshot rows relate only within the Branch DB. |
 | `org.RuntimePolicies` | `org.BranchRuntimePolicies` | 1:N logical publication | Centrally owned versioned policy; branch applies the authenticated local projection with no cross-database FK. |
 
-`auth.Users` is the unified ASP.NET Core Identity store defined by TD-29. The Employee and Customer profile links are mutually exclusive: `AccountType = Employee` requires exactly one `org.Employees` row and no `crm.Customers` row; `AccountType = Customer` requires exactly one `crm.Customers` row and no `org.Employees` row. Each profile's `UserId` is unique and references `auth.Users.UserId`. `auth.UserRoles` links Employee users to the existing `org.Roles` catalogue only. Identity claim/login/token relationship tables are conditional implementation tables, not a second user store. The final database-enforced XOR mechanism is still a physical-design gate; application-only validation is insufficient.
+`auth.Users` is the unified ASP.NET Core Identity store defined by TD-29. The Employee and Customer profile links are mutually exclusive: `AccountType = Employee` requires exactly one `org.Employees` row and no `crm.Customers` row; `AccountType = Customer` requires exactly one `crm.Customers` row and no `org.Employees` row. Each profile's `UserId` is unique and references `auth.Users.UserId`. `auth.UserRoles` links Employee users to the existing `org.Roles` catalogue only. Identity claim/login/token relationship tables are conditional implementation tables, not a second user store. Per TD-29 and TD-32, AccountType plus Application Layer validation is the approved profile-exclusivity rule. Do not introduce a cross-table XOR CHECK, trigger or shared registry.
 
 ## 3. Product catalog
 
@@ -87,7 +87,7 @@
 | `procurement.PurchaseReceiptLines` | `procurement.SupplierInvoiceMatchLines` | 1:N | Actual received quantity reference. Match is evaluated centrally. |
 | `procurement.SupplierInvoices` | `procurement.SupplierInvoiceDiscrepancies` | 1:N | Discrepancies block invoice approval until Central decision. |
 | `procurement.SupplierInvoices` | `procurement.SupplierInvoiceDueDates` | 1:N | One invoice may have one or more contractual due dates/installments. |
-| `procurement.SupplierInvoices` | `procurement.SupplierPayments` | 1:N | Payments are centrally approved and executed; cumulative paid amount must respect approved invoice terms. |
+| `procurement.SupplierPayments` | `procurement.SupplierPaymentAllocations` | 1:N | Central payment header to invoice allocations. A payment may allocate across multiple invoices of the same supplier; each allocation references one invoice, and totals/outstanding caps are checked transactionally. |
 | `procurement.SupplierReturns` | `procurement.SupplierReturnLines` | 1:N | Return request references original supplier, receiving and batch. |
 | `procurement.SupplierReturns` | `procurement.SupplierReturnEvents` | 1:N | Branch preparation/handover and Central workflow events are correlated by GUID. |
 | `procurement.SupplierReturns` | `procurement.SupplierReturnSettlements` | 0..N | Central records the supplier compensation outcome; this is not a general ledger. |
