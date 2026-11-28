@@ -11,11 +11,11 @@ namespace Central.Infrastructure.ProductCatalog.Repositories;
 public sealed class ProductRepository(CentralDbContext dbContext) : IProductRepository
 {
     public Task<bool> ExistsBySkuAsync(
-        string normalizedSku,
+        string sku,
         CancellationToken cancellationToken)
         => dbContext.Products
             .AsNoTracking()
-            .AnyAsync(x => x.Sku == normalizedSku, cancellationToken);
+            .AnyAsync(x => x.Sku == sku, cancellationToken);
 
     public async Task AddAsync(Product product, CancellationToken cancellationToken)
         => await dbContext.Products.AddAsync(product, cancellationToken);
