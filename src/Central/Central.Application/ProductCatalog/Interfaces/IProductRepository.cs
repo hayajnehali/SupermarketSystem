@@ -8,6 +8,6 @@ namespace Central.Application.ProductCatalog.Interfaces;
 /// </summary>
 public interface IProductRepository
 {
-    Task<bool> ExistsBySkuAsync(string normalizedSku, CancellationToken cancellationToken);
+    Task<bool> ExistsBySkuAsync(string sku, CancellationToken cancellationToken);
     Task AddAsync(Product product, CancellationToken cancellationToken);
 }
