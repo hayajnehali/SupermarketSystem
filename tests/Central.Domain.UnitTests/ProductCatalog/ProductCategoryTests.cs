@@ -6,15 +6,25 @@ namespace Central.Domain.UnitTests.ProductCatalog;
 public sealed class ProductCategoryTests
 {
     [Fact]
-    public void Create_NormalizesCodeAndTrimsText()
+    public void Create_PreservesCodeExactlyAndTrimsOtherText()
     {
         var category = ProductCategory.Create(
-            Guid.NewGuid(), null, "  grocery  ", "  Grocery  ", "  Daily products  ", 2);
+            Guid.NewGuid(), null, "gRoCeRy", "  Grocery  ", "  Daily products  ", 2);
 
-        Assert.Equal("GROCERY", category.CategoryCode);
+        Assert.Equal("gRoCeRy", category.CategoryCode);
         Assert.Equal("Grocery", category.Name);
         Assert.Equal("Daily products", category.Description);
         Assert.True(category.IsActive);
+    }
+
+    [Theory]
+    [InlineData(" grocery")]
+    [InlineData("grocery ")]
+    [InlineData("  grocery  ")]
+    public void Create_WithLeadingOrTrailingCodeWhitespace_Throws(string categoryCode)
+    {
+        Assert.Throws<ArgumentException>(() =>
+            ProductCategory.Create(Guid.NewGuid(), null, categoryCode, "Grocery", null, 0));
     }
 
     [Fact]
