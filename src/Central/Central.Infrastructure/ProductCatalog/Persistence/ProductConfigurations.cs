@@ -19,6 +19,7 @@ public sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(x => x.Sku)
             .HasColumnName("SKU")
             .HasMaxLength(60)
+            .UseCollation("Latin1_General_100_CI_AS")
             .IsRequired();
 
         builder.HasIndex(x => x.Sku)

@@ -13,6 +13,9 @@ This document resolves the Product Catalog technical risks in TD-16 using the de
 
 ### 2.1 Product identity and SKU
 - SKU is globally unique across the company, centrally assigned, immutable after activation/operational use, and stored as `nvarchar(60)`.
+- Preserve the exact SKU text supplied by the user; never trim, uppercase, lowercase or otherwise normalize the stored value.
+- Reject empty SKUs and any whitespace within the SKU rather than silently correcting the input.
+- Compare SKU values case-insensitively while preserving their original casing. The SQL Server SKU column uses an explicit case-insensitive, accent-sensitive collation, and a unique index enforces company-wide uniqueness.
 - A different size/type that is sold as a distinct product receives a distinct ProductId and SKU.
 - ProductId is the stable relational identity; SKU is the immutable business identifier.
 

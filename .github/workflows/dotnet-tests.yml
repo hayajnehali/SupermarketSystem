@@ -1,0 +1,42 @@
+name: .NET Tests
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Build and test (.NET 10)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Show SDK information
+        run: dotnet --info
+
+      - name: Run all test projects
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -d '' projects < <(find tests -type f -name '*.csproj' -print0)
+          if [ "${#projects[@]}" -eq 0 ]; then
+            echo "No test projects were found under tests/."
+            exit 1
+          fi
+          for project in "${projects[@]}"; do
+            echo "::group::Testing ${project}"
+            dotnet test "${project}" --configuration Release --verbosity minimal
+            echo "::endgroup::"
+          done
