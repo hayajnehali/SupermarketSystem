@@ -9,7 +9,8 @@ public sealed record CreateProductCommand(
     Guid? CountryOfOriginId,
     bool RequiresExpiryTracking,
     bool Activate,
-    IReadOnlyCollection<CreateProductUnitInput> Units);
+    IReadOnlyCollection<CreateProductUnitInput> Units,
+    string? Description = null);
 
 public sealed record CreateProductUnitInput(
     Guid UnitId,
