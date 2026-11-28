@@ -131,6 +131,7 @@ Promotion decisions: no stacking by default; explicit opt-in stacking only; prio
 - TD-32E: Branch inventory balances, batches, ledger, exact reservation allocations, stocktake freeze, quarantine and disposal.
 - TD-32F: Central pricing/promotions, deterministic rules, atomic Branch publication and offline quota allocation. Adds Central `pricing.PromotionUsageQuotas` and `pricing.CouponUsageQuotas` with Branch-local projections.
 - TD-32G: Branch POS, sales, invoice sequencing, cash shifts/drawer, returns, inspection, exchanges and cancellation compensation.
+- TD-32H: Central online provider payments, Branch POS tender evidence, cash-only customer refunds and concurrency-safe refund caps.
 
 These supplements refine or supersede earlier logical wording where explicitly stated. They must be reconciled back into TD-13/TD-14 and module specifications before migrations.
 
