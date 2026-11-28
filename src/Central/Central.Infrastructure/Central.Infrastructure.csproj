@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="../Central.Application/Central.Application.csproj" />
     <ProjectReference Include="../Central.Domain/Central.Domain.csproj" />
     <ProjectReference Include="../../BuildingBlocks/Supermarket.BuildingBlocks/Supermarket.BuildingBlocks.csproj" />
