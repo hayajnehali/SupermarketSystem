@@ -22,7 +22,7 @@ public sealed class EntityBaseTests
         var first = Product.Create(Guid.NewGuid(), "SKU-1", "First", Guid.NewGuid());
         var second = Product.Create(Guid.NewGuid(), "SKU-1", "First", Guid.NewGuid());
 
-        Assert.NotEqual(first, second);
+        Assert.False(first.Equals(second));
     }
 
     [Fact]
@@ -32,7 +32,7 @@ public sealed class EntityBaseTests
         var product = Product.Create(id, "SKU-1", "Product", Guid.NewGuid());
         var category = ProductCategory.Create(id, null, "CAT-1", "Category", null, 0);
 
-        Assert.NotEqual(product, category);
+        Assert.False(product.Equals(category));
     }
 
     [Fact]
