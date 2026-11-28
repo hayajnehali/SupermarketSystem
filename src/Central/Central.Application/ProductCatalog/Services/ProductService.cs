@@ -7,7 +7,8 @@ namespace Central.Application.ProductCatalog.Services;
 
 /// <summary>
 /// Application service for Product Catalog use cases.
-/// Uses a conventional service-layer approach; no CQRS command/handler pipeline.
+/// It coordinates repositories and commits once at the use-case boundary.
+/// Domain invariants remain inside Product and its child entities.
 /// </summary>
 public sealed class ProductService(
     IProductRepository products,
@@ -54,7 +55,7 @@ public sealed class ProductService(
         if (await products.ExistsBySkuAsync(product.Sku, cancellationToken))
             throw new InvalidOperationException($"SKU '{product.Sku}' is already in use.");
 
-        await products.AddAsync(product, cancellationToken);
+        products.Add(product);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return product.Id;
