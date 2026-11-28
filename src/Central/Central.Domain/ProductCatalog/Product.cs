@@ -34,6 +34,11 @@ public sealed class Product
             throw new ArgumentException("Product ID cannot be empty.", nameof(id));
 
         ArgumentException.ThrowIfNullOrWhiteSpace(sku);
+        if (sku.Any(char.IsWhiteSpace))
+            throw new ArgumentException("SKU cannot contain whitespace.", nameof(sku));
+        if (sku.Length > 60)
+            throw new ArgumentOutOfRangeException(nameof(sku), "SKU cannot exceed 60 characters.");
+
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
         if (categoryId == Guid.Empty)
@@ -42,7 +47,7 @@ public sealed class Product
         return new Product
         {
             Id = id,
-            Sku = sku.Trim().ToUpperInvariant(),
+            Sku = sku,
             Name = name.Trim(),
             Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim(),
             CategoryId = categoryId,
