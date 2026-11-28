@@ -83,6 +83,16 @@ public sealed class ProductTests
                 isWeightBased: false, quantityPrecision: 0));
     }
 
+    [Fact]
+    public void Create_WithDescription_PreservesTrimmedDescription()
+    {
+        var product = Product.Create(
+            Guid.NewGuid(), "sku-002", "Sample product", Guid.NewGuid(),
+            description: "  Product details  ");
+
+        Assert.Equal("Product details", product.Description);
+    }
+
     private static Product CreateProduct() =>
         Product.Create(Guid.NewGuid(), "sku-001", "Sample product", Guid.NewGuid());
 }
