@@ -37,3 +37,33 @@ The solution uses a conventional Application Service Layer, not CQRS.
 - Keep business invariants in Domain entities and aggregates; keep orchestration in Application Services; keep EF Core and external integrations in Infrastructure.
 
 This is an explicit project-wide architecture constraint unless the owner later changes it.
+
+## Application and Infrastructure folder conventions
+
+Each business feature is organized by responsibility instead of placing unrelated classes in one folder.
+
+For example, Product Catalog follows this structure:
+
+```text
+Central.Application/
+└── ProductCatalog/
+    ├── Models/
+    │   └── CreateProductRequest.cs
+    ├── Interfaces/
+    │   └── IProductRepository.cs
+    └── Services/
+        └── ProductService.cs
+
+Central.Infrastructure/
+└── ProductCatalog/
+    └── Repositories/
+        └── ProductRepository.cs
+```
+
+- `Models`: application request/response models and DTOs.
+- `Interfaces`: contracts consumed by Application Services, including repository interfaces.
+- `Services`: use-case orchestration and application business workflows.
+- `Repositories`: concrete persistence implementations in Infrastructure, normally using EF Core.
+- Shared application contracts such as `ICentralUnitOfWork` remain in `Application/Abstractions`; they are not duplicated inside every feature.
+
+Apply the same convention to Central and Branch modules. Do not place a concrete EF Core repository in the Application project, and do not make a DbContext double as a feature repository.
