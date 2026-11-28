@@ -866,7 +866,7 @@ No separate delivery-proof/evidence table, photo, document, OTP, electronic sign
 
 ## 14. Technical risks for review
 
-1. The logical customer identity mapping is now defined by TD-29: `crm.Customers.UserId` is a unique required FK to the shared `auth.Users` store, with `AccountType = Customer`. The final physical cross-profile XOR enforcement mechanism remains to be selected and tested.
+1. The customer identity mapping is governed by TD-29 and TD-32A: `crm.Customers.UserId` is a unique required FK to the shared `auth.Users` store, with `AccountType = Customer`. Profile exclusivity is enforced by `AccountType` and Central Application Layer validation. Do not add a cross-table XOR CHECK, trigger, or shared registry. This supersedes the earlier open question in this section.
 2. Define OTP provider, delivery limits, expiry/attempt limits and secure hash parameters in the security design; do not hardcode them in the schema.
 3. Define the exact central/branch order projection fields and privacy minimization; Branch must not have customer search access.
 4. Define whether an order may contain both delivery and pickup lines (this proposal assumes one FulfillmentType per order).
