@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Central.Infrastructure.ProductCatalog.Repositories;
 
 /// <summary>
-/// EF Core implementation of the Product Catalog repository contract.
+/// EF Core implementation of the Product aggregate repository.
 /// SKU comparisons use the database column's case-insensitive collation.
 /// </summary>
 public sealed class ProductRepository(CentralDbContext dbContext) : IProductRepository
@@ -18,6 +18,9 @@ public sealed class ProductRepository(CentralDbContext dbContext) : IProductRepo
             .AsNoTracking()
             .AnyAsync(x => x.Sku == sku, cancellationToken);
 
-    public async Task AddAsync(Product product, CancellationToken cancellationToken)
-        => await dbContext.Products.AddAsync(product, cancellationToken);
+    public void Add(Product product)
+    {
+        ArgumentNullException.ThrowIfNull(product);
+        dbContext.Products.Add(product);
+    }
 }
