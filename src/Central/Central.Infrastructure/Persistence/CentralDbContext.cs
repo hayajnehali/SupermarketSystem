@@ -1,5 +1,5 @@
 using Central.Application.Abstractions;
-using Central.Application.ProductCatalog;
+using Central.Application.ProductCatalog.Interfaces;
 using Central.Domain.ProductCatalog;
 using Microsoft.EntityFrameworkCore;
 using Supermarket.BuildingBlocks.Identity;
