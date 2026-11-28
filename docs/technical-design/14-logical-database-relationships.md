@@ -316,3 +316,28 @@ TD-12 remains authoritative for the physical columns, uniqueness, indexes, lease
 6. Only after logical and physical schema approval, create EF Core entities/configurations and then migrations.
 
 **No SQL table, EF Core entity, DDL or migration is created or authorized by this relationship model.**
+
+
+## 13. TD-32 physical reconciliation addendum (2026-11-28)
+
+The following relationships are added/clarified by the later physical supplements. All are same-database FKs unless explicitly marked as a projection/correlation.
+
+| Parent | Child | Cardinality | Boundary and enforcement |
+|---|---|---|---|
+| `procurement.SupplierPayments` | `procurement.SupplierPaymentAllocations` | 1:N | Central FK. A payment allocation references one Central supplier invoice; all allocations under a payment must belong to the same supplier and currency. Allocation sum equals payment amount at execution; cumulative invoice allocations cannot exceed its payable outstanding amount. |
+| `org.BranchAccessSnapshots` | `org.BranchAccessSnapshotDevices` | 1:N | Branch-local FK. Device rows are only approved local validation metadata. |
+| `org.BranchAccessSnapshots` | `org.BranchEmployeeSessions` | 1:N logical association | Branch-local session references the active snapshot/version and employee correlation; exact FK shape follows TD-32D. It stores no Central Identity secret material. |
+| `pricing.Promotions` | `pricing.PromotionUsageQuotas` | 1:N | Central FK; quotas are finite and versioned by promotion/Branch/period as defined in TD-32F. Branch copies are local quota projections with no cross-database FK. |
+| `pricing.Coupons` | `pricing.CouponUsageQuotas` | 1:N | Central FK; finite quota allocation for Branch offline use. Branch copies are projections; central/customer/global cap reconciliation remains authoritative. |
+| `online.Orders` | `online.OrderReservations` | 1:0..1 | Central FK; unique OrderId. Branch `inventory.StockReservations` is a separate authoritative local record correlated by GUID, not an FK. |
+| `online.Orders` | `fulfillment.FulfillmentTasks` | 1:0..1 active task | Central logical relationship; unique OrderId for the first-release task model. Retries are idempotent operations, not duplicate active tasks. |
+| `crm.LoyaltyAccounts` | `crm.LoyaltyPointTransactions` | 1:N | Central FK; immutable ledger. |
+| `crm.LoyaltyAccounts` | `crm.LoyaltyPointLots` | 1:N | Central FK; earning lots are consumed deterministically. |
+| `crm.LoyaltyPointTransactions` | `crm.LoyaltyPointLotAllocations` | 1:N | Central FK; redemption allocations link one redemption transaction to consumed point lots. |
+| `crm.LoyaltyPointLots` | `crm.LoyaltyPointLotAllocations` | 1:N | Central FK; each allocation consumes a bounded amount from one lot. |
+| `alerts.AlertEvents` | `alerts.AlertRecipients` | 1:N | Central FK; recipient set is materialized at event creation. |
+| `alerts.AlertRecipients` | `alerts.AlertDeliveries` | 1:N | Central FK; delivery attempts are append-only. |
+| `alerts.AlertRecipients` | `alerts.AlertAcknowledgements` | 1:0..N | Central FK; acknowledgement is idempotent and unique per alert recipient. |
+| `audit.AuditEntries` | `audit.AuditChangeDetails` | 1:N | Central/Branch local FK within each database; secrets and sensitive credentials are excluded/redacted. |
+
+Cross-database relationships in this addendum are correlation GUIDs only. In particular, Central Orders and Branch StockReservations/Fulfillment execution rows are not connected by SQL foreign keys. TD-12 Outbox/Inbox/ProcessedOperations/BranchCommands remains the sole durable messaging model.
