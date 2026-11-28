@@ -6,4 +6,5 @@
     <ProjectReference Include="../Central.Infrastructure/Central.Infrastructure.csproj" />
     <ProjectReference Include="../../Contracts/Supermarket.Contracts/Supermarket.Contracts.csproj" />
   </ItemGroup>
+  <ItemGroup><PackageReference Include="Microsoft.Extensions.Hosting" /></ItemGroup>
 </Project>
