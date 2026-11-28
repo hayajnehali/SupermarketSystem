@@ -12,6 +12,7 @@ public sealed class Product
     public Guid Id { get; private set; }
     public string Sku { get; private set; } = string.Empty;
     public string Name { get; private set; } = string.Empty;
+    public string? Description { get; private set; }
     public Guid CategoryId { get; private set; }
     public Guid? BrandId { get; private set; }
     public Guid? CountryOfOriginId { get; private set; }
@@ -24,6 +25,7 @@ public sealed class Product
         string sku,
         string name,
         Guid categoryId,
+        string? description = null,
         Guid? brandId = null,
         Guid? countryOfOriginId = null,
         bool requiresExpiryTracking = false)
@@ -42,6 +44,7 @@ public sealed class Product
             Id = id,
             Sku = sku.Trim().ToUpperInvariant(),
             Name = name.Trim(),
+            Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim(),
             CategoryId = categoryId,
             BrandId = brandId,
             CountryOfOriginId = countryOfOriginId,
