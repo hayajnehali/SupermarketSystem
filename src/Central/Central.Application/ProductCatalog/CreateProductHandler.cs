@@ -29,7 +29,8 @@ public sealed class CreateProductHandler(
             command.CategoryId,
             command.BrandId,
             command.CountryOfOriginId,
-            command.RequiresExpiryTracking);
+            command.RequiresExpiryTracking,
+            command.Description);
 
         foreach (var unit in command.Units)
         {
