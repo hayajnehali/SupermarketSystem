@@ -4,6 +4,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Supermarket.BuildingBlocks.Identity;
 using Supermarket.BuildingBlocks.Time;
+using Xunit;
 
 namespace Central.SqlServer.IntegrationTests.ProductCatalog;
 
