@@ -101,7 +101,7 @@ Promotion decisions: no stacking by default; explicit opt-in stacking only; prio
 ## 4. Branch database table register
 
 ### 4.1 Local access and approved snapshots
-- `org.BranchAccessSnapshots`, `org.BranchAccessSnapshotEmployees`, `org.BranchAccessSnapshotPermissions`, `org.BranchRuntimePolicies`.
+- `org.BranchAccessSnapshots`, `org.BranchAccessSnapshotEmployees`, `org.BranchAccessSnapshotPermissions`, `org.BranchAccessSnapshotDevices` (new projection table), `org.BranchEmployeeSessions` (new local session-state table), `org.BranchRuntimePolicies`.
 - Minimum approved device/session/offline verifier state only; never copy Central password hashes, security stamps or reusable tokens.
 
 ### 4.2 Read-only Central projections
@@ -122,7 +122,17 @@ Promotion decisions: no stacking by default; explicit opt-in stacking only; prio
 - Audit: local `audit.AuditEntries`, `AuditChangeDetails`, `SecurityEvents`.
 - Synchronization: `sync.OutboxMessages`, `sync.InboxMessages`, `sync.ProcessedOperations`, `sync.SyncCheckpoints`; no `sync.BranchCommands`.
 
-## 5. EF Core implementation boundary
+## 5. Physical schema supplements completed under delegated authority
+
+- TD-32A: Central Identity and Organization physical schema, including `auth.LoginAttempts` and unified Identity mapping.
+- TD-32B: Central Product Catalog physical decisions and indexes.
+- TD-32C: Central Suppliers, Purchasing, Receiving, invoice matching, supplier returns and multi-invoice payment allocations.
+- TD-32D: Branch access snapshots, local session state and Offline policy projection. Adds `org.BranchAccessSnapshotDevices` and `org.BranchEmployeeSessions` to the Branch physical inventory.
+- TD-32E: Branch inventory balances, batches, ledger, exact reservation allocations, stocktake freeze, quarantine and disposal.
+
+These supplements refine or supersede earlier logical wording where explicitly stated. They must be reconciled back into TD-13/TD-14 and module specifications before migrations.
+
+## 6. EF Core implementation boundary
 
 - One `CentralDbContext` in `Central.Infrastructure`; one `BranchDbContext` in `Branch.Infrastructure`.
 - Entity configurations are grouped by module and explicitly map schema, table, key, precision, max lengths, constraints, filtered indexes and rowversion.
@@ -131,7 +141,7 @@ Promotion decisions: no stacking by default; explicit opt-in stacking only; prio
 - Do not generate a partial initial migration until every table in the applicable first-release schema has an approved physical definition.
 - Use SQL Server integration tests for constraints, filtered unique indexes, rowversion, idempotency, stock concurrency, refund caps, and atomic sequences.
 
-## 6. Implementation sequence
+## 7. Implementation sequence
 
 1. Finalize Central detailed physical definitions in this order: Identity/Organization; Product Catalog; Suppliers/Procurement/Receiving/Invoices; Supplier Payments; Pricing/Promotions; Online Orders/Payments; Customers/Loyalty; approvals/operations/maintenance/alerts/audit/reporting; Central synchronization.
 2. Finalize Branch detailed physical definitions: Access/Offline; projections; Inventory/Batches/Reservations; POS/Sales/Returns; Shifts/Cash Drawer; Receiving/Fulfillment; Branch synchronization.
@@ -140,7 +150,7 @@ Promotion decisions: no stacking by default; explicit opt-in stacking only; prio
 5. Add entities, configurations and the two DbContexts; create the initial migrations and validate them against SQL Server 2025.
 6. Implement the first vertical slice only after schema migration succeeds.
 
-## 7. Known completion gates
+## 8. Known completion gates
 
 - TD-22 (`22-online-crm-fulfillment-detailed-schema.md`) and TD-23 (`23-operations-maintenance-alerts-audit-reporting-schema.md`) both exist and are detailed; TD-24 confirms 205 domain tables have detailed specifications. They must be reconciled against later decisions, not copied mechanically.
 - Exact Identity EF Core table mapping and required `auth.LoginAttempts` physical definition must be finalized before Identity migration.
@@ -148,6 +158,6 @@ Promotion decisions: no stacking by default; explicit opt-in stacking only; prio
 - Any Central projection of Branch facts must retain source BranchId and source record GUID and must not be treated as a second editable authority.
 - SQL Server integration/build validation is still required in an environment with the .NET 10 SDK and SQL Server 2025.
 
-## 8. Approval record
+## 9. Approval record
 
 This register applies the delegated design authority granted by the project owner on 2026-11-28. It records design decisions for implementation; it does not authorize merging a pull request or deploying a database.
