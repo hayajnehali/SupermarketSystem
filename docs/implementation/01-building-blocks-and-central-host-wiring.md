@@ -37,3 +37,38 @@ The solution uses a conventional Application Service Layer, not CQRS.
 - Keep business invariants in Domain entities and aggregates; keep orchestration in Application Services; keep EF Core and external integrations in Infrastructure.
 
 This is an explicit project-wide architecture constraint unless the owner later changes it.
+
+## Application and Infrastructure folder conventions
+
+Use feature-first organization: each business feature owns its related application code, then separates that code by responsibility. This keeps a feature cohesive without creating large solution-wide folders containing unrelated feature files.
+
+For example, Product Catalog follows this structure:
+
+```text
+Central.Application/
+├── Abstractions/
+│   └── ICentralUnitOfWork.cs
+└── ProductCatalog/
+    ├── Requests/
+    │   ├── CreateProductRequest.cs
+    │   └── CreateProductCategoryRequest.cs
+    ├── Interfaces/
+    │   ├── IProductRepository.cs
+    │   └── IProductCategoryRepository.cs
+    └── Services/
+        ├── ProductService.cs
+        └── ProductCategoryService.cs
+
+Central.Infrastructure/
+└── ProductCatalog/
+    └── Repositories/
+        └── ProductRepository.cs
+```
+
+- `Requests`: input DTOs for application service methods. Add `Responses` when a use case needs output DTOs; do not create empty or speculative response types.
+- `Interfaces`: contracts consumed by Application Services, including feature repository interfaces.
+- `Services`: use-case orchestration and application workflows.
+- `Repositories`: concrete persistence implementations in Infrastructure, normally using EF Core.
+- Shared application contracts such as `ICentralUnitOfWork` remain in `Application/Abstractions`; they are not duplicated inside every feature.
+
+Apply the same feature-first convention to Central and Branch modules. Do not place a concrete EF Core repository in the Application project, and do not make a DbContext double as a feature repository. This is a folder organization convention, not CQRS; application use cases remain methods on cohesive services.

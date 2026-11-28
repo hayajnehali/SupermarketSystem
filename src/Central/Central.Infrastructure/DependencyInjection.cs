@@ -1,7 +1,8 @@
 using Central.Application.Abstractions;
-using Central.Application.ProductCatalog;
+using Central.Application.ProductCatalog.Interfaces;
 using Central.Infrastructure.Execution;
 using Central.Infrastructure.Persistence;
+using Central.Infrastructure.ProductCatalog.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,7 +29,8 @@ public static class DependencyInjection
         services.AddDbContext<CentralDbContext>(options =>
             options.UseSqlServer(connectionString));
 
-        services.AddScoped<IProductRepository>(provider => provider.GetRequiredService<CentralDbContext>());
+        services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
         services.AddScoped<ICentralUnitOfWork>(provider => provider.GetRequiredService<CentralDbContext>());
 
         return services;

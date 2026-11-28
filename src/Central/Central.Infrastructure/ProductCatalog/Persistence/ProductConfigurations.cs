@@ -43,6 +43,11 @@ public sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasColumnName("ProductCategoryId")
             .IsRequired();
 
+        builder.HasOne<ProductCategory>()
+            .WithMany()
+            .HasForeignKey(x => x.CategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.Property(x => x.BrandId);
         builder.Property(x => x.CountryOfOriginId);
         builder.Property(x => x.RequiresExpiryTracking).IsRequired();

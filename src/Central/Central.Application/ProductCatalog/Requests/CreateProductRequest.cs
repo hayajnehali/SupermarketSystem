@@ -1,4 +1,4 @@
-namespace Central.Application.ProductCatalog;
+namespace Central.Application.ProductCatalog.Requests;
 
 /// <summary>
 /// Input model for creating a product through the Product application service.
