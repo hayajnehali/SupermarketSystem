@@ -1,5 +1,6 @@
 using Central.Domain.ProductCatalog;
 using Central.Infrastructure.Persistence;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Supermarket.BuildingBlocks.Identity;
 using Supermarket.BuildingBlocks.Time;
@@ -22,24 +23,32 @@ public sealed class ProductSkuSqlServerTests
             .UseSqlServer(connectionString)
             .Options;
 
-        await using var db = new CentralDbContext(options, actor, clock);
+        var masterConnectionString = new SqlConnectionStringBuilder(connectionString)
+        {
+            InitialCatalog = "master"
+        }.ConnectionString;
 
         var connected = false;
         for (var attempt = 0; attempt < 45; attempt++)
         {
-            if (await db.Database.CanConnectAsync())
+            try
             {
+                await using var connection = new SqlConnection(masterConnectionString);
+                await connection.OpenAsync();
                 connected = true;
                 break;
             }
-
-            await Task.Delay(TimeSpan.FromSeconds(2));
+            catch (SqlException) when (attempt < 44)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(2));
+            }
         }
 
         Assert.True(connected, "SQL Server did not become available within 90 seconds.");
 
-        // This test database is disposable and isolated. EnsureCreated uses the current EF model;
-        // it does not create or apply a production migration.
+        await using var db = new CentralDbContext(options, actor, clock);
+
+        // This is a disposable, isolated CI database. No production migration is created or applied.
         await db.Database.EnsureDeletedAsync();
         await db.Database.EnsureCreatedAsync();
 
