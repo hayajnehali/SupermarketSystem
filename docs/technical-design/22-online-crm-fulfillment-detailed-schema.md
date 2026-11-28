@@ -701,18 +701,11 @@ Cancellation before preparation requires Central approval. Cancellation after pr
 - AttemptNumber check = 1. Technical retries use the same OperationId and cannot create a second customer attempt.
 - A failed attempt triggers return-to-branch workflow; no further delivery attempt is scheduled.
 
-### 10.4 `fulfillment.DeliveryProofs` — Branch execution; Central reference
+### 10.4 Delivery completion recording — part of `fulfillment.DeliveryAttempts`
 
-| Column | SQL Server type | Null | Rule |
-|---|---|---:|---|
-| DeliveryProofId | uniqueidentifier | No | PK; sequential Guid |
-| DeliveryAttemptId | uniqueidentifier | No | FK → local DeliveryAttempts |
-| ConfirmedByEmployeeId | uniqueidentifier | No | Delivery employee |
-| ConfirmedAtUtc | datetime2(3) | No | UTC |
-| ConfirmationNotes | nvarchar(1000) | Yes | Optional manual notes |
-| EvidenceReference | nvarchar(500) | Yes | Optional protected evidence reference |
+The delivery employee records the final `AttemptStatus`, `AttemptedAtUtc`, `RecordedByEmployeeId`, and (when failed) `FailureReason` directly on the single `DeliveryAttempts` row. This is the complete operational record for the attempt.
 
-Delivery confirmation is manual. No OTP or electronic signature is required.
+No separate delivery-proof/evidence table, photo, document, OTP, electronic signature, or proof upload is required or stored. A successful delivery is recorded by the authorized employee as `AttemptStatus = Delivered`; a failed delivery records the reason and starts the failed-delivery return workflow.
 
 ## 11. Pickup handover, failed delivery returns and disputes
 
