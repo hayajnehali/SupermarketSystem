@@ -7,10 +7,10 @@ namespace Central.Infrastructure.ProductCatalog.Repositories;
 
 public sealed class ProductCategoryRepository(CentralDbContext dbContext) : IProductCategoryRepository
 {
-    public Task<bool> ExistsByCodeAsync(string normalizedCode, CancellationToken cancellationToken)
+    public Task<bool> ExistsByCodeAsync(string categoryCode, CancellationToken cancellationToken)
         => dbContext.ProductCategories
             .AsNoTracking()
-            .AnyAsync(x => x.CategoryCode == normalizedCode, cancellationToken);
+            .AnyAsync(x => x.CategoryCode == categoryCode, cancellationToken);
 
     public Task<bool> IsActiveByIdAsync(Guid categoryId, CancellationToken cancellationToken)
         => dbContext.ProductCategories
