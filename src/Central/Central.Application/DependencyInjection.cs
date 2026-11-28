@@ -1,4 +1,4 @@
-using Central.Application.ProductCatalog;
+using Central.Application.ProductCatalog.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Central.Application;
