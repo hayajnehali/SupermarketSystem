@@ -36,7 +36,7 @@ public sealed class CentralDbContext(
         bool acceptAllChangesOnSuccess,
         CancellationToken cancellationToken = default)
     {
-        ApplyProductAudit();
+        ApplyAudit();
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
