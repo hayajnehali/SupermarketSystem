@@ -70,7 +70,7 @@ Purchasing/receiving decisions: a request may contain multiple lines; approval d
 - Central synchronized projections of Branch warehouses, batches, balances, movements, reservations and quarantines where reporting/control requires them. They are not operational stock authority.
 
 ### 3.5 Pricing and promotions
-- `pricing.PriceVersions`, `pricing.ProductPrices`, `pricing.PromotionVersions`, `pricing.Promotions`, `pricing.PromotionConditions`, `pricing.PromotionRewards`, `pricing.Coupons`
+- `pricing.PriceVersions`, `pricing.ProductPrices`, `pricing.PromotionVersions`, `pricing.Promotions`, `pricing.PromotionConditions`, `pricing.PromotionRewards`, `pricing.Coupons`, `pricing.PromotionUsageQuotas`, `pricing.CouponUsageQuotas`
 - Central authority for `pricing.CouponRedemptions` and `pricing.PromotionRedemptions`, with synchronized Branch use events as specified by Offline rules.
 - Branch-applied version/hash records remain Branch-owned.
 
@@ -129,6 +129,7 @@ Promotion decisions: no stacking by default; explicit opt-in stacking only; prio
 - TD-32C: Central Suppliers, Purchasing, Receiving, invoice matching, supplier returns and multi-invoice payment allocations.
 - TD-32D: Branch access snapshots, local session state and Offline policy projection. Adds `org.BranchAccessSnapshotDevices` and `org.BranchEmployeeSessions` to the Branch physical inventory.
 - TD-32E: Branch inventory balances, batches, ledger, exact reservation allocations, stocktake freeze, quarantine and disposal.
+- TD-32F: Central pricing/promotions, deterministic rules, atomic Branch publication and offline quota allocation. Adds Central `pricing.PromotionUsageQuotas` and `pricing.CouponUsageQuotas` with Branch-local projections.
 
 These supplements refine or supersede earlier logical wording where explicitly stated. They must be reconciled back into TD-13/TD-14 and module specifications before migrations.
 
