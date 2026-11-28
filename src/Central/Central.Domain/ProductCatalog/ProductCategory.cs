@@ -32,11 +32,15 @@ public sealed class ProductCategory
         ArgumentException.ThrowIfNullOrWhiteSpace(categoryCode);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
-        var normalizedCode = categoryCode.Trim().ToUpperInvariant();
+        if (!string.Equals(categoryCode, categoryCode.Trim(), StringComparison.Ordinal))
+            throw new ArgumentException(
+                "Category code cannot contain leading or trailing whitespace.",
+                nameof(categoryCode));
+
         var normalizedName = name.Trim();
         var normalizedDescription = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
-        if (normalizedCode.Length > 50)
+        if (categoryCode.Length > 50)
             throw new ArgumentOutOfRangeException(nameof(categoryCode), "Category code cannot exceed 50 characters.");
         if (normalizedName.Length > 150)
             throw new ArgumentOutOfRangeException(nameof(name), "Category name cannot exceed 150 characters.");
@@ -49,7 +53,7 @@ public sealed class ProductCategory
         {
             Id = id,
             ParentCategoryId = parentCategoryId,
-            CategoryCode = normalizedCode,
+            CategoryCode = categoryCode,
             Name = normalizedName,
             Description = normalizedDescription,
             DisplayOrder = displayOrder
