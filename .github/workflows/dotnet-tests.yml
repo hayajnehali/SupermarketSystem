@@ -26,6 +26,9 @@ jobs:
       - name: Show SDK information
         run: dotnet --info
 
+      - name: Build solution
+        run: dotnet build SupermarketSystem.sln --configuration Release --verbosity minimal
+
       - name: Run all test projects
         shell: bash
         run: |
@@ -37,6 +40,6 @@ jobs:
           fi
           for project in "${projects[@]}"; do
             echo "::group::Testing ${project}"
-            dotnet test "${project}" --configuration Release --verbosity minimal
+            dotnet test "${project}" --configuration Release --no-build --no-restore --verbosity minimal
             echo "::endgroup::"
           done

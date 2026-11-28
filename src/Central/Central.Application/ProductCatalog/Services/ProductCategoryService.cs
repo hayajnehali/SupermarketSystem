@@ -5,7 +5,10 @@ using Central.Domain.ProductCatalog;
 
 namespace Central.Application.ProductCatalog.Services;
 
-/// <summary>Application service for product category use cases.</summary>
+/// <summary>
+/// Application service for ProductCategory use cases.
+/// It coordinates validation, repository access and the single commit boundary.
+/// </summary>
 public sealed class ProductCategoryService(
     IProductCategoryRepository categories,
     ICentralUnitOfWork unitOfWork)
@@ -42,7 +45,7 @@ public sealed class ProductCategoryService(
             request.Description,
             request.DisplayOrder);
 
-        await categories.AddAsync(category, cancellationToken);
+        categories.Add(category);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return category.Id;

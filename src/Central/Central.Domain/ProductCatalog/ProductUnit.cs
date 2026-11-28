@@ -1,11 +1,16 @@
+using Central.Domain.Common;
+
 namespace Central.Domain.ProductCatalog;
 
-/// <summary>A product-specific unit. Selling prices are owned by the Pricing module.</summary>
-public sealed class ProductUnit
+/// <summary>
+/// ProductUnit is an entity inside the Product aggregate; it is not an independent repository boundary.
+/// </summary>
+public sealed class ProductUnit : EntityBase
 {
     private ProductUnit() { }
 
-    public Guid Id { get; private set; }
+    private ProductUnit(Guid id) : base(id) { }
+
     public string Code { get; private set; } = string.Empty;
     public string Name { get; private set; } = string.Empty;
     public ProductUnitKind Kind { get; private set; }
@@ -27,9 +32,6 @@ public sealed class ProductUnit
         bool isWeightBased,
         byte quantityPrecision)
     {
-        if (id == Guid.Empty)
-            throw new ArgumentException("Unit ID cannot be empty.", nameof(id));
-
         ArgumentException.ThrowIfNullOrWhiteSpace(code);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -42,9 +44,8 @@ public sealed class ProductUnit
         if (isOpenPackAllowed && kind != ProductUnitKind.Package)
             throw new ArgumentException("Open-pack behavior can only be enabled for Package units.", nameof(isOpenPackAllowed));
 
-        return new ProductUnit
+        return new ProductUnit(id)
         {
-            Id = id,
             Code = code.Trim().ToUpperInvariant(),
             Name = name.Trim(),
             Kind = kind,

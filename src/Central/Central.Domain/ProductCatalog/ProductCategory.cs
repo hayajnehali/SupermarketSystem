@@ -1,13 +1,16 @@
+using Central.Domain.Common;
+
 namespace Central.Domain.ProductCatalog;
 
 /// <summary>
-/// Central-owned product category. Category hierarchy is validated by the application service.
+/// Central-owned product-category aggregate. Category hierarchy is validated by the application service.
 /// </summary>
-public sealed class ProductCategory
+public sealed class ProductCategory : AggregateRoot
 {
     private ProductCategory() { }
 
-    public Guid Id { get; private set; }
+    private ProductCategory(Guid id) : base(id) { }
+
     public Guid? ParentCategoryId { get; private set; }
     public string CategoryCode { get; private set; } = string.Empty;
     public string Name { get; private set; } = string.Empty;
@@ -23,9 +26,6 @@ public sealed class ProductCategory
         string? description,
         int displayOrder)
     {
-        if (id == Guid.Empty)
-            throw new ArgumentException("Category ID cannot be empty.", nameof(id));
-
         if (parentCategoryId == Guid.Empty || parentCategoryId == id)
             throw new ArgumentException("Parent category ID is invalid.", nameof(parentCategoryId));
 
@@ -49,9 +49,8 @@ public sealed class ProductCategory
         if (displayOrder < 0)
             throw new ArgumentOutOfRangeException(nameof(displayOrder), "Display order cannot be negative.");
 
-        return new ProductCategory
+        return new ProductCategory(id)
         {
-            Id = id,
             ParentCategoryId = parentCategoryId,
             CategoryCode = categoryCode,
             Name = normalizedName,

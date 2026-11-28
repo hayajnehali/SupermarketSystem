@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Central.Infrastructure.ProductCatalog.Repositories;
 
+/// <summary>EF Core implementation of the ProductCategory aggregate repository.</summary>
 public sealed class ProductCategoryRepository(CentralDbContext dbContext) : IProductCategoryRepository
 {
     public Task<bool> ExistsByCodeAsync(string categoryCode, CancellationToken cancellationToken)
@@ -17,6 +18,9 @@ public sealed class ProductCategoryRepository(CentralDbContext dbContext) : IPro
             .AsNoTracking()
             .AnyAsync(x => x.Id == categoryId && x.IsActive, cancellationToken);
 
-    public async Task AddAsync(ProductCategory category, CancellationToken cancellationToken)
-        => await dbContext.ProductCategories.AddAsync(category, cancellationToken);
+    public void Add(ProductCategory category)
+    {
+        ArgumentNullException.ThrowIfNull(category);
+        dbContext.ProductCategories.Add(category);
+    }
 }
