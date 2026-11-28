@@ -13,6 +13,7 @@ public sealed class ProductUnit
     public bool IsSellable { get; private set; }
     public bool IsOpenPackAllowed { get; private set; }
     public bool IsWeightBased { get; private set; }
+    public bool IsActive { get; private set; } = true;
     public byte QuantityPrecision { get; private set; }
 
     internal static ProductUnit Create(
