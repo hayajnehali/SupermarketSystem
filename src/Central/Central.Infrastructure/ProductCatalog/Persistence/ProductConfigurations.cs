@@ -29,6 +29,16 @@ public sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasMaxLength(200)
             .IsRequired();
 
+        builder.Property(x => x.Description)
+            .HasMaxLength(2000);
+
+        builder.Property<DateTime>("CreatedAtUtc").HasColumnType("datetime2(3)").IsRequired();
+        builder.Property<Guid>("CreatedByUserId").IsRequired();
+        builder.Property<DateTime?>("UpdatedAtUtc").HasColumnType("datetime2(3)");
+        builder.Property<Guid?>("UpdatedByUserId");
+        builder.Property<DateTime?>("DeactivatedAtUtc").HasColumnType("datetime2(3)");
+        builder.Property<Guid?>("DeactivatedByUserId");
+
         builder.Property(x => x.CategoryId)
             .HasColumnName("ProductCategoryId")
             .IsRequired();
@@ -90,6 +100,8 @@ public sealed class ProductUnitConfiguration : IEntityTypeConfiguration<ProductU
         builder.Property(x => x.IsOpenPackAllowed).IsRequired();
         builder.Property(x => x.IsWeightBased).IsRequired();
         builder.Property(x => x.QuantityPrecision).IsRequired();
+        builder.Property<bool>("IsActive").HasDefaultValue(true).IsRequired();
+        builder.Property<DateTime>("CreatedAtUtc").HasColumnType("datetime2(3)").IsRequired();
 
         builder.Property<byte[]>("RowVersion").IsRowVersion();
 
