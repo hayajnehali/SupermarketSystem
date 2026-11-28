@@ -17,7 +17,7 @@ public sealed class ProductTests
     [Theory]
     [InlineData(" AB-123 ")]
     [InlineData("AB 123")]
-    [InlineData("AB\\t123")]
+    [InlineData("AB\t123")]
     public void Create_WithWhitespaceInSku_Throws(string sku)
     {
         Assert.Throws<ArgumentException>(() =>
