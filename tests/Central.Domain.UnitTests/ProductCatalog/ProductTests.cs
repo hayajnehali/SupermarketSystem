@@ -6,6 +6,34 @@ namespace Central.Domain.UnitTests.ProductCatalog;
 public sealed class ProductTests
 {
     [Fact]
+    public void Create_PreservesSkuExactlyAsSubmitted()
+    {
+        var product = Product.Create(
+            Guid.NewGuid(), "Ab-123", "Sample product", Guid.NewGuid());
+
+        Assert.Equal("Ab-123", product.Sku);
+    }
+
+    [Theory]
+    [InlineData(" AB-123 ")]
+    [InlineData("AB 123")]
+    [InlineData("AB\\t123")]
+    public void Create_WithWhitespaceInSku_Throws(string sku)
+    {
+        Assert.Throws<ArgumentException>(() =>
+            Product.Create(Guid.NewGuid(), sku, "Sample product", Guid.NewGuid()));
+    }
+
+    [Fact]
+    public void Create_WithSkuLongerThanSixtyCharacters_Throws()
+    {
+        var sku = new string('A', 61);
+
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            Product.Create(Guid.NewGuid(), sku, "Sample product", Guid.NewGuid()));
+    }
+
+    [Fact]
     public void Activate_WithoutInventoryBaseUnit_Throws()
     {
         var product = CreateProduct();
