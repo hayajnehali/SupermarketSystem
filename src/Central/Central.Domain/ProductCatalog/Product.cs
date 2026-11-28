@@ -25,7 +25,6 @@ public sealed class Product
         string sku,
         string name,
         Guid categoryId,
-        string? description = null,
         Guid? brandId = null,
         Guid? countryOfOriginId = null,
         bool requiresExpiryTracking = false,
