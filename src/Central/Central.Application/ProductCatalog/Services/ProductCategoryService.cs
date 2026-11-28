@@ -16,12 +16,17 @@ public sealed class ProductCategoryService(
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var normalizedCode = request.CategoryCode?.Trim().ToUpperInvariant();
-        if (string.IsNullOrWhiteSpace(normalizedCode))
+        var categoryCode = request.CategoryCode;
+        if (string.IsNullOrWhiteSpace(categoryCode))
             throw new ArgumentException("Category code is required.", nameof(request));
 
-        if (await categories.ExistsByCodeAsync(normalizedCode, cancellationToken))
-            throw new InvalidOperationException($"Category code '{normalizedCode}' is already in use.");
+        if (!string.Equals(categoryCode, categoryCode.Trim(), StringComparison.Ordinal))
+            throw new ArgumentException(
+                "Category code cannot contain leading or trailing whitespace.",
+                nameof(request));
+
+        if (await categories.ExistsByCodeAsync(categoryCode, cancellationToken))
+            throw new InvalidOperationException($"Category code '{categoryCode}' is already in use.");
 
         if (request.ParentCategoryId is { } parentId
             && !await categories.IsActiveByIdAsync(parentId, cancellationToken))
@@ -32,7 +37,7 @@ public sealed class ProductCategoryService(
         var category = ProductCategory.Create(
             request.CategoryId,
             request.ParentCategoryId,
-            normalizedCode,
+            categoryCode,
             request.Name,
             request.Description,
             request.DisplayOrder);
