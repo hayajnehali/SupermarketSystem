@@ -867,7 +867,7 @@ No separate delivery-proof/evidence table, photo, document, OTP, electronic sign
 ## 14. Technical risks for review
 
 1. The customer identity mapping is governed by TD-29 and TD-32A: `crm.Customers.UserId` is a unique required FK to the shared `auth.Users` store, with `AccountType = Customer`. Profile exclusivity is enforced by `AccountType` and Central Application Layer validation. Do not add a cross-table XOR CHECK, trigger, or shared registry. This supersedes the earlier open question in this section.
-2. Define OTP provider, delivery limits, expiry/attempt limits and secure hash parameters in the security design; do not hardcode them in the schema.
+2. OTP expiry duration, maximum verification attempts, resend cooldown and resend/rate limits are fixed in application code as constants. They are not centrally configurable and are not stored as configurable database policy values. Exact numeric values and provider/security implementation details remain for the security design.
 3. Define the exact central/branch order projection fields and privacy minimization; Branch must not have customer search access.
 4. Define whether an order may contain both delivery and pickup lines (this proposal assumes one FulfillmentType per order).
 5. **Free-delivery precedence:** a valid free-delivery rule reduces the delivery fee to zero only. Product/order promotions are evaluated independently and remain applicable under their own rules. The delivery fee benefit cannot be applied more than once to the same order, and no duplicate delivery discount is recorded.
