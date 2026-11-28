@@ -30,6 +30,7 @@ public static class DependencyInjection
             options.UseSqlServer(connectionString));
 
         services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
         services.AddScoped<ICentralUnitOfWork>(provider => provider.GetRequiredService<CentralDbContext>());
 
         return services;
