@@ -8,7 +8,9 @@ public sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
     public void Configure(EntityTypeBuilder<Product> builder)
     {
-        builder.ToTable("Products", "catalog", table =>
+        // Keep the table name convention-based; only the physical schema is explicit.
+        builder.Metadata.SetSchema("catalog");
+        builder.ToTable(table =>
             table.HasCheckConstraint("CK_Products_ProductStatus", "[ProductStatus] IN (1, 2, 3)"));
 
         builder.HasKey(x => x.Id).HasName("PK_Products");
@@ -48,8 +50,6 @@ public sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasForeignKey(x => x.CategoryId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Property(x => x.BrandId);
-        builder.Property(x => x.CountryOfOriginId);
         builder.Property(x => x.RequiresExpiryTracking).IsRequired();
 
         builder.Property(x => x.Status)
@@ -73,7 +73,9 @@ public sealed class ProductUnitConfiguration : IEntityTypeConfiguration<ProductU
 {
     public void Configure(EntityTypeBuilder<ProductUnit> builder)
     {
-        builder.ToTable("ProductUnits", "catalog", table =>
+        // Keep the table name convention-based; only the physical schema is explicit.
+        builder.Metadata.SetSchema("catalog");
+        builder.ToTable(table =>
         {
             table.HasCheckConstraint("CK_ProductUnits_QuantityPrecision", "[QuantityPrecision] BETWEEN 0 AND 3");
         });
