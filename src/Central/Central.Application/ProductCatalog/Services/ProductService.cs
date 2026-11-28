@@ -1,6 +1,6 @@
 using Central.Application.Abstractions;
 using Central.Application.ProductCatalog.Interfaces;
-using Central.Application.ProductCatalog.Models;
+using Central.Application.ProductCatalog.Requests;
 using Central.Domain.ProductCatalog;
 
 namespace Central.Application.ProductCatalog.Services;
