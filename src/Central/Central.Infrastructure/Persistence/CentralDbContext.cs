@@ -26,24 +26,6 @@ public sealed class CentralDbContext(
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(CentralDbContext).Assembly);
     }
 
-    public override int SaveChanges()
-    {
-        ApplyProductAudit();
-        return base.SaveChanges();
-    }
-
-    public override int SaveChanges(bool acceptAllChangesOnSuccess)
-    {
-        ApplyProductAudit();
-        return base.SaveChanges(acceptAllChangesOnSuccess);
-    }
-
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        ApplyProductAudit();
-        return base.SaveChangesAsync(cancellationToken);
-    }
-
     public override Task<int> SaveChangesAsync(
         bool acceptAllChangesOnSuccess,
         CancellationToken cancellationToken = default)
