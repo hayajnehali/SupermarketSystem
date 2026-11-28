@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework></PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../Branch.Application/Branch.Application.csproj" />
+    <ProjectReference Include="../Branch.Infrastructure/Branch.Infrastructure.csproj" />
+    <ProjectReference Include="../../Contracts/Supermarket.Contracts/Supermarket.Contracts.csproj" />
+  </ItemGroup>
+</Project>
