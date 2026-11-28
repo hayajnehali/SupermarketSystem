@@ -100,7 +100,7 @@ public sealed class ProductUnitConfiguration : IEntityTypeConfiguration<ProductU
         builder.Property(x => x.IsOpenPackAllowed).IsRequired();
         builder.Property(x => x.IsWeightBased).IsRequired();
         builder.Property(x => x.QuantityPrecision).IsRequired();
-        builder.Property<bool>("IsActive").HasDefaultValue(true).IsRequired();
+        builder.Property(x => x.IsActive).HasDefaultValue(true).IsRequired();
         builder.Property<DateTime>("CreatedAtUtc").HasColumnType("datetime2(3)").IsRequired();
 
         builder.Property<byte[]>("RowVersion").IsRowVersion();
