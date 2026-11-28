@@ -212,7 +212,6 @@ A completed POS sale, inventory movement, payment allocations and Outbox message
 | `fulfillment.PickingLines` | `fulfillment.PickingLineScans` | 1:N | Each scan attempt is retained with match/mismatch result. |
 | `fulfillment.FulfillmentTasks` | `fulfillment.DeliveryAssignments` | 0..N | Central assignment history; one active assignment at a time if policy requires. |
 | `fulfillment.DeliveryAssignments` | `fulfillment.DeliveryAttempts` | 1:0..1 | The approved single customer delivery attempt is enforced by a unique constraint on the order/assignment business key. Technical retries of saving/synchronizing the same attempt do not create another attempt. |
-| `fulfillment.DeliveryAttempts` | `fulfillment.DeliveryProofs` | 1:0..N | Manual confirmation/evidence references. |
 | `fulfillment.DeliveryAttempts` | `fulfillment.FailedDeliveryReturns` | 0..1:1 | A failed single delivery attempt results in goods being returned to the responsible branch. |
 | `fulfillment.FailedDeliveryReturns` | `fulfillment.FailedDeliveryReturnLines` | 1:N | Returned order items and quantities. |
 | `fulfillment.FailedDeliveryReturnLines` | `fulfillment.DeliveryReturnInspections` | 1:N | Returned goods are inspected before inventory disposition. |
