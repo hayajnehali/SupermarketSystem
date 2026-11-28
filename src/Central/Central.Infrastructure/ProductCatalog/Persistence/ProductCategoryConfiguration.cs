@@ -8,7 +8,9 @@ public sealed class ProductCategoryConfiguration : IEntityTypeConfiguration<Prod
 {
     public void Configure(EntityTypeBuilder<ProductCategory> builder)
     {
-        builder.ToTable("ProductCategories", "catalog", table =>
+        // Keep the table name convention-based; only the physical schema is explicit.
+        builder.Metadata.SetSchema("catalog");
+        builder.ToTable(table =>
         {
             table.HasCheckConstraint("CK_ProductCategories_DisplayOrder", "[DisplayOrder] >= 0");
             table.HasCheckConstraint(
@@ -21,7 +23,6 @@ public sealed class ProductCategoryConfiguration : IEntityTypeConfiguration<Prod
             .HasColumnName("ProductCategoryId")
             .ValueGeneratedNever();
 
-        builder.Property(x => x.ParentCategoryId);
         builder.Property(x => x.CategoryCode)
             .HasMaxLength(50)
             .UseCollation("Latin1_General_100_CI_AS")
